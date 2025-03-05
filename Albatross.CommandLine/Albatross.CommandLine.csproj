@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<Nullable>enable</Nullable>
+		<PackageProjectUrl>$(RepositoryProjectRoot)/commandline/Albatross.CommandLine</PackageProjectUrl>
+		<Description>An integration library that simplifies the creation of console program using the System.CommandLine library</Description>
+		<PackageReleaseNotes>$(RepositoryProjectRoot)/commandline/Albatross.CommandLine/release-notes.md</PackageReleaseNotes>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Albatross.CommandLine.CodeGen\Albatross.CommandLine.CodeGen.csproj" />
+		<PackageReference Include="Albatross.Config" Version="7.5.8" />
+		<PackageReference Include="Albatross.Logging" Version="8.0.0" />
+		<PackageReference Include="Albatross.Text" Version="7.5.8" />
+		<PackageReference Include="Spectre.Console" Version="0.49.1" />
+		<PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+		<PackageReference Include="System.CommandLine.Hosting" Version="0.4.0-alpha.22272.1" />
+		<PackageReference Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.22272.1" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="..\..\icon.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+</Project>

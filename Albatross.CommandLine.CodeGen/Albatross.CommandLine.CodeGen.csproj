@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>Latest</LangVersion>
+		<Nullable>Enable</Nullable>
+		<PackageProjectUrl>$(RepositoryProjectRoot)/commandline/Albatross.CommandLine.CodeGen</PackageProjectUrl>
+		<Description>A companion code generator used by the Albatross.CommandLine library</Description>
+		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+		<PackageTags>Analyzer;Roslyn</PackageTags>
+		<IncludeBuildOutput>false</IncludeBuildOutput>
+		<DevelopmentDependency>true</DevelopmentDependency>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Humanizer.Core" Version="2.14.1" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="Albatross.CodeAnalysis" Version="7.7.0" GeneratePathProperty="true" PrivateAssets="all" />
+	</ItemGroup>
+	<!-- begin: this setup is for package reference.  It used when packing -->
+	<ItemGroup>
+		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="$(PkgHumanizer_Core)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="$(PkgAlbatross_CodeAnalysis)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	</ItemGroup>
+	<!-- end -->
+	<!-- begin: this setup is used for project reference only.  It would be removed when packing -->
+	<PropertyGroup>
+		<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+	</PropertyGroup>
+	<Target Name="GetDependencyTargetPaths">
+		<ItemGroup>
+			<TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_CodeAnalysis)\lib\netstandard2.0\Albatross.CodeAnalysis.dll" IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="$(PKGHumanizer_Core)\lib\netstandard2.0\Humanizer.dll" IncludeRuntimeDependency="false" />
+		</ItemGroup>
+	</Target>
+	<ItemGroup>
+		<None Remove="bin\Debug\netstandard2.0\\Albatross.CommandLine.CodeGen.dll" />
+	</ItemGroup>
+	<!-- end -->
+	<ItemGroup>
+		<None Include="..\..\icon.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+</Project>

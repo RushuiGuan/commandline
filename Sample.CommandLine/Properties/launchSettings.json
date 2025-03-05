@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "default": {
+      "commandName": "Project",
+      "commandLineArgs": "yellow-command -n tesdsafdsafsadft --data 3  -s c:\\temp\\xxx\\test.json  --log information --my-file c:\\temp\\test.json ",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "staging"
+      }
+    }
+  }
+}
