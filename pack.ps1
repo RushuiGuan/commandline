@@ -65,8 +65,8 @@ if ($prod -and -not $force -and $isDirty) {
 if ($tag -and $isDirty) {
 	Write-Error "Directory is dirty. Please commit or stash changes before tagging"
 }
-
-$version = devtools project-version -d $root -p="$prod"
+$oldVersion = devtools read-project-property -f $root\Directory.Build.props -p Version
+$version = devtools project-version --directory-build-props -d $root -p="$prod"
 if ($LASTEXITCODE -ne 0) {
 	Write-Error "Unable to get project version"
 }
@@ -75,19 +75,17 @@ try {
 	Write-Information "Cleaning up artifacts folder: $root\artifacts";
 	if (-not [System.IO.Directory]::Exists("$root\artifacts")) {
 		New-Item -ItemType Directory -Path "$root\artifacts"
-	}
- else {
+	} else {
 		Get-ChildItem $root\artifacts\*.nupkg | Remove-Item -Force
 	}
 	Write-Information "Version: $version";
 	devtools set-project-version -d $root -ver $version
 	
-	$repositoryProjectRoot = devtools read-project-property -f $PSScriptRoot\Directory.Build.props -p RepositoryProjectRoot
+	$repositoryProjectRoot = devtools read-project-property -f $PSScriptRoot\Directory.Build.props -p RepositoryUrl
 	if ($LASTEXITCODE -ne 0) {
-		Write-Error "Unable to read RepositoryProjectRoot from the Directory.Build.props file";
-	}
- else {
-		$repositoryProjectRoot = $repositoryProjectRoot + "/README.md";
+		Write-Error "Unable to read RepositoryUrl from the Directory.Build.props file";
+	} else {
+		$repositoryProjectRoot = $repositoryProjectRoot + "/tree/main/README.md";
 	}
 	foreach ($project in $projects) {
 		# first fix the README.md file
@@ -112,6 +110,7 @@ try {
 			Remove-Item $tmp -Force
 		}
 	}
+	devtools set-project-version -d $root -ver $oldVersion
 	if ($tag -and $projects.Length -ne 0) {
 		$directoryName = Split-Path $root -Leaf
 		$version = devtools build-version -ver $version -clear-meta
@@ -127,8 +126,9 @@ try {
 			if ($LASTEXITCODE -ne 0) {
 				Write-Error "Error bumping version";
 			}
-			Set-Content -Path $root\.version -Value $version;
-			git commit -m "Bump version of $directoryName to $version" $root\.version;
+			devtools set-project-version -d $root -ver $version
+			devtools format-xml -f $root\Directory.Build.props
+			git commit -m "Bump version of $directoryName to $version" $root\Directory.Build.props;
 		}
 	}
 	if (-not [string]::IsNullOrEmpty($env:LocalNugetSource)) {
@@ -139,7 +139,7 @@ try {
 	}
 }
 finally {
-	devtools remove-project-version -d $root
+	devtools format-xml -f $root\Directory.Build.props
 	Get-ChildItem $root\*.csproj -recurse | ForEach-Object { 
 		devtools format-xml -f $_.FullName
 	}
