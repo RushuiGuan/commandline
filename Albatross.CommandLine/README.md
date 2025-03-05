@@ -3,8 +3,8 @@ An integration library that simplifies the creation of console program using the
 
 ## Features
 * Quick setup with dependency injection enabled by [Code Generator](../Albatross.CommandLine.CodeGen/).
-* Logging integration with Serilog provided by [Albatross.Logging](../../logging/Albatross.Logging/).
-* Easy configuration setup provided by [Albatross.Config](../../config/Albatross.Config/).
+* Logging integration with Serilog provided by [Albatross.Logging](https://www.nuget.org/packages/Albatross.Logging).
+* Easy configuration setup provided by [Albatross.Config](https://www.nuget.org/packages/Albatross.Config).
 
 ## Related Articles
 * [Code Generator](../Albatross.CommandLine.CodeGen/README.md)
