@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<Nullable>enable</Nullable>
-		<PackageProjectUrl>$(RepositoryProjectRoot)/commandline/Albatross.CommandLine</PackageProjectUrl>
+		<PackageProjectUrl>$(RepositoryProjectRoot)/Albatross.CommandLine</PackageProjectUrl>
 		<Description>An integration library that simplifies the creation of console program using the System.CommandLine library</Description>
 		<PackageReleaseNotes>$(RepositoryProjectRoot)/commandline/Albatross.CommandLine/release-notes.md</PackageReleaseNotes>
 	</PropertyGroup>

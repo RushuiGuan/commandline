@@ -1,13 +1,13 @@
 <Project>
 	<PropertyGroup>
-		<Version>7.5.7</Version>
+		<Version>7.8.4</Version>
 		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
 		<EnableWindowsTargeting>True</EnableWindowsTargeting>
 		<LangVersion>Latest</LangVersion>
 		<Nullable>enable</Nullable>
-		<RepositoryUrl>https://github.com/RushuiGuan/framework</RepositoryUrl>
-		<RepositoryProjectRoot>https://github.com/RushuiGuan/framework/tree/main</RepositoryProjectRoot>
+		<RepositoryUrl>https://github.com/RushuiGuan/commandline</RepositoryUrl>
+		<RepositoryProjectRoot>$(RepositoryUrl)/tree/main</RepositoryProjectRoot>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageIcon>icon.png</PackageIcon>
