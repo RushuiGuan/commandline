@@ -1,12 +1,26 @@
-# Albatross.CommandLine.CodeGen
-A companion code generator used by the [Albatross.CommandLine](../Albatross.CommandLine/) library.  Currently supports generation of commands, subcommands and options with dependency injection.  Support for Argument is not yet available but being actively worked on.
+# About
 
-## Features
-As a development dependency of [Albatross.CommandLine](../Albatross.CommandLine/) library, codegen will be referenced automatically as a PrivateAssets when the reference for [Albatross.CommandLine](../Albatross.CommandLine/) is added to a project.  The code generator looks for options classes those are annotated with the [Albatross.CommandLine.VerbAttribute](../Albatross.CommandLine/VerbAttribute.cs) and genenerate the appropriate command classes.  In the example below, the class `TestOptions`, `TestCommandHandler` and the first `TestCommand` class are created manually and the second `TestCommand` class is generated.  
+A companion code generator used by the [Albatross.CommandLine](../Albatross.CommandLine) library. It supports generation
+of arguments, commands, subcommands and options with dependency injection.
 
-* The command is created as a partial class which allows user to add additional functionalities.  To customize a command, create a partial command class of the same name with the interface [Albatross.CommandLine.IRequireInitialization](../Albatross.CommandLine/IRequireInitialization.cs).  
-* Nullable property are declared as optional and vice vesa.  However requirement can be overwritten using the [Albatross.CommandLine.OptionAttribute](../Albatross.CommandLine/OptionAttribute.cs) as shown in the `Value` property in the example.
-* Option alias can be created using the [Albatross.CommandLine.OptionAttribute](../Albatross.CommandLine/OptionAttribute.cs).  Aliases are prefixed with a single dash ('-') if the dash has not been prefixed already.
+## Quick Start
+
+As a development dependency of [Albatross.CommandLine](../Albatross.CommandLine) library, codegen will be referenced
+automatically as a PrivateAssets when the reference for [Albatross.CommandLine](../Albatross.CommandLine) is added to a
+project. The code generator looks for options classes those are annotated with
+the [Albatross.CommandLine.VerbAttribute](../Albatross.CommandLine/VerbAttribute.cs) and generate the appropriate
+command classes. In the example below, the class `TestOptions`, `TestCommandHandler` and the first `TestCommand` class
+are created manually and the second `TestCommand` class is generated.
+
+* The command is created as a partial class which allows user to add additional functionalities. To customize a command,
+  create a partial command class of the same name with the
+  interface [Albatross.CommandLine.IRequireInitialization](../Albatross.CommandLine/IRequireInitialization.cs).
+* Nullable property are declared as optional and vice vesa. However, requirement can be overwritten using
+  the [Albatross.CommandLine.OptionAttribute](../Albatross.CommandLine/OptionAttribute.cs) as shown in the `Value`
+  property in the example.
+* Option alias can be created using
+  the [Albatross.CommandLine.OptionAttribute](../Albatross.CommandLine/OptionAttribute.cs). Aliases are prefixed with a
+  single dash ('-') if the dash has not been prefixed already.
 
 ```csharp
 [Verb("test", typeof(TestCommandHandler), Description = "A test command")]
@@ -50,7 +64,12 @@ public sealed partial class TestCommand : Command {
 	public Option<int> Option_Value { get; }
 }
 ```
-The second part of the code generator will create the service registration and option binding code.  The `RegisterCommands` method should be invoked by service registration code in the Setup class.  `AddCommands` method is part of the bootstrap code in `program.cs` file.  See [Albatross.CommandLine](../Albatross.CommandLine/README.md) for details.
+
+The second part of the code generator will create the service registration and option binding code. The
+`RegisterCommands` method should be invoked by service registration code in the Setup class.  `AddCommands` method is
+part of the bootstrap code in `program.cs` file. See [Albatross.CommandLine](../Albatross.CommandLine/README.md) for
+details.
+
 ```csharp
 public static class RegistrationExtensions
 	{
@@ -66,3 +85,23 @@ public static class RegistrationExtensions
 		}
 	}
 ```
+
+## Troubleshooting
+
+In visual studio, `EmitCompilerGeneratedFiles` property can be added to view the generated code but Visual Studio
+doesn't work reliably. As an alternative, the code generator will output the debug file
+`albatross.commandline.codegen.txt` if the following properties are set in the project file.
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <EmitAlbatrossCodeGenDebugFile>true</EmitAlbatrossCodeGenDebugFile>
+    </PropertyGroup>
+    <ItemGroup>
+        <CompilerVisibleProperty Include="EmitAlbatrossCodeGenDebugFile"/>
+    </ItemGroup>
+</Project>
+```
+
+Rider can display the roslyn generated file reliably. They can be found under
+`Project -> Dependencies -> .NET (Version) -> Source Generators`. 

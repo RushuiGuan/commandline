@@ -5,7 +5,7 @@
 		<Nullable>enable</Nullable>
 		<PackageProjectUrl>$(RepositoryProjectRoot)/Albatross.CommandLine</PackageProjectUrl>
 		<Description>An integration library that simplifies the creation of console program using the System.CommandLine library</Description>
-		<PackageReleaseNotes>$(RepositoryProjectRoot)/commandline/Albatross.CommandLine/release-notes.md</PackageReleaseNotes>
+		<PackageReleaseNotes>$(RepositoryProjectRoot)/Albatross.CommandLine/release-notes.md</PackageReleaseNotes>
 	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Albatross.CommandLine.CodeGen\Albatross.CommandLine.CodeGen.csproj" />
