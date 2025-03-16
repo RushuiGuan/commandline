@@ -32,6 +32,21 @@ namespace Albatross.CommandLine.CodeGen {
 						setupClassNamespace = walker.SetupClass?.ContainingNamespace.ToDisplayString();
 					}
 				}
+				foreach (var attribute in context.Compilation.Assembly.GetAttributes()) {
+					if (attribute.AttributeClass?.GetFullName() == My.VerbAttributeClass) {
+						if (attribute.TryGetNamedArgument(My.OptionsClassProperty, out var typedConstant) && typedConstant.Value is INamedTypeSymbol typeSymbol) {
+							var setup = new CommandSetup(typeSymbol, attribute);
+							if (setups.ContainsKey(setup.Key)) {
+								context.CodeGenDiagnostic(DiagnosticSeverity.Error, $"{My.Diagnostic.IdPrefix}3", $"Duplicate command key '{setup.Key}' found");
+							} else {
+								setups.Add(setup.Key, setup);
+							}
+						} else {
+							context.CodeGenDiagnostic(DiagnosticSeverity.Warning, $"{My.Diagnostic.IdPrefix}6", $"An assembly verb attribute is missing the required {My.OptionsClassProperty} property");
+						}
+					}
+				}
+
 				if (!optionClasses.Any()) {
 					string text = $"No option class found.  Eligible classes should be public and annotated with the {My.VerbAttributeClass}";
 					context.CodeGenDiagnostic(DiagnosticSeverity.Warning, $"{My.Diagnostic.IdPrefix}1", text);
@@ -205,8 +220,8 @@ namespace Albatross.CommandLine.CodeGen {
 				writer.WriteLine(err.ToString());
 				context.CodeGenDiagnostic(DiagnosticSeverity.Error, $"{My.Diagnostic.IdPrefix}2", err.BuildCodeGeneneratorErrorMessage("commandline"));
 			} finally {
-				var text = writer.ToString();
-				if (!string.IsNullOrEmpty(text)) {
+				if (context.AnalyzerConfigOptions.GlobalOptions.TryGetValue(My.ProjectProperty.EmitDebugFile, out var value) && bool.TryParse(value, out var emitDebugFile) && emitDebugFile) {
+					var text = writer.ToString();
 					context.CreateGeneratorDebugFile("albatross-commandline-codegen.debug.txt", text);
 				}
 			}

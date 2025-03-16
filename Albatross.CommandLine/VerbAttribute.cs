@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Albatross.CommandLine {
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = true)]
 	public class VerbAttribute : Attribute {
 		public VerbAttribute(string name) {
 			Name = name;
@@ -12,6 +12,7 @@ namespace Albatross.CommandLine {
 			this.Handler = handler;
 		}
 		public Type? Handler { get; }
+		public Type? OptionsClass { get; set; }
 		public string Name { get; }
 		public string? Description { get; set; }
 		public string[] Alias { get; set; } = new string[0];

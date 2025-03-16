@@ -1,6 +1,7 @@
 ﻿namespace Albatross.CommandLine.CodeGen {
 	public static class My {
 		public const string VerbAttributeClass = "Albatross.CommandLine.VerbAttribute";
+		public const string OptionsClassProperty = "OptionsClass";
 		public const string OptionAttributeClass = "Albatross.CommandLine.OptionAttribute";
 		public const string IgnoreAttributeClass = "Albatross.CommandLine.IgnoreAttribute";
 		public const string ArgumentAttributeClass = "Albatross.CommandLine.ArgumentAttribute";
@@ -13,6 +14,10 @@
 
 		public static class Diagnostic {
 			public const string IdPrefix = "ComandLineCodeGen";
+		}
+
+		public static class ProjectProperty {
+			public const string EmitDebugFile = "build_property.EmitAlbatrossCodeGenDebugFile";
 		}
 	}
 }
