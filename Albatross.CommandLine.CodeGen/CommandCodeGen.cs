@@ -47,7 +47,7 @@ namespace Albatross.CommandLine.CodeGen {
 					}
 				}
 
-				if (!optionClasses.Any()) {
+				if (!optionClasses.Any() && !setups.Any()) {
 					string text = $"No option class found.  Eligible classes should be public and annotated with the {My.VerbAttributeClass}";
 					context.CodeGenDiagnostic(DiagnosticSeverity.Warning, $"{My.Diagnostic.IdPrefix}1", text);
 					return;
