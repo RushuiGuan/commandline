@@ -1,12 +1,6 @@
 # Albatross.CommandLine
 An integration library that simplifies the creation of console program using the [System.CommandLine](https://learn.microsoft.com/en-us/dotnet/standard/commandline/) library.  It provdes code generation, dependency injection, configuration and logging support.  It uses [Albatross.CommandLine.CodeGen](../Albatross.CommandLine.CodeGen/) to generate commands and options automatically while giving developers the flexibility to fully leverage the capability of [System.CommandLine](https://learn.microsoft.com/en-us/dotnet/standard/commandline/) library.
 
-## Prerequisite
-* Dotnet Compiler version 4.12.0 or higher
-`Albatross.CommandLine.CodeGen` - an integrated part of the library uses Roslyn.  The library takes on 
-the dependency of the compiler version 4.12.0.  For the code generator to correctly, 
-
-
 ## Features
 * Quick setup with dependency injection enabled by [Code Generator](../Albatross.CommandLine.CodeGen/).
 * Logging integration with Serilog provided by [Albatross.Logging](https://www.nuget.org/packages/Albatross.Logging).
@@ -21,6 +15,18 @@ the dependency of the compiler version 4.12.0.  For the code generator to correc
 * [Global Options](#global-options)
 * [Error Handling](#error-handling)
 * [Customizations](#customization)
+
+## Prerequisite
+**Dotnet Compiler version 4.12.0 or higher**
+
+`Albatross.CommandLine.CodeGen` - an integrated part of the library that uses Roslyn for code generation takes on 
+the dependency of `Microsoft.CodeAnalysis.CSharp` version 4.12.0, which in term requires the compiler version 4.12.0 or above.  The requirement is met with dotnet SDK version 9 or above or with the latest version of visual studio.  If dotnet SDK 8 is used with Console, VSCode or JetBrain Rider, the compiler version by default would be 4.11.0 or below.  It can be updated at the project level by referencing the `Microsoft.Net.Compilers.Toolset` version 4.12.0 or above in the project file.  The following code snippet shows how to do that.
+```xml
+<PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.12.0">
+	<PrivateAssets>all</PrivateAssets>
+	<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+</PackageReference>
+```
 
 ## Quick Start ([Sample Program](../Sample.CommandLine/))
 * Create a .net8 Console program
