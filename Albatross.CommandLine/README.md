@@ -1,6 +1,12 @@
 # Albatross.CommandLine
 An integration library that simplifies the creation of console program using the [System.CommandLine](https://learn.microsoft.com/en-us/dotnet/standard/commandline/) library.  It provdes code generation, dependency injection, configuration and logging support.  It uses [Albatross.CommandLine.CodeGen](../Albatross.CommandLine.CodeGen/) to generate commands and options automatically while giving developers the flexibility to fully leverage the capability of [System.CommandLine](https://learn.microsoft.com/en-us/dotnet/standard/commandline/) library.
 
+## Prerequisite
+* Dotnet Compiler version 4.12.0 or higher
+`Albatross.CommandLine.CodeGen` - an integrated part of the library uses Roslyn.  The library takes on 
+the dependency of the compiler version 4.12.0.  For the code generator to correctly, 
+
+
 ## Features
 * Quick setup with dependency injection enabled by [Code Generator](../Albatross.CommandLine.CodeGen/).
 * Logging integration with Serilog provided by [Albatross.Logging](https://www.nuget.org/packages/Albatross.Logging).
