@@ -61,8 +61,9 @@ namespace Albatross.CommandLine {
 		}
 
 		public virtual RootCommand CreateRootCommand() {
-			var cmd = new RootCommand(RootCommandDescription);
-			cmd.Handler = new HelpCommandHandler();
+			var cmd = new RootCommand(RootCommandDescription) {
+				Handler = new HelpCommandHandler()
+			};
 			var logOption = new Option<LogEventLevel?>("--verbosity", () => LogEventLevel.Error, "Change the verbosity of logging");
 			logOption.AddAlias("-v");
 			cmd.AddGlobalOption(logOption);

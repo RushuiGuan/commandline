@@ -9,15 +9,14 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Albatross.CommandLine.CodeGen\Albatross.CommandLine.CodeGen.csproj" />
-		<PackageReference Include="Albatross.Config" Version="7.5.8" />
-		<PackageReference Include="Albatross.Logging" Version="8.0.0" />
-		<PackageReference Include="Albatross.Text" Version="7.5.8" />
-		<PackageReference Include="Spectre.Console" Version="0.49.1" />
+		<PackageReference Include="Albatross.Config" Version="9.0.2" />
+		<PackageReference Include="Albatross.Logging" Version="9.0.0" />
+		<PackageReference Include="Albatross.Text" Version="8.2.0" />
 		<PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
 		<PackageReference Include="System.CommandLine.Hosting" Version="0.4.0-alpha.22272.1" />
 		<PackageReference Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.22272.1" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="..\icon.png">
