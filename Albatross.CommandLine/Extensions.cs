@@ -1,18 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.Linq;
 using System.Text;
 
 namespace Albatross.CommandLine {
 	public static class Extensions {
-		public static string ParsedCommandName(this InvocationContext context) => context.ParseResult.CommandResult.Command.Name;
-
-		public static string? Prompt(this string message) {
-			Console.Write(message);
-			return Console.ReadLine();
-		}
+		public static string ParsedCommandName(this ParseResult result) => result.CommandResult.Command.Name;
 		static void ParseKey(string key, out string parent, out string self) {
 			var index = key.LastIndexOf(' ');
 			if (index == -1) {
@@ -32,10 +26,9 @@ namespace Albatross.CommandLine {
 			} else {
 				ParseKey(key, out var parent, out var self);
 				var parentCommand = GetOrCreateHelpCommand(dictionary, parent);
-				var newCommand = new Command(self) {
-					Handler = new HelpCommandHandler(),
-				};
-				parentCommand.AddCommand(newCommand);
+				var newCommand = new Command(self);
+				newCommand.SetAction(new HelpCommandHandler().Invoke);
+				parentCommand.Add(newCommand);
 				dictionary[key] = newCommand;
 				return newCommand;
 			}
@@ -48,10 +41,10 @@ namespace Albatross.CommandLine {
 			dictionary.Add(key, command);
 			ParseKey(key, out var parent, out _);
 			var parentCommand = GetOrCreateHelpCommand(dictionary, parent);
-			parentCommand.AddCommand(command);
+			parentCommand.Add(command);
 			// this step has to be done after the command has been added to its parent
-			if (command.Handler == null) {
-				command.Handler = setup.CreateGlobalCommandHandler(command);
+			if (command.Action == null) {
+				command.Action = setup.CreateGlobalCommandHandler(command);
 			}
 			return command;
 		}

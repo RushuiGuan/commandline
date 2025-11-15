@@ -3,9 +3,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.CommandLine;
-using System.CommandLine.Hosting;
-using System.CommandLine.Invocation;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
@@ -18,8 +17,8 @@ namespace Albatross.CommandLine {
 			this.key = command.GetKey();
 		}
 
-		public int Invoke(InvocationContext context) => Invoke(context, false).Result;
-		public Task<int> InvokeAsync(InvocationContext context) => Invoke(context, true);
+		public int Invoke(ParseResult result) => Invoke(result, false).Result;
+		public Task<int> InvokeAsync(ParseResult result, CancellationToken _) => Invoke(result, true);
 
 		public virtual int HandleCommandException(Exception err, ILogger logger, GlobalOptions globalOptions) {
 			if (globalOptions.ShowStack) {
@@ -30,7 +29,7 @@ namespace Albatross.CommandLine {
 			return 10000;
 		}
 
-		public async Task<int> Invoke(InvocationContext context, bool async) {
+		public async Task<int> Invoke(ParseResult context, bool async) {
 			var provider = context.GetHost().Services;
 			var globalOptions = provider.GetRequiredService<IOptions<GlobalOptions>>().Value;
 			var logger = provider.GetRequiredService<ILogger<GlobalCommandHandler>>();

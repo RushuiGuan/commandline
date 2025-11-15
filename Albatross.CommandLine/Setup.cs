@@ -8,9 +8,6 @@ using Serilog;
 using Serilog.Events;
 using System;
 using System.CommandLine;
-using System.CommandLine.Builder;
-using System.CommandLine.Hosting;
-using System.CommandLine.Invocation;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,8 +16,6 @@ namespace Albatross.CommandLine {
 		protected virtual string RootCommandDescription => string.Empty;
 		public Setup() {
 			this.RootCommand = CreateRootCommand();
-			this.CommandBuilder = new CommandLineBuilder(this.RootCommand);
-			this.CommandBuilder.AddMiddleware(AddLoggingMiddleware);
 			this.CommandBuilder.UseHost(args => Host.CreateDefaultBuilder(), hostBuilder => {
 				var environment = EnvironmentSetting.DOTNET_ENVIRONMENT;
 				var logger = new SetupSerilog().Configure(ConfigureLogging).Create();
@@ -61,28 +56,18 @@ namespace Albatross.CommandLine {
 		}
 
 		public virtual RootCommand CreateRootCommand() {
-			var cmd = new RootCommand(RootCommandDescription) {
-				Handler = new HelpCommandHandler()
+			var root = new RootCommand(RootCommandDescription);
+			var logOption = new Option<LogEventLevel?>("--verbosity", "-v") {
+				Description = "Set the verbosity level of logging",
+				Arity = ArgumentArity.ZeroOrOne,
+				DefaultValueFactory = _ => LogEventLevel.Error
 			};
-			var logOption = new Option<LogEventLevel?>("--verbosity", () => LogEventLevel.Error, "Change the verbosity of logging");
-			logOption.AddAlias("-v");
-			cmd.AddGlobalOption(logOption);
-			cmd.AddGlobalOption(new Option<bool>("--benchmark", "Show the time it takes to run the command in milliseconds"));
-			cmd.AddGlobalOption(new Option<bool>("--show-stack", "Show the full stack when an exception has been thrown"));
-			return cmd;
+			root.Add(logOption);
+			root.Add(new Option<bool>("--benchmark", "Show the time it takes to run the command in milliseconds"));
+			root.Add(new Option<bool>("--show-stack", "Show the full stack when an exception has been thrown"));
+			return root;
 		}
 		public RootCommand RootCommand { get; }
-		public CommandLineBuilder CommandBuilder { get; }
-
-		[Obsolete]
-		public Setup AddCommand<TCommand>() where TCommand : Command, new() {
-			var command = new TCommand();
-			if (command is IRequireInitialization instance) {
-				instance.Init();
-			}
-			this.RootCommand.Add(command);
-			return this;
-		}
 
 		public virtual void RegisterServices(InvocationContext context, IConfiguration configuration, EnvironmentSetting envSetting, IServiceCollection services) {
 			Serilog.Log.Debug("Registering services");

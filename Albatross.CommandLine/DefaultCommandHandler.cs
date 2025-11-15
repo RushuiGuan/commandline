@@ -1,11 +1,10 @@
-﻿using System.CommandLine.Invocation;
-using System.CommandLine.IO;
+﻿using System.CommandLine;
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
 	public class DefaultCommandHandler : ICommandHandler {
-		public int Invoke(InvocationContext context) {
-			context.Console.Out.WriteLine(context.ParseResult.ToString());
+		public int Invoke(ParseResult result) {
+			result.Console.Out.WriteLine(result.ParseResult.ToString());
 			return 0;
 		}
 

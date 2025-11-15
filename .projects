@@ -4,3 +4,7 @@ Albatross.CommandLine.CodeGen
 
 # tests
 Albatross.CommandLine.Test
+
+# apps
+Sample.CommandLine
+TestConsole
