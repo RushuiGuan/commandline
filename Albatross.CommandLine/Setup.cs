@@ -13,33 +13,47 @@ using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
 	public class Setup {
-		protected virtual string RootCommandDescription => string.Empty;
-		public Setup() {
-			this.RootCommand = CreateRootCommand();
-			this.CommandBuilder.UseHost(args => Host.CreateDefaultBuilder(), hostBuilder => {
-				var environment = EnvironmentSetting.DOTNET_ENVIRONMENT;
-				var logger = new SetupSerilog().Configure(ConfigureLogging).Create();
-				hostBuilder.UseSerilog(logger);
-				logger.Debug("Building Host");
-				var configBuilder = new ConfigurationBuilder()
-					.SetBasePath(AppContext.BaseDirectory)
-					.AddJsonFile("appsettings.json", true, false);
-				if (!string.IsNullOrEmpty(environment.Value)) {
-					configBuilder.AddJsonFile($"appsettings.{environment.Value}.json", true, false);
-				}
-				logger.Debug("Creating configuration");
-				var configuration = configBuilder.AddEnvironmentVariables().Build();
-				hostBuilder.ConfigureAppConfiguration(builder => {
-					builder.Sources.Clear();
-					builder.AddConfiguration(configuration);
-				}).ConfigureServices((context, svc) => RegisterServices(context.GetInvocationContext(), context.Configuration, environment, svc));
+		protected IConfiguration configuration;
+		protected IHostBuilder hostBuilder;
+		protected ParseResult? result;
+		public RootCommand RootCommand { get; }
+
+		public Setup(string rootCommandDescription) {
+			var environment = EnvironmentSetting.DOTNET_ENVIRONMENT.Value;
+			var hostBuilder = Host.CreateDefaultBuilder().UseSerilog();
+			var setupSerilog = ConfigureLogging(new SetupSerilog(), environment);
+			var configBuilder = new ConfigurationBuilder()
+				.SetBasePath(AppContext.BaseDirectory)
+				.AddJsonFile("appsettings.json", false, true);
+			if (!string.IsNullOrEmpty(environment)) { configBuilder.AddJsonFile($"appsettings.{environment}.json", true, true); }
+			this.configuration = configBuilder.AddEnvironmentVariables().Build();
+
+			hostBuilder.ConfigureAppConfiguration(builder => {
+				builder.Sources.Clear();
+				builder.AddConfiguration(configuration);
 			});
-			this.ConfigureBuilder();
+			CreateRootCommand(rootCommandDescription);
+		}
+		Setup ConfigureServices() {
+			this.hostBuilder.ConfigureServices(services => {
+				this.RegisterServices(this.result ?? throw new InvalidOperationException("Call Parse() before Build()"), configuration, EnvironmentSetting.DOTNET_ENVIRONMENT, services);
+			});
+			return this;
+		}
+		Setup AddCommands() {
+			return this;
 		}
 
-		public virtual CommandLineBuilder ConfigureBuilder() {
-			return this.CommandBuilder.UseDefaults();
+		Setup Parse(string[] args) {
+			result = this.RootCommand.Parse(args);
+			return this;
 		}
+
+		protected virtual SetupSerilog ConfigureLogging(SetupSerilog setup, string environment) {
+			setup.UseConfigFile(environment, null, null);
+			return setup;
+		}
+
 		private Task AddLoggingMiddleware(InvocationContext context, Func<InvocationContext, Task> next) {
 			var logOption = this.RootCommand.Options.OfType<Option<LogEventLevel?>>().First();
 			var result = context.ParseResult.GetValueForOption(logOption);
@@ -55,8 +69,8 @@ namespace Albatross.CommandLine {
 			return new GlobalCommandHandler(command);
 		}
 
-		public virtual RootCommand CreateRootCommand() {
-			var root = new RootCommand(RootCommandDescription);
+		public virtual RootCommand CreateRootCommand(string descriptions) {
+			var root = new RootCommand(descriptions);
 			var logOption = new Option<LogEventLevel?>("--verbosity", "-v") {
 				Description = "Set the verbosity level of logging",
 				Arity = ArgumentArity.ZeroOrOne,
@@ -65,21 +79,20 @@ namespace Albatross.CommandLine {
 			root.Add(logOption);
 			root.Add(new Option<bool>("--benchmark", "Show the time it takes to run the command in milliseconds"));
 			root.Add(new Option<bool>("--show-stack", "Show the full stack when an exception has been thrown"));
+			var globalHandler = CreateGlobalCommandHandler(root);
+			root.SetAction(globalHandler.Invoke);
 			return root;
 		}
-		public RootCommand RootCommand { get; }
 
-		public virtual void RegisterServices(InvocationContext context, IConfiguration configuration, EnvironmentSetting envSetting, IServiceCollection services) {
+		protected virtual void RegisterServices(ParseResult result, IConfiguration configuration, EnvironmentSetting envSetting, IServiceCollection services) {
 			Serilog.Log.Debug("Registering services");
 			services.AddSingleton(new ProgramSetting(configuration));
 			services.AddSingleton(envSetting);
 			services.AddSingleton(provider => provider.GetRequiredService<ILoggerFactory>().CreateLogger("default"));
 			services.AddSingleton<IHostEnvironment, MyHostEnvironment>();
-			services.AddOptions<GlobalOptions>().BindCommandLine();
 		}
 
-		protected virtual void ConfigureLogging(LoggerConfiguration cfg) {
-			SetupSerilog.UseConsole(cfg, null);
-		}
+		protected virtual void ConfigureLogging(LoggerConfiguration cfg) => SetupSerilog.UseConsole(cfg, null);
+		public virtual void Configure(ParseResult result, ProgramSetting programSetting, EnvironmentSetting environmentSetting, ILogger<Setup> logger) { }
 	}
 }

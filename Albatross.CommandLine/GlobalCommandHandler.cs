@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -8,29 +9,19 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
-	public class GlobalCommandHandler : ICommandHandler {
+	public class GlobalCommandHandler : IAsyncCommandHandler {
 		protected readonly Command command;
+		private readonly IHost host;
 		protected readonly string key;
 
-		public GlobalCommandHandler(Command command) {
+		public GlobalCommandHandler(Command command, IHost host) {
 			this.command = command;
+			this.host = host;
 			this.key = command.GetKey();
 		}
 
-		public int Invoke(ParseResult result) => Invoke(result, false).Result;
-		public Task<int> InvokeAsync(ParseResult result, CancellationToken _) => Invoke(result, true);
-
-		public virtual int HandleCommandException(Exception err, ILogger logger, GlobalOptions globalOptions) {
-			if (globalOptions.ShowStack) {
-				logger.LogError(err, "Error invoking Command {command}", key);
-			} else {
-				logger.LogError("Error invoking Command {command}: {message}", key, err.Message);
-			}
-			return 10000;
-		}
-
-		public async Task<int> Invoke(ParseResult context, bool async) {
-			var provider = context.GetHost().Services;
+		public async Task<int> InvokeAsync(ParseResult result, CancellationToken cancellationToken) {
+			var provider = this.host.Services;
 			var globalOptions = provider.GetRequiredService<IOptions<GlobalOptions>>().Value;
 			var logger = provider.GetRequiredService<ILogger<GlobalCommandHandler>>();
 			ICommandHandler? handler = null;
@@ -69,6 +60,15 @@ namespace Albatross.CommandLine {
 					}
 				}
 			}
+		}
+
+		public virtual int HandleCommandException(Exception err, ILogger logger, GlobalOptions globalOptions) {
+			if (globalOptions.ShowStack) {
+				logger.LogError(err, "Error invoking Command {command}", key);
+			} else {
+				logger.LogError("Error invoking Command {command}: {message}", key, err.Message);
+			}
+			return 10000;
 		}
 	}
 }
