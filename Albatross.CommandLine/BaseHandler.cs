@@ -13,23 +13,9 @@ namespace Albatross.CommandLine {
 		public BaseHandler(IOptions<T> options) {
 			this.options = options.Value;
 		}
-		public virtual int Invoke(ParseResult result) {
-			this.writer.WriteLine(result.ToString());
-			return 0;
-		}
-	}
-
-	public class BaseAsyncHandler<T> : IAsyncCommandHandler where T : class {
-		protected readonly T options;
-		protected virtual TextWriter writer => Console.Out;
-
-		public BaseAsyncHandler(IOptions<T> options) {
-			this.options = options.Value;
-		}
 		
-		public Task<int> InvokeAsync(ParseResult result, CancellationToken cancellationToken) {
-			this.writer.WriteLine(result.ToString());
-			return Task.FromResult(0);
+		public Task<int> InvokeAsync(CancellationToken cancellationToken) {
+			throw new NotImplementedException();
 		}
 	}
 }

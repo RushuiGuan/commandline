@@ -49,6 +49,10 @@ namespace Albatross.CommandLine {
 			return command;
 		}
 
+		public static bool HasParent(this ParseResult result, string command) {
+			return true;
+		}
+
 		private static void GetKey(this Command command, StringBuilder sb, HashSet<Command> set) {
 			if (set.Contains(command)) {
 				throw new InvalidOperationException($"Circular reference detected in command {command.Name}");
@@ -66,10 +70,11 @@ namespace Albatross.CommandLine {
 				throw new InvalidOperationException($"Parent of command {command.Name} is not a Command");
 			}
 		}
-		public static string GetKey(this Command command) {
-			var sb = new System.Text.StringBuilder();
+
+		public static string GetCommandKey(this ParseResult result) {
+			var sb = new StringBuilder();
 			var set = new HashSet<Command>();
-			GetKey(command, sb, set);
+			GetKey(result.CommandResult.Command, sb, set);
 			return sb.ToString();
 		}
 	}

@@ -1,7 +1,9 @@
 ﻿using System.CommandLine;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
 	public interface ICommandHandler {
-		int Invoke(ParseResult result);
+		Task<int> InvokeAsync(CancellationToken cancellationToken);
 	}
 }

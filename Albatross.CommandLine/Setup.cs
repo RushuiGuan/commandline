@@ -34,12 +34,14 @@ namespace Albatross.CommandLine {
 			});
 			CreateRootCommand(rootCommandDescription);
 		}
+
 		Setup ConfigureServices() {
 			this.hostBuilder.ConfigureServices(services => {
 				this.RegisterServices(this.result ?? throw new InvalidOperationException("Call Parse() before Build()"), configuration, EnvironmentSetting.DOTNET_ENVIRONMENT, services);
 			});
 			return this;
 		}
+
 		Setup AddCommands() {
 			return this;
 		}
@@ -62,14 +64,8 @@ namespace Albatross.CommandLine {
 			}
 			return next(context);
 		}
-		/// <summary>
-		/// Overwrite this method to use a custom global command handler for all commands
-		/// </summary>
-		public virtual ICommandHandler CreateGlobalCommandHandler(Command command) {
-			return new GlobalCommandHandler(command);
-		}
 
-		public virtual RootCommand CreateRootCommand(string descriptions) {
+		public RootCommand CreateRootCommand(IHost host, string descriptions) {
 			var root = new RootCommand(descriptions);
 			var logOption = new Option<LogEventLevel?>("--verbosity", "-v") {
 				Description = "Set the verbosity level of logging",
@@ -79,8 +75,8 @@ namespace Albatross.CommandLine {
 			root.Add(logOption);
 			root.Add(new Option<bool>("--benchmark", "Show the time it takes to run the command in milliseconds"));
 			root.Add(new Option<bool>("--show-stack", "Show the full stack when an exception has been thrown"));
-			var globalHandler = CreateGlobalCommandHandler(root);
-			root.SetAction(globalHandler.Invoke);
+			var globalHandler = new GlobalCommandHandler(host);
+			root.SetAction(globalHandler.InvokeAsync);
 			return root;
 		}
 

@@ -34,7 +34,13 @@ internal class Program {
 		rootCommand.Add(debugGlobalOption);
 		rootCommand.Add(CreateGreetCommand());
 		rootCommand.Add(CreatEmptyCommand());
+		rootCommand.SetAction(GlobalInvoke);
 		await rootCommand.Parse(args).InvokeAsync();
+		return 0;
+	}
+
+	private static int GlobalInvoke(ParseResult result) {
+		System.Console.WriteLine("global");
 		return 0;
 	}
 

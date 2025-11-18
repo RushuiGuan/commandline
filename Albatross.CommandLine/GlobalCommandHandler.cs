@@ -9,34 +9,31 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
-	public class GlobalCommandHandler : IAsyncCommandHandler {
-		protected readonly Command command;
+	public class GlobalCommandHandler {
 		private readonly IHost host;
-		protected readonly string key;
 
-		public GlobalCommandHandler(Command command, IHost host) {
-			this.command = command;
+		public GlobalCommandHandler(IHost host) {
 			this.host = host;
-			this.key = command.GetKey();
 		}
 
 		public async Task<int> InvokeAsync(ParseResult result, CancellationToken cancellationToken) {
+			var commandKey = result.GetCommandKey();
 			var provider = this.host.Services;
 			var globalOptions = provider.GetRequiredService<IOptions<GlobalOptions>>().Value;
 			var logger = provider.GetRequiredService<ILogger<GlobalCommandHandler>>();
 			ICommandHandler? handler = null;
 			try {
-				handler = provider.GetKeyedService<ICommandHandler>(key);
+				handler = provider.GetKeyedService<ICommandHandler>(commandKey);
 			} catch (Exception err) {
 				if (globalOptions.ShowStack) {
-					logger.LogError(err, "Error creating CommandHandler for Command {command}", key);
+					logger.LogError(err, "Error creating CommandHandler for Command {command}", commandKey);
 				} else {
-					logger.LogError("Error creating CommandHandler for Command {command}: {msg}", key, err.Message);
+					logger.LogError("Error creating CommandHandler for Command {command}: {msg}", commandKey, err.Message);
 				}
 				return 9999;
 			}
 			if (handler == null) {
-				logger.LogError("No CommandHandler is registered for Command {command}", key);
+				logger.LogError("No CommandHandler is registered for Command {command}", commandKey);
 				return 9998;
 			} else {
 				Stopwatch? stopwatch;
@@ -46,27 +43,22 @@ namespace Albatross.CommandLine {
 					stopwatch = null;
 				}
 				try {
-					if (async) {
-						return await handler.InvokeAsync(context);
-					} else {
-						return handler.Invoke(context);
-					}
+					return await handler.InvokeAsync(cancellationToken);
 				} catch (Exception err) {
-					return HandleCommandException(err, logger, globalOptions);
+					return HandleCommandException(commandKey, err, logger, globalOptions);
 				} finally {
 					if (stopwatch != null) {
 						stopwatch.Stop();
-						logger.LogInformation("Command {command} took {time:#,#0} ms", command.Name, stopwatch.ElapsedMilliseconds);
+						logger.LogInformation("Command {command} took {time:#,#0} ms", commandKey, stopwatch.ElapsedMilliseconds);
 					}
 				}
 			}
 		}
-
-		public virtual int HandleCommandException(Exception err, ILogger logger, GlobalOptions globalOptions) {
+		public int HandleCommandException(string commandKey, Exception err, ILogger logger, GlobalOptions globalOptions) {
 			if (globalOptions.ShowStack) {
-				logger.LogError(err, "Error invoking Command {command}", key);
+				logger.LogError(err, "Error invoking Command {command}", commandKey);
 			} else {
-				logger.LogError("Error invoking Command {command}: {message}", key, err.Message);
+				logger.LogError("Error invoking Command {command}: {message}", commandKey, err.Message);
 			}
 			return 10000;
 		}

@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
 	public class DefaultCommandHandler : ICommandHandler {

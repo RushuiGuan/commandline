@@ -13,9 +13,9 @@ namespace Albatross.CommandLine.Test {
 			cmd1.AddCommand(cmd2);
 			cmd2.AddCommand(cmd3);
 			cmd3.AddCommand(cmd);
-			Assert.Equal("1 2", cmd2.GetKey());
-			Assert.Equal("1 2 3", cmd3.GetKey());
-			Assert.Equal("1", cmd1.GetKey());
+			Assert.Equal("1 2", cmd2.GetCommandKey());
+			Assert.Equal("1 2 3", cmd3.GetCommandKey());
+			Assert.Equal("1", cmd1.GetCommandKey());
 		}
 		
 		[Fact]
@@ -26,7 +26,7 @@ namespace Albatross.CommandLine.Test {
 			cmd1.AddCommand(cmd2);
 			cmd2.AddCommand(cmd3);
 			cmd3.AddCommand(cmd1);
-			Assert.Throws<System.InvalidOperationException>(() => cmd1.GetKey());
+			Assert.Throws<System.InvalidOperationException>(() => cmd1.GetCommandKey());
 		}
 	}
 }
