@@ -1,0 +1,69 @@
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
+using System.CommandLine;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Albatross.CommandLine {
+	public class GlobalCommandAction {
+		const int ErrorExitCode = 9999;
+		private readonly IHost host;
+
+		public GlobalCommandAction(IHost host) {
+			this.host = host;
+		}
+
+		public async Task<int> InvokeAsync(ParseResult result, CancellationToken cancellationToken) {
+			var commandNames = result.CommandResult.Command.GetCommandNames();
+			var key = string.Join(' ', commandNames);
+			var provider = this.host.Services;
+			var benchmark = result.GetValue<bool>("--benchmark");
+			var showStack = result.GetValue<bool>("--show-stack");
+			var logger = provider.GetRequiredService<ILogger<GlobalCommandAction>>();
+			ICommandHandler? handler = null;
+			try {
+				if (result.CommandResult.Command is IRequireInitialization requireInitialization) {
+					logger.LogInformation("Initializing command {command}", key);
+					requireInitialization.Init();
+				}
+				handler = provider.GetKeyedService<ICommandHandler>(key);
+			} catch (Exception err) {
+				if (showStack) {
+					logger.LogError(err, "Error creating CommandHandler for command {command}", key);
+				} else {
+					logger.LogError("Error creating CommandHandler for command {command}: {msg}", key, err.Message);
+				}
+				return ErrorExitCode;
+			}
+			if (handler == null) {
+				logger.LogError("No CommandHandler is registered for command {command}", key);
+				return ErrorExitCode;
+			} else {
+				Stopwatch? stopwatch;
+				if (benchmark) {
+					stopwatch = Stopwatch.StartNew();
+				} else {
+					stopwatch = null;
+				}
+				try {
+					return await handler.Invoke(cancellationToken);
+				} catch (Exception err) {
+					if (showStack) {
+						logger.LogError(err, "Error invoking command {command}", key);
+					} else {
+						logger.LogError("Error invoking command {command}: {message}", key, err.Message);
+					}
+					return ErrorExitCode;
+				} finally {
+					if (stopwatch != null) {
+						stopwatch.Stop();
+						logger.LogInformation("Command {command} took {time:#,#0} ms", key, stopwatch.ElapsedMilliseconds);
+					}
+				}
+			}
+		}
+	}
+}

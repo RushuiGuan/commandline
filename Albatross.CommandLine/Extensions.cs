@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.Linq;
-using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
 	public static class Extensions {
@@ -33,18 +33,15 @@ namespace Albatross.CommandLine {
 				return newCommand;
 			}
 		}
-		public static Command AddCommand<T>(this Dictionary<string, Command> dictionary, string key, Setup setup) where T : Command, new() {
+		public static Command AddCommand<T>(this Dictionary<string, Command> dictionary, string key, Func<ParseResult, CancellationToken, Task<int>> globalCommandAction) where T : Command, new() {
 			var command = new T();
-			if (command is IRequireInitialization instance) {
-				instance.Init();
-			}
 			dictionary.Add(key, command);
 			ParseKey(key, out var parent, out _);
 			var parentCommand = GetOrCreateHelpCommand(dictionary, parent);
 			parentCommand.Add(command);
 			// this step has to be done after the command has been added to its parent
 			if (command.Action == null) {
-				command.Action = setup.CreateGlobalCommandHandler(command);
+				command.SetAction(globalCommandAction);
 			}
 			return command;
 		}
@@ -53,29 +50,12 @@ namespace Albatross.CommandLine {
 			return true;
 		}
 
-		private static void GetKey(this Command command, StringBuilder sb, HashSet<Command> set) {
-			if (set.Contains(command)) {
-				throw new InvalidOperationException($"Circular reference detected in command {command.Name}");
-			} else {
-				set.Add(command);
-			}
-			var parent = command.Parents.FirstOrDefault();
-			if (parent == null || parent is RootCommand) {
-				sb.Append(command.Name);
-			} else if (parent is Command parentCommand) {
-				GetKey(parentCommand, sb, set);
-				sb.Append(' ');
-				sb.Append(command.Name);
-			} else {
-				throw new InvalidOperationException($"Parent of command {command.Name} is not a Command");
-			}
-		}
-
-		public static string GetCommandKey(this ParseResult result) {
-			var sb = new StringBuilder();
-			var set = new HashSet<Command>();
-			GetKey(result.CommandResult.Command, sb, set);
-			return sb.ToString();
+		public static string[] GetCommandNames(this Command command) {
+			var stack = new Stack<string>();
+			do {
+				stack.Push(command.Name);
+			} while (command is not RootCommand);
+			return stack.ToArray();
 		}
 	}
 }

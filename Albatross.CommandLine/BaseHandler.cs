@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
 using System;
-using System.CommandLine;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +13,7 @@ namespace Albatross.CommandLine {
 			this.options = options.Value;
 		}
 		
-		public Task<int> InvokeAsync(CancellationToken cancellationToken) {
+		public Task<int> Invoke(CancellationToken cancellationToken) {
 			throw new NotImplementedException();
 		}
 	}
