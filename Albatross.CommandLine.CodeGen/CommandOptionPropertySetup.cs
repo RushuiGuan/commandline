@@ -6,10 +6,10 @@ using System.Linq;
 
 namespace Albatross.CommandLine.CodeGen {
 	public class CommandOptionPropertySetup : CommandPropertySetup {
-		public CommandOptionPropertySetup(IPropertySymbol property, AttributeData? propertyAttribute)
+		public CommandOptionPropertySetup(Compilation compilation, IPropertySymbol property, AttributeData? propertyAttribute)
 			: base(property, propertyAttribute, $"--{property.Name.Kebaberize()}") {
 			this.Aliases = Array.Empty<string>();
-			this.Required = property.Type.SpecialType != SpecialType.System_Boolean && !property.Type.IsNullable() && !property.Type.IsCollection() && !ShouldDefaultToInitializer;
+			this.Required = property.Type.SpecialType != SpecialType.System_Boolean && !property.Type.IsNullable(compilation) && !property.Type.IsCollection(compilation) && !ShouldDefaultToInitializer;
 
 			if (propertyAttribute != null) {
 				if (propertyAttribute.ConstructorArguments.Any()) {

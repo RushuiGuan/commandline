@@ -1,5 +1,6 @@
 ﻿using Albatross.CommandLine;
 using Microsoft.Extensions.Options;
+using System.CommandLine.Parsing;
 using System.Linq;
 
 namespace Sample.CommandLine {
@@ -14,12 +15,12 @@ namespace Sample.CommandLine {
 
 	public partial class MutuallyExclusiveCommand : IRequireInitialization {
 		public void Init() {
-			this.AddValidator(result => {
-				var found = result.Children.Where(x => x.Symbol == this.Option_Id || x.Symbol == this.Option_Name).ToList();
+			this.Validators.Add(result => {
+				var found = result.Children.Where(x => x is OptionResult optionResult && (optionResult.Option == this.Option_Id || optionResult.Option == this.Option_Name)).ToList();
 				if (found.Count == 0) {
-					result.ErrorMessage = "Either Id or Name is required";
+					result.AddError("Either Id or Name is required");
 				} else if (found.Count > 1) {
-					result.ErrorMessage = "Id and Name are mutually exclusive";
+					result.AddError("Id and Name are mutually exclusive");
 				};
 			});
 		}

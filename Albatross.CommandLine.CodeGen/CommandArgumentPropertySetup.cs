@@ -4,12 +4,12 @@ using Microsoft.CodeAnalysis;
 
 namespace Albatross.CommandLine.CodeGen {
 	public class CommandArgumentPropertySetup : CommandPropertySetup {
-		public CommandArgumentPropertySetup(IPropertySymbol property, AttributeData argumentAttribute) : base(property, argumentAttribute, property.Name.Kebaberize()) {
-			if(property.Type.IsCollection()) {
+		public CommandArgumentPropertySetup(Compilation compilation, IPropertySymbol property, AttributeData argumentAttribute) : base(property, argumentAttribute, property.Name.Kebaberize()) {
+			if(property.Type.IsCollection(compilation)) {
 				this.ArityMin = 0;
 				this.ArityMax = 100_000;
 			} else {
-				if (property.Type.IsNullable()) {
+				if (property.Type.IsNullable(compilation)) {
 					this.ArityMin = 0;
 				} else {
 					this.ArityMin = 1;

@@ -1,7 +1,7 @@
 ﻿using Albatross.CommandLine;
 using Microsoft.Extensions.Options;
-using System.CommandLine;
-using System.CommandLine.Invocation;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
 	// parent1 has two subcommands sub1 and sub2,  if the parent itself is not declared, it will
@@ -35,10 +35,10 @@ namespace Sample.CommandLine {
 
 	public class MyParent3Handler : BaseHandler<MyParent3Sub1Options> {
 		public MyParent3Handler(IOptions<MyParent3Sub1Options> options) : base(options) { }
-		public override int Invoke(InvocationContext context) {
+		public override Task<int> Invoke(CancellationToken token) {
 			// remove base.Invoke and do some work here
-			base.Invoke(context);
-			return 0;
+			// return base.Invoke(token);
+			return Task.FromResult(0);
 		}
 	}
 }

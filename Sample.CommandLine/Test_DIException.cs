@@ -1,5 +1,6 @@
 ﻿using Albatross.CommandLine;
 using System.CommandLine.Invocation;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
@@ -10,7 +11,6 @@ namespace Sample.CommandLine {
 	public class TestDIExceptionCommandHandler : ICommandHandler {
 		public TestDIExceptionCommandHandler(string data) { }
 
-		public int Invoke(InvocationContext context) => 0;
-		public Task<int> InvokeAsync(InvocationContext context) => Task.FromResult(0);
+		public Task<int> Invoke(CancellationToken token) => Task.FromResult(0);
 	}
 }

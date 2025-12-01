@@ -15,8 +15,8 @@ namespace Sample.CommandLine {
 	/// </summary>
 	public partial class CustomizedGeneratedCommand : IRequireInitialization {
 		public void Init() {
-			this.Option_Value.SetDefaultValue("test");
-			this.Handler = new DefaultCommandHandler();
+			this.Option_Value.DefaultValueFactory = _=>"test";
+			// this.Handler = new DefaultCommandHandler();
 		}
 	}
 }

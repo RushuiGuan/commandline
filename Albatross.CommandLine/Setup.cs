@@ -20,10 +20,10 @@ namespace Albatross.CommandLine {
 		protected IHostBuilder hostBuilder;
 		ParseResult? result;
 		protected ParseResult RequiredResult => this.result ?? throw new InvalidOperationException("Parse() has not been called yet");
-		public RootCommand RootCommand { get; }
 		protected SetupSerilog setupSerilog;
+		public CommandBuilder CommandBuilder { get; }
 
-		public Setup(string rootCommandDescription) {
+		public Setup(string description) {
 			var environment = EnvironmentSetting.DOTNET_ENVIRONMENT;
 			this.hostBuilder = Host.CreateDefaultBuilder().UseSerilog();
 			this.setupSerilog = new SetupSerilog().UseConsole(LogEventLevel.Error);
@@ -36,13 +36,13 @@ namespace Albatross.CommandLine {
 				builder.Sources.Clear();
 				builder.AddConfiguration(configuration);
 			});
-			RootCommand = CreateRootCommand(rootCommandDescription);
+			CommandBuilder = new CommandBuilder(description);
 		}
 		public Setup Parse(string[] args) {
-			result = this.RootCommand.Parse(args);
+			result = this.CommandBuilder.RootCommand.Parse(args);
 			this.hostBuilder.ConfigureServices(services => services.AddSingleton(result));
 			// right after parsing is the earliest time to configure logging level
-			var logOption = this.RootCommand.Options.OfType<Option<LogEventLevel?>>().First();
+			var logOption = this.CommandBuilder.RootCommand.Options.OfType<Option<LogEventLevel?>>().First();
 			var value = result.GetValue(logOption);
 			if (value != null) {
 				SetupSerilog.SwitchConsoleLoggingLevel(value.Value);
@@ -54,17 +54,6 @@ namespace Albatross.CommandLine {
 				this.RegisterServices(this.RequiredResult, configuration, EnvironmentSetting.DOTNET_ENVIRONMENT, services);
 			});
 			return this;
-		}
-		RootCommand CreateRootCommand(string description) {
-			var root = new RootCommand(description);
-			var logOption = new Option<LogEventLevel?>("--verbosity", "-v") {
-				Description = "Set the verbosity level of logging",
-				DefaultValueFactory = _ => LogEventLevel.Error,
-			};
-			root.Add(logOption);
-			root.Add(new Option<bool>("--benchmark", "Show the time it takes to run the command in milliseconds"));
-			root.Add(new Option<bool>("--show-stack", "Show the full stack when an exception has been thrown"));
-			return root;
 		}
 		protected virtual void RegisterServices(ParseResult result, IConfiguration configuration, EnvironmentSetting envSetting, IServiceCollection services) {
 			Serilog.Log.Debug("Registering services");
@@ -79,6 +68,7 @@ namespace Albatross.CommandLine {
 			var programSetting = host.Services.GetRequiredService<ProgramSetting>();
 			var environmentSetting = host.Services.GetRequiredService<EnvironmentSetting>();
 			this.Configure(this.RequiredResult, programSetting, environmentSetting, host.Services.GetRequiredService<ILogger<Setup>>());
+			this.CommandBuilder.Build(host);
 			return this;
 		}
 		public Task<int> InvokeAsync() => this.RequiredResult.InvokeAsync();

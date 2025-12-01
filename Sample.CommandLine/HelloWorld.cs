@@ -1,6 +1,8 @@
 ﻿using Albatross.CommandLine;
 using Microsoft.Extensions.Options;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
 	[Verb("hello", typeof(HelloWorldCommandHandler), Description = "HelloWorld command")]
@@ -16,6 +18,10 @@ namespace Sample.CommandLine {
 	}
 	public class HelloWorldCommandHandler : BaseHandler<HelloWorldOptions> {
 		public HelloWorldCommandHandler(IOptions<HelloWorldOptions> options) : base(options) {
+		}
+
+		public override Task<int> Invoke(CancellationToken cancellationToken) {
+			throw new NotImplementedException();
 		}
 	}
 }

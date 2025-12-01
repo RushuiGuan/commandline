@@ -21,7 +21,7 @@ namespace Sample.CommandLine {
 
 	public sealed partial class ColorCommand : IRequireInitialization {
 		public void Init() {
-			this.Option_Data.AddCompletions("1", "2", "3");
+			// this.Option_Data.AddCompletions("1", "2", "3");
 		}
 	}
 }

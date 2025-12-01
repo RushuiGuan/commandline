@@ -1,7 +1,8 @@
 ﻿using Albatross.CommandLine;
 using Microsoft.Extensions.Options;
 using Sample.CommandLine;
-using System.CommandLine.Invocation;
+using System.Threading;
+using System.Threading.Tasks;
 
 
 [assembly: Verb("generic1", typeof(MyGenericCommandHandle<string>), Description = "generic1 command", OptionsClass = typeof(MyOptions))]
@@ -17,9 +18,9 @@ namespace Sample.CommandLine {
 		public MyGenericCommandHandle(IOptions<MyOptions> options) : base(options) {
 		}
 
-		public override int Invoke(InvocationContext context) {
+		public override Task<int> Invoke(CancellationToken token) {
 			this.writer.WriteLine($"MyGenericCommandHandler<{typeof(T).Name}> is invoked with name of {options.Name}");
-			return base.Invoke(context);
+			return Task.FromResult(0);
 		}
 	}
 }

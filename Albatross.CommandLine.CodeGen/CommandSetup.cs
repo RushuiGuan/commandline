@@ -6,7 +6,11 @@ using System.Linq;
 
 namespace Albatross.CommandLine.CodeGen {
 	public class CommandSetup {
-		public CommandSetup(INamedTypeSymbol optionClass, AttributeData verbAttribute) {
+		const string Postfix_Options = "Options";
+
+		public CommandSetup(Compilation compilation, INamedTypeSymbol optionClass, AttributeData verbAttribute) {
+			this.compilation = compilation;
+			this.compilation = compilation;
 			this.OptionClass = optionClass;
 			this.VerbAttribute = verbAttribute;
 			this.CommandClassName = GetCommandClassName();
@@ -40,6 +44,8 @@ namespace Albatross.CommandLine.CodeGen {
 			this.Arguments = arguments.ToArray();
 		}
 
+		private readonly Compilation compilation;
+
 		public string Key { get; set; }
 		public string Name { get; }
 		public INamedTypeSymbol OptionClass { get; }
@@ -58,8 +64,8 @@ namespace Albatross.CommandLine.CodeGen {
 		/// </summary>
 		public string GetCommandClassName() {
 			string optionsClassName = OptionClass.Name;
-			if (optionsClassName.EndsWith(My.Postfix_Options, StringComparison.InvariantCultureIgnoreCase)) {
-				optionsClassName = optionsClassName.Substring(0, optionsClassName.Length - My.Postfix_Options.Length);
+			if (optionsClassName.EndsWith(Postfix_Options, StringComparison.InvariantCultureIgnoreCase)) {
+				optionsClassName = optionsClassName.Substring(0, optionsClassName.Length - Postfix_Options.Length);
 			}
 			if (!optionsClassName.EndsWith(My.CommandClassName, StringComparison.InvariantCultureIgnoreCase)) {
 				optionsClassName = optionsClassName + My.CommandClassName;
@@ -79,15 +85,15 @@ namespace Albatross.CommandLine.CodeGen {
 			foreach (var propertySymbol in propertySymbols) {
 				index++;
 				AttributeData? attributeData = null;
-				if (propertySymbol.TryGetAttribute(My.IgnoreAttributeClass, out _)) {
+				if (propertySymbol.TryGetAttribute(compilation.IgnoreAttributeClass(), out _)) {
 					continue;
-				} else if (propertySymbol.TryGetAttribute(My.ArgumentAttributeClass, out attributeData)) {
-					arguments.Add(new CommandArgumentPropertySetup(propertySymbol, attributeData!) {
+				} else if (propertySymbol.TryGetAttribute(compilation.ArgumentAttributeClass(), out attributeData)) {
+					arguments.Add(new CommandArgumentPropertySetup(compilation, propertySymbol, attributeData!) {
 						Index = index,
 					});
 				} else {
-					propertySymbol.TryGetAttribute(My.OptionAttributeClass, out attributeData);
-					options.Add(new CommandOptionPropertySetup(propertySymbol, attributeData) {
+					propertySymbol.TryGetAttribute(compilation.OptionAttributeClass(), out attributeData);
+					options.Add(new CommandOptionPropertySetup(compilation, propertySymbol, attributeData) {
 						Index = index,
 					});
 				}

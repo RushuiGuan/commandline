@@ -1,20 +1,27 @@
 ﻿using Microsoft.Extensions.Options;
 using System;
+using System.CommandLine;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
-	public class BaseHandler<T> : ICommandHandler where T : class {
+	public abstract class BaseHandler<T> : ICommandHandler where T : class {
 		protected readonly T options;
+		readonly ParseResult? result;
+		protected readonly string? format;
 		protected virtual TextWriter writer => Console.Out;
+		protected ParseResult Result => result ?? throw new InvalidOperationException("ParseResult is not available.");
 
-		public BaseHandler(IOptions<T> options) {
+		protected BaseHandler(ParseResult result, IOptions<T> options) : this(options){
+			this.result = result;
+			format = result.GetValue<string?>("--format");
+		}
+
+		protected BaseHandler(IOptions<T> options) {
 			this.options = options.Value;
 		}
-		
-		public Task<int> Invoke(CancellationToken cancellationToken) {
-			throw new NotImplementedException();
-		}
+
+		public abstract Task<int> Invoke(CancellationToken cancellationToken);
 	}
 }

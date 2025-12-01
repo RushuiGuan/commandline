@@ -1,9 +1,9 @@
 ﻿using Albatross.CommandLine;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
@@ -21,20 +21,17 @@ namespace Sample.CommandLine {
 	}
 	public class TestCommandHandler : ICommandHandler {
 		private readonly ILogger logger;
+		private readonly ParseResult result;
 		private readonly TestCommandOptions options;
 
-		public TestCommandHandler(ILogger logger, IOptions<TestCommandOptions> options) {
+		public TestCommandHandler(ILogger logger, IOptions<TestCommandOptions> options, ParseResult result) {
 			this.logger = logger;
+			this.result = result;
 			this.options = options.Value;
 		}
 
-		public int Invoke(InvocationContext context) {
-			context.Console.WriteLine(context.ParseResult.Diagram());
-			return 0;
-		}
-
-		public Task<int> InvokeAsync(InvocationContext context) {
-			return Task.FromResult(Invoke(context));
+		public Task<int> Invoke(CancellationToken token) {
+			return Task.FromResult(0);
 		}
 	}
 }

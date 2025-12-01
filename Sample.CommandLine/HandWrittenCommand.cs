@@ -3,7 +3,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
 	[Verb("argument-test", typeof(ArgumentTestCommandHandler))]
@@ -18,14 +19,17 @@ namespace Sample.CommandLine {
 	}
 	public partial class ArgumentTestCommand : IRequireInitialization {
 		public void Init() {
-			Argument argument = new Argument<DateOnly>("dead-line", "the deadline");
-			argument.SetDefaultValue(new DateOnly(2024, 1,1));
-			this.AddArgument(argument);
-
-			argument = new Argument<int[]>("id", "The id of the item") {
-				IsHidden = false,
+			Argument argument = new Argument<DateOnly>("dead-line") {
+				Description = "the deadline",
+				DefaultValueFactory = _ => new DateOnly(2024, 1, 1)
 			};
-			this.AddArgument(argument);
+			this.Add(argument);
+
+			argument = new Argument<int[]>("id"){
+				Description = "The id of the item",
+				Hidden = false,
+			};
+			this.Add(argument);
 		}
 	}
 	public class ArgumentTestCommandHandler : BaseHandler<ArgumentTestOptions> {
@@ -34,9 +38,9 @@ namespace Sample.CommandLine {
 		public ArgumentTestCommandHandler(ILogger logger, IOptions<ArgumentTestOptions> options) : base(options) {
 			this.logger = logger;
 		}
-		public override int Invoke(InvocationContext context) {
+		public override Task<int> Invoke(CancellationToken token) {
 			logger.LogInformation("{@options}", this.options);
-			return 0;
+			return Task.FromResult(0);
 		}
 	}
 }

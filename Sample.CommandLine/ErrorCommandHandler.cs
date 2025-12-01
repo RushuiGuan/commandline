@@ -1,10 +1,8 @@
 ﻿using Albatross.CommandLine;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
-using System.CommandLine.Invocation;
-using System.Linq;
-using System.Text;
+using System.CommandLine;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
@@ -14,7 +12,7 @@ namespace Sample.CommandLine {
 	public class ErrorCommandHandler : BaseHandler<ErrorCommandOptions> {
 		public ErrorCommandHandler(IOptions<ErrorCommandOptions> options) : base(options) {
 		}
-		public override int Invoke(InvocationContext context) {
+		public override Task<int> Invoke(CancellationToken token) {
 			throw new InvalidOperationException("We have a problem!!");
 		}
 	}

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
@@ -31,20 +32,14 @@ namespace Sample.CommandLine {
 	}
 	public class SysCommandHandler : ICommandHandler {
 		private readonly ILogger<SysCommandHandler> logger;
-		private readonly IConsole console;
 		private readonly SysCommandOptions myOptions;
 
-		public SysCommandHandler(ILogger<SysCommandHandler> logger, IConsole console, IOptions<SysCommandOptions> myOptions) {
+		public SysCommandHandler(ILogger<SysCommandHandler> logger, IOptions<SysCommandOptions> myOptions) {
 			this.logger = logger;
-			this.console = console;
 			this.myOptions = myOptions.Value;
 		}
 
-		public int Invoke(InvocationContext context) {
-			throw new NotSupportedException();
-		}
-
-		public Task<int> InvokeAsync(InvocationContext context) {
+		public Task<int> Invoke(CancellationToken token) {
 			logger.LogInformation("i am here");
 			logger.LogInformation("my options: {myOptions}", this.myOptions);
 			return Task.FromResult(0);
