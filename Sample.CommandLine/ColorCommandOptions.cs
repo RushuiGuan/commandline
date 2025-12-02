@@ -9,6 +9,7 @@ namespace Sample.CommandLine {
 		[Option("n", "-name", Description = "use the name of the test")]
 		public string Name { get; set; } = string.Empty;
 
+		[Option]
 		public int Data { get; set; }
 
 		[Option("s", "second", Description = "second file name")]
@@ -19,9 +20,9 @@ namespace Sample.CommandLine {
 		public FileInfo MyFile { get; set; } = null!;
 	}
 
-	public sealed partial class ColorCommand : IRequireInitialization {
-		public void Init() {
-			// this.Option_Data.AddCompletions("1", "2", "3");
+	public sealed partial class ColorCommand {
+		partial void Initialize() {
+			this.Option_Data.CompletionSources.Add([ "1", "2", "3"]);
 		}
 	}
 }

@@ -10,9 +10,11 @@ namespace Sample.CommandLine {
 	[Verb("test", typeof(TestCommandHandler), Description = "A Test Command")]
 	public record class TestCommandOptions {
 		// Name is a required option by default since the property is not nullable
+		[Option]
 		public string Name { get; set; } = string.Empty;
 
 		// Description is optional since the property is nullable
+		[Option]
 		public string? Description { get; set; }
 
 		// The OptionAttribute can be used the change the default requirement behavior.  In this case, changing the Id option to be optional

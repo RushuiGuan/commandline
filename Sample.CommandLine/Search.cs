@@ -13,10 +13,12 @@ namespace Sample.CommandLine {
 
 	[Verb("search id", typeof(SearchCommandHandler))]
 	public class SearchByIdOptions {
+		[Option]
 		public int Id { get; set; }
 	}
 	[Verb("search name", typeof(SearchCommandHandler))]
 	public class SearchByNameOptions {
+		[Option]
 		public string Name { get; set; } = string.Empty;
 	}
 	public class SearchCommandHandler : ICommandHandler {

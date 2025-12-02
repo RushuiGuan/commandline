@@ -4,6 +4,7 @@ using Albatross.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.CommandLine;
+using System.IO;
 
 namespace Sample.CommandLine {
 	public class MySetup : Setup {
@@ -17,6 +18,16 @@ namespace Sample.CommandLine {
 			services.RegisterCommands();
 			// register your dependencies here
 			services.AddSingleton<IMyService, MyService>();
+
+			services.AddScoped<ColorCommandOptions>(provider => { 
+				var result = provider.GetRequiredService<ParseResult>();
+				return new ColorCommandOptions {
+					Name = result.GetRequiredValue<string>("--name"),
+					Data = result.GetRequiredValue<int>("--data"),
+					MyFile = result.GetRequiredValue<FileInfo>("--myfile")!,
+					SecondFile = result.GetRequiredValue<FileInfo>("--second")!,
+				};
+			});
 		}
 	}
 }

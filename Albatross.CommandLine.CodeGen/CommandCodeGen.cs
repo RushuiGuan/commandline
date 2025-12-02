@@ -16,7 +16,7 @@ namespace Albatross.CommandLine.CodeGen {
 		public StringWriter Writer { get; } = new StringWriter();
 		public CommandCodeGen(SourceProductionContext context, IEnumerable<CommandSetup> commands, IEnumerable<INamedTypeSymbol> commandHandlers, IEnumerable<INamedTypeSymbol> setupClasses) {
 			string? setupClassNamespace = setupClasses.FirstOrDefault()?.ContainingNamespace?.GetFullNamespace();
-				var setups = new SortedDictionary<string, CommandSetup>();
+			var setups = new SortedDictionary<string, CommandSetup>();
 			foreach (var command in commands) {
 				setups.Add(command.Key, command);
 			}
@@ -47,6 +47,7 @@ namespace Albatross.CommandLine.CodeGen {
 									}
 									additionalNamespaces = this.BuildConstructorStatements(cs, setup);
 								}
+								cs.NewScope(new MethodDeclarationBuilder("void", "Initialize").Partial().SignatureOnly()).Dispose();
 								var variableArityArgumentCount = 0;
 								var index = 0;
 								// build the argument properties
@@ -110,7 +111,12 @@ namespace Albatross.CommandLine.CodeGen {
 										using (diCodeStack.NewScope()) {
 											diCodeStack.With(new IdentifierNode("services"))
 												.With(new GenericIdentifierNode("AddScoped", setup.OptionClass.Name))
-												.To(new InvocationExpressionBuilder());
+												.ToNewBegin(new InvocationExpressionBuilder())
+													.Begin(new LambdaExpressionBuilder())
+														.With(new ParameterNode("provider"))
+														.With(new LiteralNode(1))
+													.End()
+												.End();
 										}
 									}
 								}
@@ -145,7 +151,7 @@ namespace Albatross.CommandLine.CodeGen {
 				Writer.WriteSourceHeader(Shared.Class.CodeGenExtensions);
 				Writer.WriteLine(code);
 			} catch (Exception err) {
-				Writer.WriteLine(err.ToString());
+				context.AddSource(Shared.Class.CodeGenExtensions, SourceText.From(err.ToString(), Encoding.UTF8));
 				// context.CodeGenDiagnostic(DiagnosticSeverity.Error, $"{My.Diagnostic.IdPrefix}2", err.BuildCodeGeneneratorErrorMessage("commandline"));
 			}
 		}
@@ -241,17 +247,17 @@ namespace Albatross.CommandLine.CodeGen {
 						} else {
 							aliasName = $"--{alias}";
 						}
-							using (cs.NewScope()) {
-								cs.With(new IdentifierNode(option.CommandPropertyName))
-									.With(new IdentifierNode("Aliases"))
-									.With(new IdentifierNode("Add"))
-									.To(new MemberAccessBuilder())
-									.ToNewBegin(new InvocationExpressionBuilder())
-										.Begin(new ArgumentListBuilder())
-											.With(new LiteralNode(aliasName))
-										.End()
-									.End();
-							}
+						using (cs.NewScope()) {
+							cs.With(new IdentifierNode(option.CommandPropertyName))
+								.With(new IdentifierNode("Aliases"))
+								.With(new IdentifierNode("Add"))
+								.To(new MemberAccessBuilder())
+								.ToNewBegin(new InvocationExpressionBuilder())
+									.Begin(new ArgumentListBuilder())
+										.With(new LiteralNode(aliasName))
+									.End()
+								.End();
+						}
 					}
 					SetCommandPropertyDefaultValue(option, cs, namespaces);
 					using (cs.NewScope()) {

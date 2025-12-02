@@ -13,8 +13,8 @@ namespace Sample.CommandLine {
 		public string Name { get; set; } = string.Empty;
 	}
 
-	public partial class MutuallyExclusiveCommand : IRequireInitialization {
-		public void Init() {
+	public partial class MutuallyExclusiveCommand  {
+		partial void Initialize() {
 			this.Validators.Add(result => {
 				var found = result.Children.Where(x => x is OptionResult optionResult && (optionResult.Option == this.Option_Id || optionResult.Option == this.Option_Name)).ToList();
 				if (found.Count == 0) {

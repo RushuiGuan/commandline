@@ -42,10 +42,9 @@ namespace Albatross.CommandLine {
 			result = this.CommandBuilder.RootCommand.Parse(args);
 			this.hostBuilder.ConfigureServices(services => services.AddSingleton(result));
 			// right after parsing is the earliest time to configure logging level
-			var logOption = this.CommandBuilder.RootCommand.Options.OfType<Option<LogEventLevel?>>().First();
-			var value = result.GetValue(logOption);
-			if (value != null) {
-				SetupSerilog.SwitchConsoleLoggingLevel(value.Value);
+			var logLevel = Extensions.GetLogEventLevel(result.GetValue<string?>(CommandBuilder.VerbosityOptionName));
+			if (logLevel != null) {
+				SetupSerilog.SwitchConsoleLoggingLevel(logLevel.Value);
 			}
 			return this;
 		}

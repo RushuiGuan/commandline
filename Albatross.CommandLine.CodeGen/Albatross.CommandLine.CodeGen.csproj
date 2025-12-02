@@ -13,7 +13,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Humanizer.Core" Version="3.0.1" GeneratePathProperty="true" PrivateAssets="all" />
-		<PackageReference Include="Albatross.CodeAnalysis" Version="8.0.0-25.main" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="Albatross.CodeAnalysis" Version="8.0.0-27.main" GeneratePathProperty="true" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
 	</ItemGroup>
 	<!-- begin: this setup is for package reference.  It used when packing -->

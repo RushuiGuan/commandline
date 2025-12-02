@@ -20,15 +20,11 @@ namespace Albatross.CommandLine {
 			var commandNames = result.CommandResult.Command.GetCommandNames();
 			var key = string.Join(' ', commandNames);
 			var provider = this.host.Services;
-			var benchmark = result.GetValue<bool>("--benchmark");
-			var showStack = result.GetValue<bool>("--show-stack");
+			var benchmark = result.GetValue<bool>(CommandBuilder.BenchmarkOptionName);
+			var showStack = result.GetValue<bool>(CommandBuilder.ShowStackOptionName);
 			var logger = provider.GetRequiredService<ILogger<GlobalCommandAction>>();
 			ICommandHandler? handler = null;
 			try {
-				if (result.CommandResult.Command is IRequireInitialization requireInitialization) {
-					logger.LogInformation("Initializing command {command}", key);
-					requireInitialization.Init();
-				}
 				handler = provider.GetKeyedService<ICommandHandler>(key);
 			} catch (Exception err) {
 				if (showStack) {

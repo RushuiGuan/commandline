@@ -85,14 +85,11 @@ namespace Albatross.CommandLine.CodeGen {
 			foreach (var propertySymbol in propertySymbols) {
 				index++;
 				AttributeData? attributeData = null;
-				if (propertySymbol.TryGetAttribute(compilation.IgnoreAttributeClass(), out _)) {
-					continue;
-				} else if (propertySymbol.TryGetAttribute(compilation.ArgumentAttributeClass(), out attributeData)) {
+				if (propertySymbol.TryGetAttribute(compilation.ArgumentAttributeClass(), out attributeData)) {
 					arguments.Add(new CommandArgumentPropertySetup(compilation, propertySymbol, attributeData!) {
 						Index = index,
 					});
-				} else {
-					propertySymbol.TryGetAttribute(compilation.OptionAttributeClass(), out attributeData);
+				} else if (propertySymbol.TryGetAttribute(compilation.OptionAttributeClass(), out attributeData)) {
 					options.Add(new CommandOptionPropertySetup(compilation, propertySymbol, attributeData) {
 						Index = index,
 					});

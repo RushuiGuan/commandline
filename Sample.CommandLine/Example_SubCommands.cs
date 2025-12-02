@@ -26,10 +26,12 @@ namespace Sample.CommandLine {
 	// the parent command with additional options
 	[Verb("parent3", typeof(MyParent3Handler), Description ="This command shares the same handler and option class as its sub command")]
 	public class MyParent3Options {
+		[Option]
 		public int Id { get; set; }
 	}
 	[Verb("parent3 sub1", typeof(MyParent3Handler), Description ="This command shares the same handler and base option class as its parent command")]
 	public class MyParent3Sub1Options : MyParent3Options {
+		[Option]
 		public string Name { get; set; } = string.Empty;
 	}
 

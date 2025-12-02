@@ -3,6 +3,7 @@
 namespace Sample.CommandLine {
 	[Verb("customized-generated-command", Description = "This command is generated and customized")]
 	public record class CustomizedGeneratedCommandOptions {
+		[Option]
 		public string Value { get; set; } = string.Empty;
 
 		[Option(DefaultToInitializer = true)]
@@ -13,8 +14,8 @@ namespace Sample.CommandLine {
 	/// The class should implement IRequireInitialization.  The Init method will be called after the command instance is created.
 	/// This is done since the constructor is being generated and cannot be accessed by the partial class.
 	/// </summary>
-	public partial class CustomizedGeneratedCommand : IRequireInitialization {
-		public void Init() {
+	public partial class CustomizedGeneratedCommand  {
+		partial void Initialize() {
 			this.Option_Value.DefaultValueFactory = _=>"test";
 			// this.Handler = new DefaultCommandHandler();
 		}

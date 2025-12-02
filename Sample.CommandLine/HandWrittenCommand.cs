@@ -9,16 +9,15 @@ using System.Threading.Tasks;
 namespace Sample.CommandLine {
 	[Verb("argument-test", typeof(ArgumentTestCommandHandler))]
 	public class ArgumentTestOptions {
+		[Option]
 		public string Name { get; set; } = string.Empty;
 
-		[Ignore]
 		public DateOnly DeadLine { get; set; }//  = new DateOnly(2024, 1, 1);
 
-		[Ignore]
 		public int[] Id { get; set; } = Array.Empty<int>();
 	}
-	public partial class ArgumentTestCommand : IRequireInitialization {
-		public void Init() {
+	public partial class ArgumentTestCommand  {
+		partial void Initialize() {
 			Argument argument = new Argument<DateOnly>("dead-line") {
 				Description = "the deadline",
 				DefaultValueFactory = _ => new DateOnly(2024, 1, 1)

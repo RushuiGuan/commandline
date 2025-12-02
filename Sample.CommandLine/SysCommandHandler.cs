@@ -11,20 +11,23 @@ using System.Threading.Tasks;
 namespace Sample.CommandLine {
 	[Verb("sys-command", typeof(SysCommandHandler), Alias = ["t"])]
 	public record class SysCommandOptions {
+		[Option]
 		public int Id { get; set; }
+		[Option]
 		public string Name { get; set; } = string.Empty;
 
 		[Option(Required = false)]
 		public decimal Price { get; set; }
 
-		[Ignore]
 		public int ShouldIgnore { get; set; }
-
+		
+		[Option]
 		public int ShouldNotIgnore { get; set; }
 
 		[Option(Required = true)]
 		public int? ForceRequired { get; set; }
 
+		[Option]
 		public ICollection<string> Items { get; set; } = new List<string>();
 
 		[Option(Required = true)]
