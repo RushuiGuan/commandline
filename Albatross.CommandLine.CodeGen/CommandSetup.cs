@@ -5,20 +5,31 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Albatross.CommandLine.CodeGen {
-	public class CommandSetup {
+	public record class CommandSetup {
+		public INamedTypeSymbol OptionClass { get; }
+		public AttributeData VerbAttribute { get; }
+		
+		public string Key { get; set; }
+		public string Name { get; }
+		public string HandlerClass { get; }
+		public string CommandClassName { get; init; }
+		public string CommandClassNamespace => OptionClass.ContainingNamespace.GetFullNamespace();
+		public string? Description { get; }
+		public string[] Aliases { get; } = Array.Empty<string>();
+		public CommandOptionPropertySetup[] Options { get; }
+		public CommandArgumentPropertySetup[] Arguments { get; }
+
 		const string Postfix_Options = "Options";
 
 		public CommandSetup(Compilation compilation, INamedTypeSymbol optionClass, AttributeData verbAttribute) {
-			this.compilation = compilation;
-			this.compilation = compilation;
 			this.OptionClass = optionClass;
 			this.VerbAttribute = verbAttribute;
-			this.CommandClassName = GetCommandClassName();
+			this.CommandClassName = GetCommandClassName(optionClass);
 
 			if (verbAttribute.ConstructorArguments.Length > 0) {
 				this.Key = VerbAttribute.ConstructorArguments[0].Value?.ToString() ?? string.Empty;
 			} else {
-				this.Key = "MissingVerbKey";
+				this.Key = "MissingCommandKey";
 			}
 			this.Name = this.Key.Split(' ').Last();
 			if (verbAttribute.ConstructorArguments.Length > 1) {
@@ -39,31 +50,18 @@ namespace Albatross.CommandLine.CodeGen {
 			if (verbAttribute.TryGetNamedArgument("UseBaseClassProperties", out typedConstant)) {
 				useBaseClasssProperties = Convert.ToBoolean(typedConstant.Value);
 			}
-			GetCommandPropertyOptions(useBaseClasssProperties, out var options, out var arguments);
+			GetCommandPropertyOptions(compilation, useBaseClasssProperties, out var options, out var arguments);
 			this.Options = options.ToArray();
 			this.Arguments = arguments.ToArray();
 		}
-
-		private readonly Compilation compilation;
-
-		public string Key { get; set; }
-		public string Name { get; }
-		public INamedTypeSymbol OptionClass { get; }
-		public AttributeData VerbAttribute { get; }
-		public string HandlerClass { get; }
-		public string CommandClassName { get; private set; }
-		public string? Description { get; }
-		public string[] Aliases { get; } = Array.Empty<string>();
-		public CommandOptionPropertySetup[] Options { get; private set; }
-		public CommandArgumentPropertySetup[] Arguments { get; private set; }
 
 		/// <summary>
 		/// Command class name is derived from the options class name by:
 		/// 1. Remove the postfix "Options" if exists
 		/// 2. Append "Command" if the remaining string does not end with "Command"
 		/// </summary>
-		public string GetCommandClassName() {
-			string optionsClassName = OptionClass.Name;
+		public static string GetCommandClassName(INamedTypeSymbol optionClass) {
+			string optionsClassName = optionClass.Name;
 			if (optionsClassName.EndsWith(Postfix_Options, StringComparison.InvariantCultureIgnoreCase)) {
 				optionsClassName = optionsClassName.Substring(0, optionsClassName.Length - Postfix_Options.Length);
 			}
@@ -72,12 +70,17 @@ namespace Albatross.CommandLine.CodeGen {
 			}
 			return optionsClassName;
 		}
-		public void RenameCommandClass(int index) {
+		
+		public CommandSetup RenameCommandClass(int index) {
 			if (index != 0) {
-				this.CommandClassName = $"{GetCommandClassName()}{index}";
+				return this with {
+					CommandClassName = $"{GetCommandClassName(this.OptionClass)}{index}"
+				};
+			} else {
+				return this;
 			}
 		}
-		public void GetCommandPropertyOptions(bool useBaseClassProperties, out List<CommandOptionPropertySetup> options, out List<CommandArgumentPropertySetup> arguments) {
+		public void GetCommandPropertyOptions(Compilation compilation, bool useBaseClassProperties, out List<CommandOptionPropertySetup> options, out List<CommandArgumentPropertySetup> arguments) {
 			options = new List<CommandOptionPropertySetup>();
 			arguments = new List<CommandArgumentPropertySetup>();
 			var propertySymbols = OptionClass.GetDistinctProperties(useBaseClassProperties).ToArray();

@@ -2,6 +2,7 @@
 using Albatross.CodeAnalysis;
 using Albatross.CodeAnalysis.Symbols;
 using Albatross.CodeAnalysis.Syntax;
+using Albatross.CodeGen.CSharp.Expressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -10,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml.Schema;
 
 namespace Albatross.CommandLine.CodeGen {
 	public class CommandCodeGen {
@@ -31,6 +33,10 @@ namespace Albatross.CommandLine.CodeGen {
 				}
 				// generate the command class
 				foreach (var setup in setups.Values) {
+					var file = new Albatross.CodeGen.CSharp.Declarations.FileDeclaration(setup.CommandClassName) {
+						Namespace = new NamespaceExpression(setup.CommandClassNamespace),
+						Classes = [],
+					};
 					var cs = new CodeStack();
 					using (cs.NewScope(new CompilationUnitBuilder())) {
 						cs.With(new UsingDirectiveNode("System.CommandLine"))
@@ -278,14 +284,14 @@ namespace Albatross.CommandLine.CodeGen {
 		void SetCommandPropertyDefaultValue(CommandPropertySetup propertySetup, CodeStack cs, ISet<string> namespaces) {
 			if (propertySetup.ShouldDefaultToInitializer && propertySetup.PropertyInitializer != null) {
 				using (cs.NewScope()) {
-					namespaces.Add(propertySetup.Property.Type.ContainingNamespace.ToDisplayString());
+					namespaces.Add(propertySetup.PropertySymbol.Type.ContainingNamespace.ToDisplayString());
 					// Option_Number.DefaultValueFactory = _ => 100;
 					cs.With(new IdentifierNode(propertySetup.CommandPropertyName))
 						.With(new IdentifierNode("DefaultValueFactory"))
 						.ToNewBegin(new AssignmentExpressionBuilder())
 							.Begin(new LambdaExpressionBuilder())
 								.With(new ParameterNode("_"))
-								.With(new NodeContainer(propertySetup.PropertyInitializer))
+								// .With(new NodeContainer(propertySetup.PropertyInitializer))
 							.End()
 						.End();
 				}
