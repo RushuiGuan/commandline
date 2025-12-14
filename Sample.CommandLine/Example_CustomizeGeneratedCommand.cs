@@ -1,4 +1,5 @@
 ﻿using Albatross.CommandLine;
+using System.Text.Json;
 
 namespace Sample.CommandLine {
 	[Verb("customized-generated-command", Description = "This command is generated and customized")]
@@ -17,7 +18,6 @@ namespace Sample.CommandLine {
 	public partial class CustomizedGeneratedCommand  {
 		partial void Initialize() {
 			this.Option_Value.DefaultValueFactory = _=>"test";
-			// this.Handler = new DefaultCommandHandler();
 		}
 	}
 }

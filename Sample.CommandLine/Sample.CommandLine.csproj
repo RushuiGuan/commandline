@@ -5,10 +5,8 @@
 		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-		<EmitAlbatrossCodeGenDebugFile>true</EmitAlbatrossCodeGenDebugFile>
 	</PropertyGroup>
 	<ItemGroup>
-		<CompilerVisibleProperty Include="EmitAlbatrossCodeGenDebugFile" />
 		<ProjectReference Include="..\Albatross.CommandLine.CodeGen\Albatross.CommandLine.CodeGen.csproj">
 			<PrivateAssets>all</PrivateAssets>
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
