@@ -11,13 +11,12 @@ namespace Albatross.CommandLine.CodeGen {
 
 		public string Key { get; }
 		public string Name { get; }
-		public string HandlerClass { get; }
+		public ITypeSymbol HandlerClass { get; }
 		public string CommandClassName { get; private set; }
 		public string CommandClassNamespace => OptionClass.ContainingNamespace.GetFullNamespace();
 		public string? Description { get; }
 		public string[] Aliases { get; } = Array.Empty<string>();
-		public CommandOptionPropertySetup[] Options { get; }
-		public CommandArgumentPropertySetup[] Arguments { get; }
+		public CommandPropertySetup[] Parameters { get; }
 
 		const string Postfix_Options = "Options";
 
@@ -33,12 +32,10 @@ namespace Albatross.CommandLine.CodeGen {
 			}
 			this.Name = this.Key.Split(' ').Last();
 			if (verbAttribute.ConstructorArguments.Length > 1) {
-				this.HandlerClass = verbAttribute.ConstructorArguments[1].Value?.ToString() ?? string.Empty;
+				this.HandlerClass = (verbAttribute.ConstructorArguments[1].Value as ITypeSymbol)
+				                    ?? compilation.HelpCommandHandler();
 			} else {
-				this.HandlerClass = string.Empty;
-			}
-			if (string.IsNullOrEmpty(this.HandlerClass)) {
-				this.HandlerClass = "Albatross.CommandLine.HelpCommandHandler";
+				this.HandlerClass = compilation.HelpCommandHandler();
 			}
 			if (VerbAttribute.TryGetNamedArgument("Description", out var typedConstant)) {
 				this.Description = typedConstant.Value?.ToString();
@@ -50,9 +47,7 @@ namespace Albatross.CommandLine.CodeGen {
 			if (verbAttribute.TryGetNamedArgument("UseBaseClassProperties", out typedConstant)) {
 				useBaseClasssProperties = Convert.ToBoolean(typedConstant.Value);
 			}
-			GetCommandPropertyOptions(compilation, useBaseClasssProperties, out var options, out var arguments);
-			this.Options = options.ToArray();
-			this.Arguments = arguments.ToArray();
+			this.Parameters = GetCommandParameters(compilation, useBaseClasssProperties).ToArray();
 		}
 
 		/// <summary>
@@ -76,22 +71,19 @@ namespace Albatross.CommandLine.CodeGen {
 				CommandClassName = $"{GetCommandClassName(this.OptionClass)}{index}";
 			}
 		}
-		public void GetCommandPropertyOptions(Compilation compilation, bool useBaseClassProperties, out List<CommandOptionPropertySetup> options, out List<CommandArgumentPropertySetup> arguments) {
-			options = new List<CommandOptionPropertySetup>();
-			arguments = new List<CommandArgumentPropertySetup>();
+		public IEnumerable<CommandPropertySetup> GetCommandParameters(Compilation compilation, bool useBaseClassProperties) {
 			var propertySymbols = OptionClass.GetDistinctProperties(useBaseClassProperties).ToArray();
 			int index = 0;
 			foreach (var propertySymbol in propertySymbols) {
 				index++;
-				AttributeData? attributeData = null;
-				if (propertySymbol.TryGetAttribute(compilation.ArgumentAttributeClass(), out attributeData)) {
-					arguments.Add(new CommandArgumentPropertySetup(compilation, propertySymbol, attributeData!) {
+				if (propertySymbol.TryGetAttribute(compilation.ArgumentAttributeClass(), out AttributeData? attributeData)) {
+					yield return new CommandArgumentPropertySetup(compilation, propertySymbol, attributeData!) {
 						Index = index,
-					});
+					};
 				} else if (propertySymbol.TryGetAttribute(compilation.OptionAttributeClass(), out attributeData)) {
-					options.Add(new CommandOptionPropertySetup(compilation, propertySymbol, attributeData) {
+					yield return new CommandOptionPropertySetup(compilation, propertySymbol, attributeData) {
 						Index = index,
-					});
+					};
 				}
 			}
 		}

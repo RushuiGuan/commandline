@@ -5,6 +5,8 @@ using Albatross.CodeGen.CSharp.Expressions;
 using Albatross.CodeGen.Syntax;
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
+using System.Linq;
+using InvocationExpression = Albatross.CodeGen.CSharp.Expressions.InvocationExpression;
 
 namespace Albatross.CommandLine.CodeGen {
 	public class CommandClassBuilder : IConvertObject<CommandSetup, ClassDeclaration> {
@@ -49,15 +51,15 @@ namespace Albatross.CommandLine.CodeGen {
 						IsPartial = true,
 					}
 				],
-				Properties = CreateOptionProperties(setup),
+				Properties = CreateProperties(setup),
 			};
 		}
 
-		private IEnumerable<PropertyDeclaration> CreateOptionProperties(CommandSetup setup) {
-			foreach (var option in setup.Options) {
+		private IEnumerable<PropertyDeclaration> CreateProperties(CommandSetup setup) {
+			foreach (var parameter in setup.Parameters) {
 				yield return new PropertyDeclaration {
-					Name = new IdentifierNameExpression(option.CommandPropertyName),
-					Type = this.typeConverter.Convert(option.PropertySymbol.Type),
+					Name = new IdentifierNameExpression(parameter.CommandPropertyName),
+					Type = new TypeExpression(parameter is CommandArgumentPropertySetup ? MyDefined.Identifiers.Argument : MyDefined.Identifiers.Option, this.typeConverter.Convert(parameter.PropertySymbol.Type)),
 					AccessModifier = Defined.Keywords.Public,
 					GetterBody = new NoOpExpression(),
 					SetterBody = null,
@@ -66,13 +68,58 @@ namespace Albatross.CommandLine.CodeGen {
 		}
 
 		private IEnumerable<IExpression> CreateConstructorBody(CommandSetup setup) {
-			foreach (var property in setup.Options) {
+			foreach (var parameter in setup.Parameters) {
 				yield return new AssignmentExpression {
-					Left = new IdentifierNameExpression("this." + property.CommandPropertyName),
+					Left = new IdentifierNameExpression("this." + parameter.CommandPropertyName),
 					Expression = new NewObjectExpression {
-						Type = new TypeExpression(MyDefined.Identifiers.Option, this.typeConverter.Convert(property.PropertySymbol.Type)),
-						Arguments = new ListOfArguments(new StringLiteralExpression(property.Name))
-					},
+						Type = new TypeExpression(parameter is CommandArgumentPropertySetup ? MyDefined.Identifiers.Argument : MyDefined.Identifiers.Option, this.typeConverter.Convert(parameter.PropertySymbol.Type)),
+						Arguments = new ListOfArguments(new StringLiteralExpression(parameter.Name)),
+						Initializers = new() {
+							{
+								!string.IsNullOrEmpty(setup.Description), () => new AssignmentExpression {
+									Left = new IdentifierNameExpression("Description"),
+									Expression = new StringLiteralExpression(setup.Description!),
+								}
+							}, {
+								setup.Aliases.Any(), () => new AssignmentExpression {
+									Left = new IdentifierNameExpression("Aliases"),
+									Expression = new ArrayLiteralExpression(setup.Aliases.Select(x => new StringLiteralExpression(x)))
+								}
+							}, {
+								parameter is CommandOptionPropertySetup { Required: true }, () => new AssignmentExpression {
+									Left = new IdentifierNameExpression("Required"),
+									Expression = Defined.Literals.True,
+								}
+							}, {
+								parameter is CommandArgumentPropertySetup argumentProperty, () => new AssignmentExpression {
+									Left = new IdentifierNameExpression("Arity"),
+									Expression = new NewObjectExpression {
+										Type = new TypeExpression("ArgumentArity"),
+										Arguments = new ListOfArguments {
+											new IntLiteralExpression(((CommandArgumentPropertySetup)parameter).ArityMin),
+											new IntLiteralExpression(((CommandArgumentPropertySetup)parameter).ArityMax),
+										}
+									}
+								}
+							},
+							{
+								parameter.ShouldDefaultToInitializer, () => new AssignmentExpression {
+									Left = new IdentifierNameExpression("DefaultValueFactory"),
+									Expression = new AnonymousMethodExpression{
+										Parameters = [
+											new ParameterDeclaration {
+												Name = new IdentifierNameExpression("_"),
+												Type = Defined.Types.Var,
+											},
+										],
+										Body = [
+											new LiteralExpression(parameter.PropertyInitializer!)
+										]
+									}
+								}
+							}
+						},
+					}.EndOfStatement()
 				};
 			}
 		}

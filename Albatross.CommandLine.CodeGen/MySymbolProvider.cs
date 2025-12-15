@@ -10,6 +10,6 @@ namespace Albatross.CommandLine.CodeGen {
 		public static INamedTypeSymbol OptionAttributeClass(this Compilation compilation) => compilation.GetRequiredSymbol("Albatross.CommandLine.OptionAttribute");
 		public static INamedTypeSymbol ArgumentAttributeClass(this Compilation compilation) => compilation.GetRequiredSymbol("Albatross.CommandLine.ArgumentAttribute");
 		public static INamedTypeSymbol ICommandHandler_Interface(this Compilation compilation) => compilation.GetRequiredSymbol("Albatross.CommandLine.ICommandHandler");
-		public static INamedTypeSymbol SetupClass(this Compilation compilation) => compilation.GetRequiredSymbol("Albatross.CommandLine.Setup");
+		public static INamedTypeSymbol HelpCommandHandler(this Compilation compilation) => compilation.GetRequiredSymbol("Albatross.CommandLine.HelpCommandHandler");
 	}
 }

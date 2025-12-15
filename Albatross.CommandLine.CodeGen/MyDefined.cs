@@ -3,12 +3,19 @@ using Albatross.CodeGen.CSharp.Expressions;
 namespace Albatross.CommandLine.CodeGen {
 	public static class MyDefined {
 		public static class Namespaces {
+			public static readonly NamespaceExpression AlbatrossCommandLine = new("Albatross.CommandLine");
 			public static readonly NamespaceExpression SystemCommandLine = new("System.CommandLine");
 		}
 		public static class Identifiers {
-			public static readonly QualifiedIdentifierNameExpression Command = new("Command", MyDefined.Namespaces.SystemCommandLine);
-			public static readonly QualifiedIdentifierNameExpression Option = new("Option", MyDefined.Namespaces.SystemCommandLine);
-			public static readonly QualifiedIdentifierNameExpression Argument = new("Argument", MyDefined.Namespaces.SystemCommandLine);
+			public static readonly QualifiedIdentifierNameExpression Command = new("Command", Namespaces.SystemCommandLine);
+			public static readonly QualifiedIdentifierNameExpression Option = new("Option", Namespaces.SystemCommandLine);
+			public static readonly QualifiedIdentifierNameExpression Argument = new("Argument", Namespaces.SystemCommandLine);
+			public static readonly QualifiedIdentifierNameExpression ICommandHandler = new("ICommandHandler", Namespaces.AlbatrossCommandLine);
+			public static readonly QualifiedIdentifierNameExpression Setup = new("Setup", Namespaces.AlbatrossCommandLine);
+		}
+		public static class Types {
+			public static readonly TypeExpression ICommandHandler = new(Identifiers.ICommandHandler);
+			public static readonly TypeExpression Setup = new(Identifiers.Setup);
 		}
 	}
 }

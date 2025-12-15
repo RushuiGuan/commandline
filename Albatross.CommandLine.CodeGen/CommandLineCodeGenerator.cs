@@ -1,12 +1,13 @@
 ﻿using Albatross.CodeAnalysis.Symbols;
 using Albatross.CodeGen;
+using Albatross.CodeGen.CSharp;
 using Albatross.CodeGen.CSharp.Declarations;
 using Albatross.CodeGen.CSharp.Expressions;
 using Albatross.CodeGen.CSharp.TypeConversions;
+using Albatross.CodeGen.Syntax;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 
@@ -34,45 +35,16 @@ namespace Albatross.CommandLine.CodeGen {
 					return list;
 				}).SelectMany(static (x, _) => x);
 
-			var commandHandlers = context.SyntaxProvider.CreateSyntaxProvider(
-					predicate: static (node, _) => node is ClassDeclarationSyntax,
-					transform: static (ctx, _) => ctx)
-				.Combine(compilationProvider).Select(static (tuple, cancellationToken) => {
-					var (ctx, compilation) = tuple;
-					var declaration = (ClassDeclarationSyntax)ctx.Node;
-					var symbol = ctx.SemanticModel.GetDeclaredSymbol(declaration, cancellationToken);
-					if (symbol != null && symbol.HasInterface(compilation.ICommandHandler_Interface()) && symbol.IsConcreteClass()) {
-						return symbol;
-					} else {
-						return null;
-					}
-				}).Where(static x => x is not null);
-
-			var commandNamespaces = context.SyntaxProvider.CreateSyntaxProvider(
-				predicate: static (node, _) => node is ClassDeclarationSyntax,
-				transform: static (ctx, _) => ctx).Combine(compilationProvider).Select(static (x, cancellationToken) => {
-					var (ctx, symbolProvider) = x;
-					var declaration = (ClassDeclarationSyntax)ctx.Node;
-					var symbol = ctx.SemanticModel.GetDeclaredSymbol(declaration, cancellationToken);
-					if (symbol != null && symbol.IsDerivedFrom(symbolProvider.SetupClass())) {
-						return symbol.ContainingNamespace.GetFullNamespace();
-					} else {
-						return null;
-					}
-				}).Where(static x => x is not null);
 			var aggregated = compilationProvider
 				.Combine(commandSetups.Collect())
-				.Select(static (x, _) => (Compilation: x.Left, optionClasses: x.Right))
-				.Combine(commandHandlers.Collect())
-				.Select(static (x, _) => (x.Left.Compilation, x.Left.optionClasses, CommandHandlers: x.Right))
-				.Combine(commandNamespaces.Collect())
-				.Select(static (x, _) => (x.Left.Compilation, x.Left.optionClasses, x.Left.CommandHandlers, Setups: x.Right));
+				.Select(static (x, _) => (Compilation: x.Left, optionClasses: x.Right));
 
 			context.RegisterSourceOutput(
 				aggregated,
 				static (context, data) => {
-					var (compilation, commandSetups, handlers, commandNamespaces) = data;
-					var builder = new CommandClassBuilder(compilation, new DefaultTypeConverter(compilation));
+					var typeConverter = new DefaultTypeConverter(data.Compilation);
+					var (compilation, commandSetups) = data;
+					var builder = new CommandClassBuilder(compilation, typeConverter);
 					foreach (var group in commandSetups.GroupBy(x => x.CommandClassName)) {
 						if (group.Count() > 1) {
 							int index = 0;
@@ -88,11 +60,96 @@ namespace Albatross.CommandLine.CodeGen {
 								builder.Convert(setup)
 							]
 						};
-						var writer = new StringWriter();
-						writer.Code(file);
-						context.AddSource(file.FileName, writer.ToString());
+						context.AddSource(file.FileName, new StringWriter().Code(file).ToString());
 					}
+					var entryPoint = compilation.GetEntryPoint(context.CancellationToken);
+					var entryPointNamespace = entryPoint?.ContainingNamespace.GetFullNamespace() ?? "EntryMethodNamespaceNotFound";
+					var registrationFile = new FileDeclaration($"CodeGenExtensions.g") {
+						Namespace = new NamespaceExpression(entryPointNamespace),
+						Classes = [
+							new ClassDeclaration {
+								Name = new IdentifierNameExpression("CodeGenExtensions"),
+								AccessModifier = Defined.Keywords.Public,
+								IsStatic = true,
+								Methods = [
+									new MethodDeclaration {
+										IsStatic = true,
+										AccessModifier = Defined.Keywords.Public,
+										Name = new IdentifierNameExpression("RegisterCommands"),
+										ReturnType = Defined.Types.IServiceCollection,
+										Parameters = [
+											new ParameterDeclaration {
+												Name = new IdentifierNameExpression("services"),
+												Type = Defined.Types.IServiceCollection,
+												UseThisKeyword = true,
+											}
+										],
+										Body = new CSharpCodeBlock {
+											{
+												true,
+												() => CreateCommandHandlerRegistrations(commandSetups, typeConverter)
+											},
+											new ReturnExpression {
+												Expression = new IdentifierNameExpression("services")
+											}
+										},
+									},
+									new MethodDeclaration {
+										IsStatic = true,
+										AccessModifier = Defined.Keywords.Public,
+										Name = new IdentifierNameExpression("AddCommands"),
+										ReturnType = MyDefined.Types.Setup,
+										Parameters = [
+											new ParameterDeclaration {
+												Name = new IdentifierNameExpression("setup"),
+												Type = MyDefined.Types.Setup,
+												UseThisKeyword = true,
+											}
+										],
+										Body = new CSharpCodeBlock {
+											{ true, () => CreateAddCommandsBody(commandSetups) },
+											new ReturnExpression {
+												Expression = new IdentifierNameExpression("setup")
+											}
+										}
+									}
+								]
+							}
+						]
+					};
+					context.AddSource(registrationFile.FileName, new StringWriter().Code(registrationFile).ToString());
 				});
+		}
+
+		private static IEnumerable<IExpression> CreateAddCommandsBody(ImmutableArray<CommandSetup> commandSetups) {
+			foreach (var setup in commandSetups) {
+				yield return new InvocationExpression {
+					CallableExpression = new IdentifierNameExpression("setup.CommandBuilder.Add") {
+						GenericArguments = new ListOfGenericArguments {
+							new TypeExpression(setup.CommandClassName)
+						}
+					},
+					Arguments = new ListOfArguments {
+						new StringLiteralExpression(setup.Key)
+					}
+				};
+			}
+		}
+
+		private static IEnumerable<IExpression> CreateCommandHandlerRegistrations(ImmutableArray<CommandSetup> commandSetups, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
+			foreach (var setup in commandSetups) {
+				yield return new InvocationExpression {
+					CallableExpression = new IdentifierNameExpression("services.AddKeyedScoped") {
+						GenericArguments = new ListOfGenericArguments {
+							MyDefined.Types.ICommandHandler,
+							typeConverter.Convert(setup.HandlerClass)
+						}
+					},
+					Arguments = new ListOfArguments {
+						new StringLiteralExpression(setup.Key)
+					}
+				};
+			}
 		}
 	}
 }
