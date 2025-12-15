@@ -51,15 +51,15 @@ namespace Albatross.CommandLine.CodeGen {
 			var commandNamespaces = context.SyntaxProvider.CreateSyntaxProvider(
 				predicate: static (node, _) => node is ClassDeclarationSyntax,
 				transform: static (ctx, _) => ctx).Combine(compilationProvider).Select(static (x, cancellationToken) => {
-				var (ctx, symbolProvider) = x;
-				var declaration = (ClassDeclarationSyntax)ctx.Node;
-				var symbol = ctx.SemanticModel.GetDeclaredSymbol(declaration, cancellationToken);
-				if (symbol != null && symbol.IsDerivedFrom(symbolProvider.SetupClass())) {
-					return symbol.ContainingNamespace.GetFullNamespace();
-				} else {
-					return null;
-				}
-			}).Where(static x => x is not null);
+					var (ctx, symbolProvider) = x;
+					var declaration = (ClassDeclarationSyntax)ctx.Node;
+					var symbol = ctx.SemanticModel.GetDeclaredSymbol(declaration, cancellationToken);
+					if (symbol != null && symbol.IsDerivedFrom(symbolProvider.SetupClass())) {
+						return symbol.ContainingNamespace.GetFullNamespace();
+					} else {
+						return null;
+					}
+				}).Where(static x => x is not null);
 			var aggregated = compilationProvider
 				.Combine(commandSetups.Collect())
 				.Select(static (x, _) => (Compilation: x.Left, optionClasses: x.Right))
@@ -73,6 +73,14 @@ namespace Albatross.CommandLine.CodeGen {
 				static (context, data) => {
 					var (compilation, commandSetups, handlers, commandNamespaces) = data;
 					var builder = new CommandClassBuilder(compilation, new DefaultTypeConverter(compilation));
+					foreach (var group in commandSetups.GroupBy(x => x.CommandClassName)) {
+						if (group.Count() > 1) {
+							int index = 0;
+							foreach (var item in group) {
+								item.RenameCommandClass(index++);
+							}
+						}
+					}
 					foreach (var setup in commandSetups) {
 						var file = new FileDeclaration($"{setup.CommandClassName}.g") {
 							Namespace = new NamespaceExpression(setup.CommandClassNamespace),

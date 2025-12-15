@@ -42,6 +42,13 @@ namespace Albatross.CommandLine.CodeGen {
 						Body = new CodeBlock(CreateConstructorBody(setup)),
 					}
 				],
+				Methods = [
+					new MethodDeclaration {
+						Name = new IdentifierNameExpression("Initialize"),
+						ReturnType = Defined.Types.Void,
+						IsPartial = true,
+					}
+				],
 				Properties = CreateOptionProperties(setup),
 			};
 		}

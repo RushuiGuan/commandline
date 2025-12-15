@@ -8,11 +8,11 @@ namespace Albatross.CommandLine.CodeGen {
 	public record class CommandSetup {
 		public INamedTypeSymbol OptionClass { get; }
 		public AttributeData VerbAttribute { get; }
-		
-		public string Key { get; set; }
+
+		public string Key { get; }
 		public string Name { get; }
 		public string HandlerClass { get; }
-		public string CommandClassName { get; init; }
+		public string CommandClassName { get; private set; }
 		public string CommandClassNamespace => OptionClass.ContainingNamespace.GetFullNamespace();
 		public string? Description { get; }
 		public string[] Aliases { get; } = Array.Empty<string>();
@@ -70,14 +70,10 @@ namespace Albatross.CommandLine.CodeGen {
 			}
 			return optionsClassName;
 		}
-		
-		public CommandSetup RenameCommandClass(int index) {
+
+		public void RenameCommandClass(int index) {
 			if (index != 0) {
-				return this with {
-					CommandClassName = $"{GetCommandClassName(this.OptionClass)}{index}"
-				};
-			} else {
-				return this;
+				CommandClassName = $"{GetCommandClassName(this.OptionClass)}{index}";
 			}
 		}
 		public void GetCommandPropertyOptions(Compilation compilation, bool useBaseClassProperties, out List<CommandOptionPropertySetup> options, out List<CommandArgumentPropertySetup> arguments) {
