@@ -11,7 +11,10 @@ namespace Albatross.CommandLine {
 		private readonly Dictionary<string, Command> commands = new();
 		public RootCommand RootCommand { get; }
 		public CommandBuilder(string rootCommandDescription) {
-			RootCommand = new RootCommand(rootCommandDescription);
+			RootCommand = new RootCommand(rootCommandDescription) {
+				BenchmarkOption,
+				ShowStackOption,
+			};
 			RootCommand.SetAction(HelpAction.Invoke);
 			AddVerbosityOption(RootCommand);
 			commands.Add(string.Empty, RootCommand);
@@ -28,21 +31,25 @@ namespace Albatross.CommandLine {
 		}
 
 		internal static readonly Option<string?> FormatOption = new Option<string?>(FormatOptionName) {
-			Description = "Specify the optional output format expression.  See the formatting cheatsheet @https://github.com/RushuiGuan/text/blob/main/Albatross.Text.CliFormat/CheatSheet.md"
+			Description = "Specify the optional output format expression.  See the formatting cheatsheet @https://github.com/RushuiGuan/text/blob/main/Albatross.Text.CliFormat/CheatSheet.md",
+			Recursive = true,
 		};
 
 		internal static readonly Option<bool> BenchmarkOption = new Option<bool>(BenchmarkOptionName) {
-			Description = "Show the time it takes to run the command in milliseconds"
+			Description = "Show the time it takes to run the command in milliseconds",
+			Recursive = true,
 		};
 
 		internal static readonly Option<bool> ShowStackOption = new Option<bool>(ShowStackOptionName) {
-			Description = "Show the full stack when an exception has been thrown"
+			Description = "Show the full stack when an exception has been thrown",
+			Recursive = true,
 		};
 
 		public const string VerbosityOptionName = "--verbosity";
 		public const string FormatOptionName = "--format";
 		public const string BenchmarkOptionName = "--benchmark";
 		public const string ShowStackOptionName = "--show-stack";
+
 		void AddVerbosityOption(Command command) {
 			var allowedValues = new[] { "Verbose", "Debug", "Information", "Info", "Warning", "Error", "Err", "Fatal" };
 			var option = new Option<string?>(VerbosityOptionName, "-v") {
