@@ -72,17 +72,12 @@ namespace Albatross.CommandLine.CodeGen {
 					Left = new IdentifierNameExpression("this." + parameter.CommandPropertyName),
 					Expression = new NewObjectExpression {
 						Type = new TypeExpression(parameter is CommandArgumentPropertySetup ? MyDefined.Identifiers.Argument : MyDefined.Identifiers.Option, this.typeConverter.Convert(parameter.PropertySymbol.Type)),
-						Arguments = new ListOfArguments(new StringLiteralExpression(parameter.Name)),
+						Arguments = new ListOfArguments(new StringLiteralExpression(parameter.Key)),
 						Initializers = new() {
 							{
 								!string.IsNullOrEmpty(setup.Description), () => new AssignmentExpression {
 									Left = new IdentifierNameExpression("Description"),
 									Expression = new StringLiteralExpression(setup.Description!),
-								}
-							}, {
-								setup.Aliases.Any(), () => new AssignmentExpression {
-									Left = new IdentifierNameExpression("Aliases"),
-									Expression = new ArrayLiteralExpression(setup.Aliases.Select(x => new StringLiteralExpression(x)))
 								}
 							}, {
 								parameter is CommandOptionPropertySetup { Required: true }, () => new AssignmentExpression {
@@ -112,7 +107,7 @@ namespace Albatross.CommandLine.CodeGen {
 											},
 										],
 										Body = [
-											new LiteralExpression(parameter.PropertyInitializer!)
+											new SyntaxNodeExpression(parameter.PropertyInitializer!)
 										]
 									}
 								}
@@ -120,7 +115,18 @@ namespace Albatross.CommandLine.CodeGen {
 						},
 					}.EndOfStatement()
 				};
+				if (parameter is CommandOptionPropertySetup propertySetup) {
+					foreach(var alias in propertySetup.Aliases){
+						yield return new InvocationExpression {
+							CallableExpression = new IdentifierNameExpression($"this.{parameter.CommandPropertyName}.Aliases.Add"),
+							Arguments = new ListOfArguments(new StringLiteralExpression(alias))
+						}.EndOfStatement();
+					}
+				}
 			}
+			yield return new InvocationExpression {
+				CallableExpression = new IdentifierNameExpression("this.Initialize"),
+			}.EndOfStatement();
 		}
 	}
 }

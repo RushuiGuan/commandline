@@ -12,20 +12,20 @@ namespace Albatross.CommandLine.CodeGen {
 
 		public int Index { get; init; }
 		public int Order { get; }
-		public object? PropertyInitializer { get; }
+		public ExpressionSyntax? PropertyInitializer { get; }
 		public bool DefaultToInitializer { get; }
-		public string Name { get; }
+		public string Key { get; }
 		public string Type { get; }
 		public string? Description { get; }
 		public bool Hidden { get; }
 		public bool ShouldDefaultToInitializer => DefaultToInitializer && PropertyInitializer != null;
 		public abstract string CommandPropertyName { get; }
 
-		protected CommandPropertySetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute) {
+		protected CommandPropertySetup(IPropertySymbol propertySymbol, AttributeData propertyAttribute) {
 			this.PropertySymbol = propertySymbol;
 			this.propertyAttribute = propertyAttribute;
 
-			this.Name = $"--{propertySymbol.Name.Kebaberize()}";
+			this.Key = $"--{propertySymbol.Name.Kebaberize()}";
 			this.Type = propertySymbol.Type.GetFullName();
 
 			if (propertyAttribute.TryGetNamedArgument("Order", out var order)) {
@@ -34,7 +34,7 @@ namespace Albatross.CommandLine.CodeGen {
 			if (propertyAttribute.TryGetNamedArgument("DefaultToInitializer", out var defaultToInitializer)) {
 				this.DefaultToInitializer = Convert.ToBoolean(defaultToInitializer.Value);
 				if (this.DefaultToInitializer) {
-					this.PropertyInitializer = GetPropertyInitializer(compilation, propertySymbol);
+					this.PropertyInitializer = GetPropertyInitializer(propertySymbol);
 				}
 			}
 			if (propertyAttribute.TryGetNamedArgument("Hidden", out var hidden)) {
@@ -45,13 +45,11 @@ namespace Albatross.CommandLine.CodeGen {
 			}
 		}
 
-		protected static object? GetPropertyInitializer(Compilation compilation, IPropertySymbol propertySymbol) {
-			var syntax = propertySymbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
-			if (syntax is PropertyDeclarationSyntax { Initializer: not null } propertyDeclarationSyntax) {
-				var semanticModel = compilation.GetSemanticModel(syntax.SyntaxTree);
-				var constant = semanticModel.GetConstantValue(propertyDeclarationSyntax.Initializer);
-				if (constant.HasValue) {
-					return constant.Value;
+		protected static ExpressionSyntax? GetPropertyInitializer(IPropertySymbol propertySymbol) {
+			foreach (var syntaxReference in propertySymbol.DeclaringSyntaxReferences) {
+				var syntaxNode = syntaxReference.GetSyntax();
+				if (syntaxNode is PropertyDeclarationSyntax propertyDeclaration) {
+					return propertyDeclaration.Initializer?.Value;
 				}
 			}
 			return null;

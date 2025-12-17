@@ -148,7 +148,70 @@ namespace Albatross.CommandLine.CodeGen {
 						new StringLiteralExpression(setup.Key)
 					}
 				};
+				yield return CreateCommandOptionsRegistration(setup, typeConverter);
 			}
+		}
+
+		private static IExpression CreateCommandOptionsRegistration(CommandSetup setup, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
+			return new InvocationExpression {
+				CallableExpression = new IdentifierNameExpression("services.AddScoped") {
+					GenericArguments = {
+						new TypeExpression(MyDefined.Identifiers.IOptions, typeConverter.Convert(setup.OptionClass))
+					}
+				},
+				Arguments = {
+					new AnonymousMethodExpression {
+						Parameters = [
+							new ParameterDeclaration {
+								Name = new IdentifierNameExpression("provider"),
+								Type = Defined.Types.Var,
+							}
+						],
+						Body = [
+							new AssignmentExpression {
+								Left = new VariableDeclaration {
+									Identifier = new IdentifierNameExpression("result"),
+								},
+								Expression = new InvocationExpression {
+									CallableExpression = new IdentifierNameExpression("provider.GetRequiredService") {
+										GenericArguments = {
+											new TypeExpression(MyDefined.Identifiers.ParserResult)
+										}
+									}
+								}
+							}.EndOfStatement(),
+							new AssignmentExpression {
+								Left = new VariableDeclaration {
+									Identifier = new IdentifierNameExpression("options"),
+								},
+								Expression = new NewObjectExpression {
+									Type = typeConverter.Convert(setup.OptionClass),
+									Initializers = new ListOfNodes<AssignmentExpression>(
+										setup.Parameters.Select(x => new AssignmentExpression {
+												Left = new IdentifierNameExpression(x.PropertySymbol.Name),
+												Expression = new InvocationExpression {
+													CallableExpression = new IdentifierNameExpression("result.GetRequiredValue") {
+														GenericArguments = new(typeConverter.Convert(x.PropertySymbol.Type))
+													},
+													Arguments = new ListOfArguments(
+														new StringLiteralExpression(x.Key)
+													)
+												}
+											}
+										)
+									)
+								}
+							}.EndOfStatement(),
+							new ReturnExpression {
+								Expression = new InvocationExpression {
+									CallableExpression = new IdentifierNameExpression("Options.Create"),
+									Arguments = new(new IdentifierNameExpression("options"))
+								}
+							}.EndOfStatement(),
+						]
+					}
+				}
+			};
 		}
 	}
 }

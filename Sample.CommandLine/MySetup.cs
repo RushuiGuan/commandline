@@ -3,7 +3,9 @@ using Albatross.Config;
 using Albatross.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System.CommandLine;
+using System.ComponentModel;
 using System.IO;
 
 namespace Sample.CommandLine {
@@ -27,6 +29,14 @@ namespace Sample.CommandLine {
 					MyFile = result.GetRequiredValue<FileInfo>("--myfile")!,
 					SecondFile = result.GetRequiredValue<FileInfo>("--second")!,
 				};
+			});
+
+			services.AddScoped<IOptions<MyOptions>>(provider => {
+				var result = provider.GetRequiredService<ParseResult>();
+				var options = new MyOptions {
+					Name = result.GetRequiredValue<string>("--name"),
+				};
+				return Options.Create(options);
 			});
 		}
 	}
