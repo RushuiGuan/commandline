@@ -207,7 +207,7 @@ namespace Albatross.CommandLine.CodeGen {
 									CallableExpression = new IdentifierNameExpression("Options.Create"),
 									Arguments = new(new IdentifierNameExpression("options"))
 								}
-							}.EndOfStatement(),
+							},
 						]
 					}
 				}
