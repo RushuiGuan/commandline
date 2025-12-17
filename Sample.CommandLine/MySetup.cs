@@ -30,14 +30,6 @@ namespace Sample.CommandLine {
 					SecondFile = result.GetRequiredValue<FileInfo>("--second")!,
 				};
 			});
-
-			services.AddScoped<IOptions<MyOptions>>(provider => {
-				var result = provider.GetRequiredService<ParseResult>();
-				var options = new MyOptions {
-					Name = result.GetRequiredValue<string>("--name"),
-				};
-				return Options.Create(options);
-			});
 		}
 	}
 }
