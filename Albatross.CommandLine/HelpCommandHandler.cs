@@ -11,14 +11,7 @@ namespace Albatross.CommandLine {
 		}
 
 		public Task<int> Invoke(CancellationToken _) {
-			var returnCode = Invoke(this.result);
-			return Task.FromResult(returnCode);
-		}
-
-		public static int Invoke(ParseResult result) {
-			var helpAction = new System.CommandLine.Help.HelpAction();
-			var returnCode = helpAction.Invoke(result);
-			return returnCode;
+			return Task.FromResult(0);
 		}
 	}
 }

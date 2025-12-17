@@ -2,17 +2,17 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Help;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
 	public class CommandBuilder {
-		Dictionary<string, Command> commands = new();
-
+		public readonly static HelpAction HelpAction = new HelpAction();
+		private readonly Dictionary<string, Command> commands = new();
 		public RootCommand RootCommand { get; }
 		public CommandBuilder(string rootCommandDescription) {
 			RootCommand = new RootCommand(rootCommandDescription);
-			RootCommand.SetAction(HelpCommandAction.Invoke);
+			RootCommand.SetAction(HelpAction.Invoke);
 			AddVerbosityOption(RootCommand);
 			commands.Add(string.Empty, RootCommand);
 		}
@@ -43,7 +43,7 @@ namespace Albatross.CommandLine {
 		public const string FormatOptionName = "--format";
 		public const string BenchmarkOptionName = "--benchmark";
 		public const string ShowStackOptionName = "--show-stack";
-		void AddVerbosityOption(Command command){
+		void AddVerbosityOption(Command command) {
 			var allowedValues = new[] { "Verbose", "Debug", "Information", "Info", "Warning", "Error", "Err", "Fatal" };
 			var option = new Option<string?>(VerbosityOptionName, "-v") {
 				Description = "Set the verbosity level of logging",
@@ -82,8 +82,8 @@ namespace Albatross.CommandLine {
 			if (!commands.TryGetValue(key, out command)) {
 				ParseCommandText(key, out var parent, out var self);
 				command = new Command(self);
-				command.SetAction(HelpCommandAction.Invoke);
-				commands[key] = command;
+				command.SetAction(HelpAction.Invoke);
+				commands.Add(key, command);
 				GetOrCreateCommand(parent, out var parentCommand);
 				parentCommand.Add(command);
 			}
@@ -98,9 +98,9 @@ namespace Albatross.CommandLine {
 			parentCommand.Add(command);
 		}
 
-		public void Build(IHost host) {
-			var globalCommandAction = new GlobalCommandAction(host);
-			foreach (var item in this.commands) {
+		public void BuildTree(Func<IHost> hostFactory) {
+			var globalCommandAction = new GlobalCommandAction(hostFactory);
+			foreach (var item in this.commands.OrderBy(x => x.Key).ToArray()) {
 				if (!string.IsNullOrEmpty(item.Key)) {
 					AddToParentCommand(item.Key, item.Value);
 				}

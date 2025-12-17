@@ -19,9 +19,12 @@ namespace Albatross.CommandLine {
 		protected IConfiguration configuration;
 		protected IHostBuilder hostBuilder;
 		ParseResult? result;
+		IHost? host;
 		protected ParseResult RequiredResult => this.result ?? throw new InvalidOperationException("Parse() has not been called yet");
 		protected SetupSerilog setupSerilog;
 		public CommandBuilder CommandBuilder { get; }
+
+		IHost GetHost() => host ?? throw new InvalidOperationException($"Host has not been built, Call the Build() method!");
 
 		public Setup(string description) {
 			var environment = EnvironmentSetting.DOTNET_ENVIRONMENT;
@@ -38,7 +41,13 @@ namespace Albatross.CommandLine {
 			});
 			CommandBuilder = new CommandBuilder(description);
 		}
+		/// <summary>
+		/// Command Hierarchy should be built before calling Parse
+		/// </summary>
+		/// <param name="args"></param>
+		/// <returns></returns>
 		public Setup Parse(string[] args) {
+			this.CommandBuilder.BuildTree(GetHost);
 			result = this.CommandBuilder.RootCommand.Parse(args);
 			this.hostBuilder.ConfigureServices(services => services.AddSingleton(result));
 			// right after parsing is the earliest time to configure logging level
@@ -63,11 +72,10 @@ namespace Albatross.CommandLine {
 		}
 		public virtual void Configure(ParseResult result, ProgramSetting programSetting, EnvironmentSetting environmentSetting, ILogger<Setup> logger) { }
 		public Setup Build() {
-			var host = this.hostBuilder.Build();
+			this.host = this.hostBuilder.Build();
 			var programSetting = host.Services.GetRequiredService<ProgramSetting>();
 			var environmentSetting = host.Services.GetRequiredService<EnvironmentSetting>();
 			this.Configure(this.RequiredResult, programSetting, environmentSetting, host.Services.GetRequiredService<ILogger<Setup>>());
-			this.CommandBuilder.Build(host);
 			return this;
 		}
 		public Task<int> InvokeAsync() => this.RequiredResult.InvokeAsync();

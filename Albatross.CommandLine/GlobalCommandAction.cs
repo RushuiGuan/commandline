@@ -9,25 +9,24 @@ using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
 	public class GlobalCommandAction {
-		const int ErrorExitCode = -1;
-		private readonly IHost host;
-
-		public GlobalCommandAction(IHost host) {
-			this.host = host;
+		public GlobalCommandAction(Func<IHost> hostFactory) {
+			this.hostFactory = hostFactory;
 		}
+		const int ErrorExitCode = -1;
+		private readonly Func<IHost> hostFactory;
 
 		public async Task<int> InvokeAsync(ParseResult result, CancellationToken cancellationToken) {
+			var host = this.hostFactory();
 			var commandNames = result.CommandResult.Command.GetCommandNames();
 			var key = string.Join(' ', commandNames);
-			var provider = this.host.Services;
 			var benchmark = result.GetValue<bool>(CommandBuilder.BenchmarkOptionName);
 			var showStack = result.GetValue<bool>(CommandBuilder.ShowStackOptionName);
-			var logger = provider.GetRequiredService<ILogger<GlobalCommandAction>>();
+			var logger = host.Services.GetRequiredService<ILogger<GlobalCommandAction>>();
 			ICommandAction? handler = null;
 			try {
-				handler = provider.GetKeyedService<ICommandAction>(key);
+				handler = host.Services.GetKeyedService<ICommandAction>(key);
 			} catch (Exception err) {
-				if (showStack) {
+				if (showStack == true) {
 					logger.LogError(err, "Error creating CommandAction for command {command}", key);
 				} else {
 					logger.LogError("Error creating CommandAction for command {command}: {msg}", key, err.Message);
@@ -39,7 +38,7 @@ namespace Albatross.CommandLine {
 				return ErrorExitCode;
 			} else {
 				Stopwatch? stopwatch;
-				if (benchmark) {
+				if (benchmark == true) {
 					stopwatch = Stopwatch.StartNew();
 				} else {
 					stopwatch = null;
@@ -47,7 +46,7 @@ namespace Albatross.CommandLine {
 				try {
 					return await handler.Invoke(cancellationToken);
 				} catch (Exception err) {
-					if (showStack) {
+					if (showStack == true) {
 						logger.LogError(err, "Error invoking command {command}", key);
 					} else {
 						logger.LogError("Error invoking command {command}: {message}", key, err.Message);
