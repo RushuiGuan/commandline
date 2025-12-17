@@ -12,27 +12,27 @@
 		<DevelopmentDependency>true</DevelopmentDependency>
 	</PropertyGroup>
 	<ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
-        <PackageReference Include="Humanizer.Core" Version="2.14.1" GeneratePathProperty="true" PrivateAssets="all" />
-        <PackageReference Include="Albatross.CodeAnalysis" Version="8.0.1-61.main" GeneratePathProperty="true" PrivateAssets="all" />
-        <PackageReference Include="Albatross.CodeAnalysis.Polyfill" Version="8.0.1-61.main" GeneratePathProperty="true" PrivateAssets="all" />
-        <PackageReference Include="Albatross.CodeGen" Version="9.0.1-129.main" GeneratePathProperty="true" PrivateAssets="all" />
-        <PackageReference Include="Albatross.CodeGen.CSharp" Version="9.0.1-129.main" GeneratePathProperty="true" PrivateAssets="all" />
-        <PackageReference Include="Albatross.Collections" Version="8.0.1" GeneratePathProperty="true" PrivateAssets="all" />
-        <PackageReference Include="Albatross.Reflection" Version="8.0.7" GeneratePathProperty="true" PrivateAssets="all" />
-        <PackageReference Include="Albatross.Text" Version="9.0.1" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
+		<PackageReference Include="Humanizer.Core" Version="2.14.1" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="Albatross.CodeAnalysis" Version="8.0.1-61.main" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="Albatross.CodeAnalysis.Polyfill" Version="8.0.1-61.main" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="Albatross.CodeGen" Version="9.0.1-134.main" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="Albatross.CodeGen.CSharp" Version="9.0.1-134.main" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="Albatross.Collections" Version="8.0.1" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="Albatross.Reflection" Version="8.0.7" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="Albatross.Text" Version="9.0.1" GeneratePathProperty="true" PrivateAssets="all" />
 	</ItemGroup>
 	<!-- begin: this setup is for package reference.  It used when packing -->
 	<ItemGroup>
 		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 		<None Include="$(PkgHumanizer_Core)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PkgAlbatross_CodeAnalysis)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PkgAlbatross_CodeAnalysis_Polyfill)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PkgAlbatross_CodeGen)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PkgAlbatross_CodeGen_CSharp)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PkgAlbatross_Collections)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PkgAlbatross_Reflection)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PkgAlbatross_Text)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="$(PkgAlbatross_CodeAnalysis)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="$(PkgAlbatross_CodeAnalysis_Polyfill)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="$(PkgAlbatross_CodeGen)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="$(PkgAlbatross_CodeGen_CSharp)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="$(PkgAlbatross_Collections)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="$(PkgAlbatross_Reflection)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="$(PkgAlbatross_Text)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 	</ItemGroup>
 	<!-- end -->
 	<!-- begin: this setup is used for project reference only.  It would be removed when packing -->
@@ -42,13 +42,13 @@
 	<Target Name="GetDependencyTargetPaths">
 		<ItemGroup>
 			<TargetPathWithTargetPlatformMoniker Include="$(PKGHumanizer_Core)\lib\netstandard2.0\Humanizer.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_CodeAnalysis)\lib\netstandard2.0\Albatross.CodeAnalysis.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_CodeAnalysis_Polyfill)\lib\netstandard2.0\Albatross.CodeAnalysis.Polyfill.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_CodeGen)\lib\netstandard2.0\Albatross.CodeGen.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_CodeGen_CSharp)\lib\netstandard2.0\Albatross.CodeGen.CSharp.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_Collections)\lib\netstandard2.0\Albatross.Collections.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_Reflection)\lib\netstandard2.0\Albatross.Reflection.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_Text)\lib\netstandard2.0\Albatross.Text.dll" IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_CodeAnalysis)\lib\netstandard2.0\Albatross.CodeAnalysis.dll" IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_CodeAnalysis_Polyfill)\lib\netstandard2.0\Albatross.CodeAnalysis.Polyfill.dll" IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_CodeGen)\lib\netstandard2.0\Albatross.CodeGen.dll" IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_CodeGen_CSharp)\lib\netstandard2.0\Albatross.CodeGen.CSharp.dll" IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_Collections)\lib\netstandard2.0\Albatross.Collections.dll" IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_Reflection)\lib\netstandard2.0\Albatross.Reflection.dll" IncludeRuntimeDependency="false" />
+			<TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_Text)\lib\netstandard2.0\Albatross.Text.dll" IncludeRuntimeDependency="false" />
 		</ItemGroup>
 	</Target>
 	<ItemGroup>

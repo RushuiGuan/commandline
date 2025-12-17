@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
 	// parent1 has two subcommands sub1 and sub2,  if the parent itself is not declared, it will
-	// be generated with a default HelpCommandHandler
+	// be generated with a default HelpCommandAction
 	[Verb("parent1 sub1", Description = "This demonstrate the creation of a sub command.  The verb should be composed of \"[parent name] [sub command name]\"")]
 	public class MyParent1Sub1Options { }
 	[Verb("parent1 sub2", Description = "If the parent command option is not declared, it will be generated automatically")]
@@ -35,7 +35,7 @@ namespace Sample.CommandLine {
 		public string Name { get; set; } = string.Empty;
 	}
 
-	public class MyParent3Handler : BaseHandler<MyParent3Sub1Options> {
+	public class MyParent3Handler : CommandAction<MyParent3Sub1Options> {
 		public MyParent3Handler(IOptions<MyParent3Sub1Options> options) : base(options) { }
 		public override Task<int> Invoke(CancellationToken token) {
 			// remove base.Invoke and do some work here

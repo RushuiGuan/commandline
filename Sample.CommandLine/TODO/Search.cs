@@ -7,26 +7,26 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	// this declaration is not required.  The system will auto generate the parent command with a HelpCommandHandler if it is not declared
-	[Verb("search", typeof(HelpCommandHandler))]
+	// this declaration is not required.  The system will auto generate the parent command with a HelpCommandAction if it is not declared
+	[Verb("search", typeof(HelpCommandAction))]
 	public record class SearchOptions { }
 
-	[Verb("search id", typeof(SearchCommandHandler))]
+	[Verb("search id", typeof(SearchCommandAction))]
 	public class SearchByIdOptions {
 		[Option]
 		public int Id { get; set; }
 	}
-	[Verb("search name", typeof(SearchCommandHandler))]
+	[Verb("search name", typeof(SearchCommandAction))]
 	public class SearchByNameOptions {
 		[Option]
 		public string Name { get; set; } = string.Empty;
 	}
-	public class SearchCommandHandler : ICommandHandler {
+	public class SearchCommandAction : ICommandAction {
 		private readonly ParseResult result;
 		private readonly IOptions<SearchByIdOptions> searchByIdOptions;
 		private readonly IOptions<SearchByNameOptions> searchByNameOptions;
 
-		public SearchCommandHandler(ParseResult result, IOptions<SearchByIdOptions> searchByIdOptions, IOptions<SearchByNameOptions> searchByNameOptions) {
+		public SearchCommandAction(ParseResult result, IOptions<SearchByIdOptions> searchByIdOptions, IOptions<SearchByNameOptions> searchByNameOptions) {
 			this.result = result;
 			this.searchByIdOptions = searchByIdOptions;
 			this.searchByNameOptions = searchByNameOptions;

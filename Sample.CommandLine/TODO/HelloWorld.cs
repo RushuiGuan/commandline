@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	[Verb("hello", typeof(HelloWorldCommandHandler), Description = "HelloWorld command")]
+	[Verb("hello", typeof(HelloWorldCommandAction), Description = "HelloWorld command")]
 	public record class HelloWorldOptions {
 		[Option("n", Description = "Give me a name")]
 		public string Name { get; set; } = string.Empty;
@@ -16,8 +16,8 @@ namespace Sample.CommandLine {
 		[Option("x", Description = "Give me a number", DefaultToInitializer = true)]
 		public int Number { get; set; } = 100;
 	}
-	public class HelloWorldCommandHandler : BaseHandler<HelloWorldOptions> {
-		public HelloWorldCommandHandler(IOptions<HelloWorldOptions> options) : base(options) {
+	public class HelloWorldCommandAction : CommandAction<HelloWorldOptions> {
+		public HelloWorldCommandAction(IOptions<HelloWorldOptions> options) : base(options) {
 		}
 
 		public override Task<int> Invoke(CancellationToken cancellationToken) {

@@ -6,14 +6,14 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	public class RedCommandHandler : ICommandHandler {
-		private readonly ILogger<RedCommandHandler> logger;
+	public class RedCommandAction : ICommandAction {
+		private readonly ILogger<RedCommandAction> logger;
 		private readonly ColorCommandOptions myOptions;
 
 		private GlobalOptions GlobalOptions { get; }
 		public MyColorPicker Picker { get; }
 
-		public RedCommandHandler(MyColorPicker picker, ILogger<RedCommandHandler> logger, IOptions<GlobalOptions> globalOptions, IOptions<ColorCommandOptions> myOptions) {
+		public RedCommandAction(MyColorPicker picker, ILogger<RedCommandAction> logger, IOptions<GlobalOptions> globalOptions, IOptions<ColorCommandOptions> myOptions) {
 			Picker = picker;
 			this.logger = logger;
 			this.myOptions = myOptions.Value;

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
 	public class GlobalCommandAction {
-		const int ErrorExitCode = 9999;
+		const int ErrorExitCode = -1;
 		private readonly IHost host;
 
 		public GlobalCommandAction(IHost host) {
@@ -23,19 +23,19 @@ namespace Albatross.CommandLine {
 			var benchmark = result.GetValue<bool>(CommandBuilder.BenchmarkOptionName);
 			var showStack = result.GetValue<bool>(CommandBuilder.ShowStackOptionName);
 			var logger = provider.GetRequiredService<ILogger<GlobalCommandAction>>();
-			ICommandHandler? handler = null;
+			ICommandAction? handler = null;
 			try {
-				handler = provider.GetKeyedService<ICommandHandler>(key);
+				handler = provider.GetKeyedService<ICommandAction>(key);
 			} catch (Exception err) {
 				if (showStack) {
-					logger.LogError(err, "Error creating CommandHandler for command {command}", key);
+					logger.LogError(err, "Error creating CommandAction for command {command}", key);
 				} else {
-					logger.LogError("Error creating CommandHandler for command {command}: {msg}", key, err.Message);
+					logger.LogError("Error creating CommandAction for command {command}: {msg}", key, err.Message);
 				}
 				return ErrorExitCode;
 			}
 			if (handler == null) {
-				logger.LogError("No CommandHandler is registered for command {command}", key);
+				logger.LogError("No CommandAction is registered for command {command}", key);
 				return ErrorExitCode;
 			} else {
 				Stopwatch? stopwatch;

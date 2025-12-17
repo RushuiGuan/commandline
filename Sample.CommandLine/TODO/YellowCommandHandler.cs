@@ -6,13 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	public class YellowCommandHandler : ICommandHandler {
-		private readonly ILogger<YellowCommandHandler> logger;
+	public class YellowCommandAction : ICommandAction {
+		private readonly ILogger<YellowCommandAction> logger;
 		private readonly ColorCommandOptions myOptions;
 
 		private GlobalOptions GlobalOptions { get; }
 
-		public YellowCommandHandler(ILogger<YellowCommandHandler> logger, IOptions<GlobalOptions> globalOptions, IOptions<ColorCommandOptions> myOptions) {
+		public YellowCommandAction(ILogger<YellowCommandAction> logger, IOptions<GlobalOptions> globalOptions, IOptions<ColorCommandOptions> myOptions) {
 			this.logger = logger;
 			this.myOptions = myOptions.Value;
 			this.GlobalOptions = globalOptions.Value;

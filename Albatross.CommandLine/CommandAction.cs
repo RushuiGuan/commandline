@@ -6,19 +6,19 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
-	public abstract class BaseHandler<T> : ICommandHandler where T : class {
-		protected readonly T options;
-		readonly ParseResult? result;
-		protected readonly string? format;
-		protected virtual TextWriter writer => Console.Out;
+	public abstract class CommandAction<T> : ICommandAction where T : class {
+		private readonly ParseResult? result;
 		protected ParseResult Result => result ?? throw new InvalidOperationException("ParseResult is not available.");
+		protected readonly T options;
+		protected readonly string? format;
+		protected virtual TextWriter Writer => Console.Out;
 
-		protected BaseHandler(ParseResult result, IOptions<T> options) : this(options){
+		protected CommandAction(ParseResult result, IOptions<T> options) : this(options){
 			this.result = result;
 			format = result.GetValue<string?>("--format");
 		}
 
-		protected BaseHandler(IOptions<T> options) {
+		protected CommandAction(IOptions<T> options) {
 			this.options = options.Value;
 		}
 

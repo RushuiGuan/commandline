@@ -3,9 +3,7 @@ using Albatross.Config;
 using Albatross.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using System.CommandLine;
-using System.ComponentModel;
 using System.IO;
 
 namespace Sample.CommandLine {
@@ -20,6 +18,7 @@ namespace Sample.CommandLine {
 			services.RegisterCommands();
 			// register your dependencies here
 			services.AddSingleton<IMyService, MyService>();
+
 
 			services.AddScoped<ColorCommandOptions>(provider => { 
 				var result = provider.GetRequiredService<ParseResult>();

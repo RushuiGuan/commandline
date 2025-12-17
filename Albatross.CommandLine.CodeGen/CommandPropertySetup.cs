@@ -11,7 +11,6 @@ namespace Albatross.CommandLine.CodeGen {
 		protected AttributeData propertyAttribute;
 
 		public int Index { get; init; }
-		public int Order { get; }
 		public ExpressionSyntax? PropertyInitializer { get; }
 		public bool DefaultToInitializer { get; }
 		public string Key { get; }
@@ -28,9 +27,6 @@ namespace Albatross.CommandLine.CodeGen {
 			this.Key = $"--{propertySymbol.Name.Kebaberize()}";
 			this.Type = propertySymbol.Type.GetFullName();
 
-			if (propertyAttribute.TryGetNamedArgument("Order", out var order)) {
-				this.Order = Convert.ToInt32(order.Value);
-			}
 			if (propertyAttribute.TryGetNamedArgument("DefaultToInitializer", out var defaultToInitializer)) {
 				this.DefaultToInitializer = Convert.ToBoolean(defaultToInitializer.Value);
 				if (this.DefaultToInitializer) {

@@ -9,7 +9,7 @@ As a development dependency of [Albatross.CommandLine](../Albatross.CommandLine)
 automatically as a PrivateAssets when the reference for [Albatross.CommandLine](../Albatross.CommandLine) is added to a
 project. The code generator looks for options classes those are annotated with
 the [Albatross.CommandLine.VerbAttribute](../Albatross.CommandLine/VerbAttribute.cs) and generate the appropriate
-command classes. In the example below, the class `TestOptions`, `TestCommandHandler` and the first `TestCommand` class
+command classes. In the example below, the class `TestOptions`, `TestCommandAction` and the first `TestCommand` class
 are created manually and the second `TestCommand` class is generated.
 
 * The command is created as a partial class which allows user to add additional functionalities. To customize a command,
@@ -23,7 +23,7 @@ are created manually and the second `TestCommand` class is generated.
   single dash ('-') if the dash has not been prefixed already.
 
 ```csharp
-[Verb("test", typeof(TestCommandHandler), Description = "A test command")]
+[Verb("test", typeof(TestCommandAction), Description = "A test command")]
 public record class TestOptions {
 	// required since its type is not nullable
 	public string Name { get; set; } = string.Empty;
@@ -35,7 +35,7 @@ public record class TestOptions {
 }
 // implement your command handler logic here
 // optionally use BaseHandler<OptionType> class as the base class
-public class TestCommandHandler : ICommandHandler {
+public class TestCommandAction : ICommandAction {
 	...
 }
 public partial class TestCommand : IRequireInitialization {
@@ -74,7 +74,7 @@ details.
 public static class RegistrationExtensions
 	{
 		public static IServiceCollection RegisterCommands(this IServiceCollection services) {
-			services.AddKeyedScoped<ICommandHandler, TestCommandHandler>("test");
+			services.AddKeyedScoped<ICommandAction, TestCommandAction>("test");
 			services.AddOptions<TestOptions>().BindCommandLine();
 			return services;
 		}

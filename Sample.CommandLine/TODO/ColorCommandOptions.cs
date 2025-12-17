@@ -3,8 +3,8 @@ using System.CommandLine;
 using System.IO;
 
 namespace Sample.CommandLine {
-	[Verb("yellow-command", typeof(YellowCommandHandler), Description = "a sample yellow command", Alias = ["y"])]
-	[Verb("red-command", typeof(RedCommandHandler), Description = "a sample red command", Alias = ["r"])]
+	[Verb("yellow-command", typeof(YellowCommandAction), Description = "a sample yellow command", Alias = ["y"])]
+	[Verb("red-command", typeof(RedCommandAction), Description = "a sample red command", Alias = ["r"])]
 	public record class ColorCommandOptions {
 		[Option("n", "-name", Description = "use the name of the test")]
 		public string Name { get; set; } = string.Empty;

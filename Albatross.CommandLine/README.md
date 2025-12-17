@@ -59,9 +59,9 @@ the dependency of `Microsoft.CodeAnalysis.CSharp` version 4.12.0, which in term 
 				.InvokeAsync(args);
 	}
 	```	
-* Create a new class file [TestCommandHandler.cs](../Sample.CommandLine/TestCommandHandler.cs) with the following code:
+* Create a new class file [TestCommandAction.cs](../Sample.CommandLine/TestCommandAction.cs) with the following code:
 	```csharp
-	[Verb("test", typeof(TestCommandHandler), Description = "My Test Command")]
+	[Verb("test", typeof(TestCommandAction), Description = "My Test Command")]
 	public record class TestCommandOptions {
 		// Name is a required option by default since the property is not nullable
 		public string Name { get; set; } = string.Empty;
@@ -73,11 +73,11 @@ the dependency of `Microsoft.CodeAnalysis.CSharp` version 4.12.0, which in term 
 		[Option(Required = false)]
 		public int Id { get; set; }
 	}
-	public class TestCommandHandler : ICommandHandler {
+	public class TestCommandAction : ICommandAction {
 		private readonly ILogger logger;
 		private readonly TestCommandOptions options;
 
-		public TestCommandHandler(ILogger logger, IOptions<TestCommandOptions> options) {
+		public TestCommandAction(ILogger logger, IOptions<TestCommandOptions> options) {
 			this.logger = logger;
 			this.options = options.Value;
 		}
@@ -135,7 +135,7 @@ the dependency of `Microsoft.CodeAnalysis.CSharp` version 4.12.0, which in term 
 		{
 			public static IServiceCollection RegisterCommands(this IServiceCollection services)
 			{
-				services.AddKeyedScoped<ICommandHandler, Sample.CommandLine.TestCommandHandler>("test");
+				services.AddKeyedScoped<ICommandAction, Sample.CommandLine.TestCommandAction>("test");
 				services.AddOptions<TestCommandOptions>().BindCommandLine();
 				return services;
 			}

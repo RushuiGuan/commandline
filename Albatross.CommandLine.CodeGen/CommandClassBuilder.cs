@@ -35,9 +35,10 @@ namespace Albatross.CommandLine.CodeGen {
 						Name = new IdentifierNameExpression(setup.CommandClassName),
 						BaseConstructorInvocation = new InvocationExpression {
 							CallableExpression = new IdentifierNameExpression("base"),
-							Arguments = new ListOfArguments(
+							Arguments = new ListOfArguments{
 								new StringLiteralExpression(setup.Name),
-								string.IsNullOrEmpty(setup.Description) ? Defined.Literals.Null : new StringLiteralExpression(setup.Description!)),
+								{ !string.IsNullOrEmpty(setup.Description), () => new StringLiteralExpression(setup.Description!) },
+							}
 						},
 						AccessModifier = Defined.Keywords.Public,
 						Body = new CodeBlock(CreateConstructorBody(setup)),
@@ -67,19 +68,34 @@ namespace Albatross.CommandLine.CodeGen {
 		}
 
 		private IEnumerable<IExpression> CreateConstructorBody(CommandSetup setup) {
+			foreach (var alias in setup.Aliases) {
+				yield return new InvocationExpression {
+					CallableExpression = new IdentifierNameExpression("this.Aliases.Add"),
+					Arguments = new ListOfArguments(new StringLiteralExpression(alias))
+				}.EndOfStatement();
+			}
 			foreach (var parameter in setup.Parameters) {
 				yield return new AssignmentExpression {
 					Left = new IdentifierNameExpression("this." + parameter.CommandPropertyName),
 					Expression = new NewObjectExpression {
 						Type = new TypeExpression(parameter is CommandArgumentPropertySetup ? MyDefined.Identifiers.Argument : MyDefined.Identifiers.Option, this.typeConverter.Convert(parameter.PropertySymbol.Type)),
-						Arguments = new ListOfArguments(new StringLiteralExpression(parameter.Key)),
+						Arguments = new ListOfArguments {
+							new StringLiteralExpression(parameter.Key),
+							{ parameter is CommandOptionPropertySetup, ()=> ((CommandOptionPropertySetup)parameter).Aliases.Select(x=>new StringLiteralExpression(x)) }
+						},
 						Initializers = new() {
 							{
-								!string.IsNullOrEmpty(setup.Description), () => new AssignmentExpression {
+								!string.IsNullOrEmpty(parameter.Description), () => new AssignmentExpression {
 									Left = new IdentifierNameExpression("Description"),
-									Expression = new StringLiteralExpression(setup.Description!),
+									Expression = new StringLiteralExpression(parameter.Description!),
 								}
 							}, {
+								parameter.Hidden, () => new AssignmentExpression {
+									Left = new IdentifierNameExpression("Hidden"),
+									Expression = Defined.Literals.True,
+								}
+							},
+							{
 								parameter is CommandOptionPropertySetup { Required: true }, () => new AssignmentExpression {
 									Left = new IdentifierNameExpression("Required"),
 									Expression = Defined.Literals.True,
@@ -107,7 +123,7 @@ namespace Albatross.CommandLine.CodeGen {
 											},
 										],
 										Body = [
-											new SyntaxNodeExpression(parameter.PropertyInitializer!)
+											new SyntaxNodeExpression(parameter.PropertyInitializer!, compilation.GetSemanticModel(parameter.PropertyInitializer!.SyntaxTree))
 										]
 									}
 								}
@@ -115,14 +131,6 @@ namespace Albatross.CommandLine.CodeGen {
 						},
 					}.EndOfStatement()
 				};
-				if (parameter is CommandOptionPropertySetup propertySetup) {
-					foreach(var alias in propertySetup.Aliases){
-						yield return new InvocationExpression {
-							CallableExpression = new IdentifierNameExpression($"this.{parameter.CommandPropertyName}.Aliases.Add"),
-							Arguments = new ListOfArguments(new StringLiteralExpression(alias))
-						}.EndOfStatement();
-					}
-				}
 			}
 			yield return new InvocationExpression {
 				CallableExpression = new IdentifierNameExpression("this.Initialize"),

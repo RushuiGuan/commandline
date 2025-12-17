@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	[Verb("argument-test", typeof(ArgumentTestCommandHandler))]
+	[Verb("argument-test", typeof(ArgumentTestCommandAction))]
 	public class ArgumentTestOptions {
 		[Option]
 		public string Name { get; set; } = string.Empty;
@@ -41,10 +41,10 @@ namespace Sample.CommandLine {
 		}
 	}
 
-	public class ArgumentTestCommandHandler : BaseHandler<ArgumentTestOptions> {
+	public class ArgumentTestCommandAction : CommandAction<ArgumentTestOptions> {
 		private readonly ILogger logger;
 
-		public ArgumentTestCommandHandler(ILogger logger, IOptions<ArgumentTestOptions> options) : base(options) {
+		public ArgumentTestCommandAction(ILogger logger, IOptions<ArgumentTestOptions> options) : base(options) {
 			this.logger = logger;
 		}
 

@@ -6,11 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	[Verb("error", typeof(ErrorCommandHandler), Description = "This command will throw an exception")]
+	[Verb("error", typeof(ErrorCommandAction), Description = "This command will throw an exception")]
 	public record class ErrorCommandOptions {
 	}
-	public class ErrorCommandHandler : BaseHandler<ErrorCommandOptions> {
-		public ErrorCommandHandler(IOptions<ErrorCommandOptions> options) : base(options) {
+	public class ErrorCommandAction : CommandAction<ErrorCommandOptions> {
+		public ErrorCommandAction(IOptions<ErrorCommandOptions> options) : base(options) {
 		}
 		public override Task<int> Invoke(CancellationToken token) {
 			throw new InvalidOperationException("We have a problem!!");

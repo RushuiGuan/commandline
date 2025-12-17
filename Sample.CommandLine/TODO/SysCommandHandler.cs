@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	[Verb("sys-command", typeof(SysCommandHandler), Alias = ["t"])]
+	[Verb("sys-command", typeof(SysCommandAction), Alias = ["t"])]
 	public record class SysCommandOptions {
 		[Option]
 		public int Id { get; set; }
@@ -33,11 +33,11 @@ namespace Sample.CommandLine {
 		[Option(Required = true)]
 		public IDictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
 	}
-	public class SysCommandHandler : ICommandHandler {
-		private readonly ILogger<SysCommandHandler> logger;
+	public class SysCommandAction : ICommandAction {
+		private readonly ILogger<SysCommandAction> logger;
 		private readonly SysCommandOptions myOptions;
 
-		public SysCommandHandler(ILogger<SysCommandHandler> logger, IOptions<SysCommandOptions> myOptions) {
+		public SysCommandAction(ILogger<SysCommandAction> logger, IOptions<SysCommandOptions> myOptions) {
 			this.logger = logger;
 			this.myOptions = myOptions.Value;
 		}

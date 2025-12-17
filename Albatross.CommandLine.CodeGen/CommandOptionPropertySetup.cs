@@ -14,7 +14,7 @@ namespace Albatross.CommandLine.CodeGen {
 			: base(propertySymbol, propertyAttribute) {
 			if (propertyAttribute.ConstructorArguments.Any()) {
 				this.Aliases = propertyAttribute.ConstructorArguments[0].Values.Select(x => x.Value?.ToString() ?? string.Empty)
-					.Where(x => !string.IsNullOrEmpty(x))
+					.Where(x => !string.IsNullOrEmpty(x)).Select(CreateAlias)
 					.ToArray();
 			} else {
 				this.Aliases = Array.Empty<string>();
@@ -26,6 +26,16 @@ namespace Albatross.CommandLine.CodeGen {
 				                && !propertySymbol.Type.IsNullable(compilation)
 				                && !propertySymbol.Type.IsCollection(compilation)
 				                && !ShouldDefaultToInitializer;
+			}
+		}
+
+		string CreateAlias(string text) {
+			if (text.StartsWith("-")) {
+				return text;
+			} else if (text.Length == 1) {
+				return $"-{text}";
+			} else {
+				return $"--{text}";
 			}
 		}
 	}

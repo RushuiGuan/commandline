@@ -4,12 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	[Verb("di-error", typeof(TestDIExceptionCommandHandler),
+	[Verb("di-error", typeof(TestDIExceptionCommandAction),
 		Description = "The handler of this command cannot be constructed by dependency injection because of its invalid dependency")]
 	public class TestDIExceptionCommandOptions { }
 
-	public class TestDIExceptionCommandHandler : ICommandHandler {
-		public TestDIExceptionCommandHandler(string data) { }
+	public class TestDIExceptionCommandAction : ICommandAction {
+		public TestDIExceptionCommandAction(string data) { }
 
 		public Task<int> Invoke(CancellationToken token) => Task.FromResult(0);
 	}

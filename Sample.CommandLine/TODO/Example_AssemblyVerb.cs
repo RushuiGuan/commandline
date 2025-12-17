@@ -14,12 +14,12 @@ namespace Sample.CommandLine {
 		public string Name { get; set; } = string.Empty;
 	}
 
-	public class MyGenericCommandHandle<T> : BaseHandler<MyOptions> {
+	public class MyGenericCommandHandle<T> : CommandAction<MyOptions> {
 		public MyGenericCommandHandle(IOptions<MyOptions> options) : base(options) {
 		}
 
 		public override Task<int> Invoke(CancellationToken token) {
-			this.writer.WriteLine($"MyGenericCommandHandler<{typeof(T).Name}> is invoked with name of {options.Name}");
+			this.Writer.WriteLine($"MyGenericCommandAction<{typeof(T).Name}> is invoked with name of {options.Name}");
 			return Task.FromResult(0);
 		}
 	}

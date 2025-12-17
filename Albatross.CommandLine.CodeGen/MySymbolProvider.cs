@@ -9,7 +9,7 @@ namespace Albatross.CommandLine.CodeGen {
 		public static INamedTypeSymbol VerbAttributeClass(this Compilation compilation) => compilation.GetRequiredSymbol(VerbAttributeClassName);
 		public static INamedTypeSymbol OptionAttributeClass(this Compilation compilation) => compilation.GetRequiredSymbol("Albatross.CommandLine.OptionAttribute");
 		public static INamedTypeSymbol ArgumentAttributeClass(this Compilation compilation) => compilation.GetRequiredSymbol("Albatross.CommandLine.ArgumentAttribute");
-		public static INamedTypeSymbol ICommandHandler_Interface(this Compilation compilation) => compilation.GetRequiredSymbol("Albatross.CommandLine.ICommandHandler");
-		public static INamedTypeSymbol HelpCommandHandler(this Compilation compilation) => compilation.GetRequiredSymbol("Albatross.CommandLine.HelpCommandHandler");
+		public static INamedTypeSymbol ICommandAction_Interface(this Compilation compilation) => compilation.GetRequiredSymbol("Albatross.CommandLine.ICommandAction");
+		public static INamedTypeSymbol HelpCommandAction(this Compilation compilation) => compilation.GetRequiredSymbol("Albatross.CommandLine.HelpCommandAction");
 	}
 }

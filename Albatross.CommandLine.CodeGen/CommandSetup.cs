@@ -33,9 +33,9 @@ namespace Albatross.CommandLine.CodeGen {
 			this.Name = this.Key.Split(' ').Last();
 			if (verbAttribute.ConstructorArguments.Length > 1) {
 				this.HandlerClass = (verbAttribute.ConstructorArguments[1].Value as ITypeSymbol)
-				                    ?? compilation.HelpCommandHandler();
+				                    ?? compilation.HelpCommandAction();
 			} else {
-				this.HandlerClass = compilation.HelpCommandHandler();
+				this.HandlerClass = compilation.HelpCommandAction();
 			}
 			if (VerbAttribute.TryGetNamedArgument("Description", out var typedConstant)) {
 				this.Description = typedConstant.Value?.ToString();

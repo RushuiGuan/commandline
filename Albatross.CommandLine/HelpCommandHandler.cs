@@ -3,10 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
-	public class HelpCommandHandler :ICommandHandler {
+	public class HelpCommandAction :ICommandAction {
 		private readonly ParseResult result;
 
-		public HelpCommandHandler(ParseResult result) {
+		public HelpCommandAction(ParseResult result) {
 			this.result = result;
 		}
 

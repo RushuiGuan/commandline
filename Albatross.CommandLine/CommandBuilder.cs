@@ -12,7 +12,7 @@ namespace Albatross.CommandLine {
 		public RootCommand RootCommand { get; }
 		public CommandBuilder(string rootCommandDescription) {
 			RootCommand = new RootCommand(rootCommandDescription);
-			RootCommand.SetAction(HelpCommandHandler.Invoke);
+			RootCommand.SetAction(HelpCommandAction.Invoke);
 			AddVerbosityOption(RootCommand);
 			commands.Add(string.Empty, RootCommand);
 		}
@@ -82,7 +82,7 @@ namespace Albatross.CommandLine {
 			if (!commands.TryGetValue(key, out command)) {
 				ParseCommandText(key, out var parent, out var self);
 				command = new Command(self);
-				command.SetAction(HelpCommandHandler.Invoke);
+				command.SetAction(HelpCommandAction.Invoke);
 				commands[key] = command;
 				GetOrCreateCommand(parent, out var parentCommand);
 				parentCommand.Add(command);

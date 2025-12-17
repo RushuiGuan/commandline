@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	// [Verb("test", typeof(TestCommandHandler), Description = "A Test Command")]
+	// [Verb("test", typeof(TestCommandAction), Description = "A Test Command")]
 	public record class TestCommandOptions {
 		// Name is a required option by default since the property is not nullable
 		[Option]
@@ -21,12 +21,12 @@ namespace Sample.CommandLine {
 		[Option(Required = false)]
 		public int Id { get; set; }
 	}
-	public class TestCommandHandler : ICommandHandler {
+	public class TestCommandAction : ICommandAction {
 		private readonly ILogger logger;
 		private readonly ParseResult result;
 		private readonly TestCommandOptions options;
 
-		public TestCommandHandler(ILogger logger, IOptions<TestCommandOptions> options, ParseResult result) {
+		public TestCommandAction(ILogger logger, IOptions<TestCommandOptions> options, ParseResult result) {
 			this.logger = logger;
 			this.result = result;
 			this.options = options.Value;

@@ -86,7 +86,7 @@ namespace Albatross.CommandLine.CodeGen {
 										Body = new CSharpCodeBlock {
 											{
 												true,
-												() => CreateCommandHandlerRegistrations(commandSetups, typeConverter)
+												() => CreateCommandActionRegistrations(commandSetups, typeConverter)
 											},
 											new ReturnExpression {
 												Expression = new IdentifierNameExpression("services")
@@ -135,12 +135,12 @@ namespace Albatross.CommandLine.CodeGen {
 			}
 		}
 
-		private static IEnumerable<IExpression> CreateCommandHandlerRegistrations(ImmutableArray<CommandSetup> commandSetups, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
+		private static IEnumerable<IExpression> CreateCommandActionRegistrations(ImmutableArray<CommandSetup> commandSetups, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
 			foreach (var setup in commandSetups) {
 				yield return new InvocationExpression {
 					CallableExpression = new IdentifierNameExpression("services.AddKeyedScoped") {
 						GenericArguments = new ListOfGenericArguments {
-							MyDefined.Types.ICommandHandler,
+							MyDefined.Types.ICommandAction,
 							typeConverter.Convert(setup.HandlerClass)
 						}
 					},
