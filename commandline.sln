@@ -24,6 +24,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Albatross.CommandLine.CodeG
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Albatross.CommandLine.Test", "Albatross.CommandLine.Test\Albatross.CommandLine.Test.csproj", "{528DADDC-2C47-4212-A9A0-53BA907ABCAF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Albatross.CommandLine.CliFormat", "Albatross.CommandLine.CliFormat\Albatross.CommandLine.CliFormat.csproj", "{F57410E0-D14A-4627-8EDD-CE5C1B7DD2F7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +48,10 @@ Global
 		{528DADDC-2C47-4212-A9A0-53BA907ABCAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{528DADDC-2C47-4212-A9A0-53BA907ABCAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{528DADDC-2C47-4212-A9A0-53BA907ABCAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F57410E0-D14A-4627-8EDD-CE5C1B7DD2F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F57410E0-D14A-4627-8EDD-CE5C1B7DD2F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F57410E0-D14A-4627-8EDD-CE5C1B7DD2F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F57410E0-D14A-4627-8EDD-CE5C1B7DD2F7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -20,21 +20,16 @@ namespace Albatross.CommandLine {
 			return stack.ToArray();
 		}
 
-		public static LogEventLevel? GetLogEventLevel(string? verbosity) {
-			if (string.IsNullOrEmpty(verbosity)) {
-				return null;
-			}
-			if (Enum.TryParse<LogEventLevel>(verbosity, true, out var level)) {
-				return level;
-			}
-			switch (verbosity.ToLowerInvariant()) {
-				case "err":
-					return LogEventLevel.Error;
-				case "info":
-					return LogEventLevel.Information;
-				default:
-					throw new ArgumentException($"Invalid verbosity level: {verbosity}");
-			}
-		}
+		public static LogEventLevel Translate(this LogLevel logLevel)
+			=> logLevel switch {
+				LogLevel.Verbose => LogEventLevel.Verbose,
+				LogLevel.Debug => LogEventLevel.Debug,
+				LogLevel.Information => LogEventLevel.Information,
+				LogLevel.Info => LogEventLevel.Information,
+				LogLevel.Warning => LogEventLevel.Warning,
+				LogLevel.Error => LogEventLevel.Error,
+				LogLevel.Fatal => LogEventLevel.Fatal,
+				_ => throw new NotSupportedException($"LogLevel {logLevel} is not supported."),
+			};
 	}
 }

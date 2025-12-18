@@ -2,12 +2,12 @@
 using System;
 
 namespace Sample.CommandLine {
-	[Verb("test hidden", Description = "Test hidden arguments and options")]
+	[Verb<DefaultCommandAction<TestHiddenPropertiesOptions>>("test hidden", Description = "Test hidden arguments and options: --hidden-string-value, --hidden-int-value")]
 	public class TestHiddenPropertiesOptions {
 		[Argument(Description = "A string value")]
 		public required string StringValue { get; init; }
 
-		[Argument(Description = "A hidden string value", Hidden =true)]
+		[Argument(Description = "A hidden argument value", Hidden = true)]
 		public string? HiddenStringValue { get; init; }
 
 		[Option(Description = "A int value")]

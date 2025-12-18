@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.CommandLine.Help;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,7 +12,11 @@ namespace Albatross.CommandLine {
 		}
 
 		public Task<int> Invoke(CancellationToken _) {
-			return Task.FromResult(0);
+			return Task.FromResult(Invoke(result));
+		}
+
+		public static int Invoke(ParseResult result) {
+			return new HelpAction().Invoke(result);
 		}
 	}
 }

@@ -131,6 +131,12 @@ namespace Albatross.CommandLine.CodeGen {
 						},
 					}.EndOfStatement()
 				};
+				yield return new InvocationExpression {
+					CallableExpression = new IdentifierNameExpression("this.Add"),
+					Arguments = new ListOfArguments {
+						new IdentifierNameExpression("this." + parameter.CommandPropertyName)
+					}
+				}.EndOfStatement();
 			}
 			yield return new InvocationExpression {
 				CallableExpression = new IdentifierNameExpression("this.Initialize"),

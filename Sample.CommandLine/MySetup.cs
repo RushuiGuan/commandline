@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.CommandLine;
 using System.IO;
+using System.Xml.XPath;
 
 namespace Sample.CommandLine {
 	public class MySetup : Setup {

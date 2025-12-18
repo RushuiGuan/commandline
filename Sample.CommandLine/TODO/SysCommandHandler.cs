@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	[Verb("sys-command", typeof(SysCommandAction), Alias = ["t"])]
+	[Verb<SysCommandAction>("sys-command", Alias = ["t"])]
 	public record class SysCommandOptions {
 		[Option]
 		public int Id { get; set; }

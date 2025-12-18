@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	[Verb("argument-test", typeof(ArgumentTestCommandAction))]
+	[Verb<ArgumentTestCommandAction>("argument-test")]
 	public class ArgumentTestOptions {
 		[Option]
 		public string Name { get; set; } = string.Empty;

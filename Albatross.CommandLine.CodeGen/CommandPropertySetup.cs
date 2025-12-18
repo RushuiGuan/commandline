@@ -13,18 +13,18 @@ namespace Albatross.CommandLine.CodeGen {
 		public int Index { get; init; }
 		public ExpressionSyntax? PropertyInitializer { get; }
 		public bool DefaultToInitializer { get; }
-		public string Key { get; }
+		public string Key { get; protected set; }
 		public string Type { get; }
 		public string? Description { get; }
 		public bool Hidden { get; }
 		public bool ShouldDefaultToInitializer => DefaultToInitializer && PropertyInitializer != null;
 		public abstract string CommandPropertyName { get; }
-
+		
 		protected CommandPropertySetup(IPropertySymbol propertySymbol, AttributeData propertyAttribute) {
 			this.PropertySymbol = propertySymbol;
 			this.propertyAttribute = propertyAttribute;
 
-			this.Key = $"--{propertySymbol.Name.Kebaberize()}";
+			this.Key = propertySymbol.Name.Kebaberize();
 			this.Type = propertySymbol.Type.GetFullName();
 
 			if (propertyAttribute.TryGetNamedArgument("DefaultToInitializer", out var defaultToInitializer)) {

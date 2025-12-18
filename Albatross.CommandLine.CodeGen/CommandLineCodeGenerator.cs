@@ -5,6 +5,7 @@ using Albatross.CodeGen.CSharp.Declarations;
 using Albatross.CodeGen.CSharp.Expressions;
 using Albatross.CodeGen.CSharp.TypeConversions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -13,35 +14,58 @@ using System.Linq;
 namespace Albatross.CommandLine.CodeGen {
 	[Generator]
 	public class CommandLineCodeGenerator : IIncrementalGenerator {
-		public void Initialize(IncrementalGeneratorInitializationContext context) {
-			var compilationProvider = context.CompilationProvider.Select(static (x, _) => x);
-			var commandSetups = context.SyntaxProvider.ForAttributeWithMetadataName(
-					fullyQualifiedMetadataName: MySymbolProvider.VerbAttributeClassName,
+		static IncrementalValuesProvider<CommandSetup> BuildVerbsCommandSetups(IncrementalGeneratorInitializationContext context,
+			IncrementalValueProvider<Compilation> compilationProvider,
+			string attributeMetadataName) {
+			return context.SyntaxProvider.ForAttributeWithMetadataName(
+					fullyQualifiedMetadataName: attributeMetadataName,
 					predicate: static (_, _) => true,
 					transform: static (ctx, _) => ctx)
-				.Combine(compilationProvider).Select(static (tuple, cancellationToken) => {
-					var (context, compilation) = tuple;
+				.Combine(compilationProvider).Select(static (tuple, _) => {
+					var (ctx, compilation) = tuple;
 					var list = new List<CommandSetup>();
-					foreach (var attribute in context.Attributes) {
-						if (attribute.TryGetNamedArgument(My.OptionsClassProperty, out var typedConstant)) {
-							if (typedConstant.Value is INamedTypeSymbol symbol) {
-								list.Add(new CommandSetup(compilation, symbol, attribute));
+					foreach (var attribute in ctx.Attributes) {
+						var attribueClass = attribute.AttributeClass;
+						if (attribueClass != null) {
+							if (ctx.TargetSymbol is INamedTypeSymbol optionsClass) {
+								if (!attribueClass.IsGenericType) {
+									// this one matches [Verb("commandKey")] target Options Class Only
+									list.Add(new CommandSetup(compilation, optionsClass, attribute));
+								} else if (attribueClass.TypeArguments.Length == 1) {
+									// this one matches [Verb<THandler>("commandKey")] target Options Class Only with Handler Type Argument
+									list.Add(new CommandSetup(compilation, optionsClass, attribueClass.TypeArguments[0], attribute));
+								}
+							} else if (attribueClass.TypeArguments.Length == 2 && attribueClass.TypeArguments[1] is INamedTypeSymbol namedTypeSymbol) {
+								// this one matches [Verb<THandler, TOptions>("commandKey")] target assembly Only with Handler Type and Options Type Argument
+								list.Add(new CommandSetup(compilation, namedTypeSymbol, attribueClass.TypeArguments[0], attribute));
 							}
-						} else if (context.TargetSymbol is INamedTypeSymbol symbol) {
-							list.Add(new CommandSetup(compilation, symbol, attribute));
 						}
 					}
 					return list;
 				}).SelectMany(static (x, _) => x);
+		}
 
-			var aggregated = compilationProvider
-				.Combine(commandSetups.Collect())
-				.Select(static (x, _) => (Compilation: x.Left, optionClasses: x.Right));
+		public void Initialize(IncrementalGeneratorInitializationContext context) {
+			var compilationProvider = context.CompilationProvider.Select(static (x, _) => x);
+			var commandSetups = BuildVerbsCommandSetups(context, compilationProvider, MySymbolProvider.VerbAttributeClassName);
+			var commandSetups1 = BuildVerbsCommandSetups(context, compilationProvider, MySymbolProvider.VerbAttributeClassNameGeneric1);
+			var commandSetups2 = BuildVerbsCommandSetups(context, compilationProvider, MySymbolProvider.VerbAttributeClassNameGeneric2);
+
+			var aggregated = compilationProvider.Combine(commandSetups.Collect()).Select((tuple, _) => {
+				var (compilation, setups) = tuple;
+				return (compilation, setups);
+			}).Combine(commandSetups1.Collect()).Select((tuple, _) => {
+				var ((compilation, setups), setups1) = tuple;
+				return (compilation, setups.AddRange(setups1));
+			}).Combine(commandSetups2.Collect()).Select((tuple, _) => {
+				var ((compilation, setups), setups2) = tuple;
+				return (compilation, setups.AddRange(setups2));
+			});
 
 			context.RegisterSourceOutput(
 				aggregated,
 				static (context, data) => {
-					var typeConverter = new DefaultTypeConverter(data.Compilation);
+					var typeConverter = new DefaultTypeConverter(data.compilation);
 					var (compilation, commandSetups) = data;
 					var builder = new CommandClassBuilder(compilation, typeConverter);
 					foreach (var group in commandSetups.GroupBy(x => x.CommandClassName)) {
@@ -86,7 +110,7 @@ namespace Albatross.CommandLine.CodeGen {
 										Body = new CSharpCodeBlock {
 											{
 												true,
-												() => CreateCommandActionRegistrations(commandSetups, typeConverter)
+												() => CreateCommandActionRegistrations(compilation, commandSetups, typeConverter)
 											},
 											new ReturnExpression {
 												Expression = new IdentifierNameExpression("services")
@@ -135,28 +159,43 @@ namespace Albatross.CommandLine.CodeGen {
 			}
 		}
 
-		private static IEnumerable<IExpression> CreateCommandActionRegistrations(ImmutableArray<CommandSetup> commandSetups, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
+		private static IEnumerable<IExpression> CreateCommandActionRegistrations(Compilation compilation, ImmutableArray<CommandSetup> commandSetups, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
 			foreach (var setup in commandSetups) {
-				yield return new InvocationExpression {
-					CallableExpression = new IdentifierNameExpression("services.AddKeyedScoped") {
-						GenericArguments = new ListOfGenericArguments {
-							MyDefined.Types.ICommandAction,
-							typeConverter.Convert(setup.HandlerClass)
+				if (setup.HandlerClass != null) {
+					yield return new InvocationExpression {
+						CallableExpression = new IdentifierNameExpression("services.AddKeyedScoped") {
+							GenericArguments = new ListOfGenericArguments {
+								MyDefined.Types.ICommandAction,
+								typeConverter.Convert(setup.HandlerClass)
+							}
+						},
+						Arguments = new ListOfArguments {
+							new StringLiteralExpression(setup.Key)
 						}
-					},
-					Arguments = new ListOfArguments {
-						new StringLiteralExpression(setup.Key)
-					}
-				};
-				yield return CreateCommandOptionsRegistration(setup, typeConverter);
+					};
+				}
+				yield return CreateCommandOptionsRegistration(compilation, setup, typeConverter);
 			}
 		}
 
-		private static IExpression CreateCommandOptionsRegistration(CommandSetup setup, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
+		static bool ShouldUseRequiredValue(Compilation compilation, CommandPropertySetup parameter) {
+			if (parameter is CommandOptionPropertySetup optionPropertySetup) {
+				if (optionPropertySetup.Required || optionPropertySetup.ShouldDefaultToInitializer || optionPropertySetup.PropertySymbol.Type.IsCollection(compilation)) {
+					return true;
+				}
+			} else if (parameter is CommandArgumentPropertySetup argumentPropertySetup) {
+				if (argumentPropertySetup is not { ArityMin: 0, ArityMax: 1 }) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		private static IExpression CreateCommandOptionsRegistration(Compilation compilation, CommandSetup setup, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
 			return new InvocationExpression {
 				CallableExpression = new IdentifierNameExpression("services.AddScoped") {
 					GenericArguments = {
-						new TypeExpression(MyDefined.Identifiers.IOptions, typeConverter.Convert(setup.OptionClass))
+						new TypeExpression(MyDefined.Identifiers.IOptions, typeConverter.Convert(setup.OptionsClass))
 					}
 				},
 				Arguments = {
@@ -185,12 +224,12 @@ namespace Albatross.CommandLine.CodeGen {
 									Identifier = new IdentifierNameExpression("options"),
 								},
 								Expression = new NewObjectExpression {
-									Type = typeConverter.Convert(setup.OptionClass),
+									Type = typeConverter.Convert(setup.OptionsClass),
 									Initializers = new ListOfNodes<AssignmentExpression>(
 										setup.Parameters.Select(x => new AssignmentExpression {
 												Left = new IdentifierNameExpression(x.PropertySymbol.Name),
 												Expression = new InvocationExpression {
-													CallableExpression = new IdentifierNameExpression("result.GetRequiredValue") {
+													CallableExpression = new IdentifierNameExpression(ShouldUseRequiredValue(compilation, x) ? "result.GetRequiredValue" : "result.GetValue") {
 														GenericArguments = new(typeConverter.Convert(x.PropertySymbol.Type))
 													},
 													Arguments = new ListOfArguments(

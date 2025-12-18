@@ -2,23 +2,24 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Help;
 using System.Linq;
 
 namespace Albatross.CommandLine {
 	public class CommandBuilder {
-		public readonly static HelpAction HelpAction = new HelpAction();
 		private readonly Dictionary<string, Command> commands = new();
 		public RootCommand RootCommand { get; }
+
 		public CommandBuilder(string rootCommandDescription) {
 			RootCommand = new RootCommand(rootCommandDescription) {
-				BenchmarkOption,
-				ShowStackOption,
+				new Option<LogLevel?>(VerbosityOptionName, "-v") {
+					Description = "Set the logging verbosity level",
+					Recursive = true,
+				}
 			};
-			RootCommand.SetAction(HelpAction.Invoke);
-			AddVerbosityOption(RootCommand);
+			RootCommand.SetAction(HelpCommandAction.Invoke);
 			commands.Add(string.Empty, RootCommand);
 		}
+
 		public void Add<T>(string commandText) where T : Command, new()
 			=> Add(commandText, new T());
 
@@ -35,37 +36,8 @@ namespace Albatross.CommandLine {
 			Recursive = true,
 		};
 
-		internal static readonly Option<bool> BenchmarkOption = new Option<bool>(BenchmarkOptionName) {
-			Description = "Show the time it takes to run the command in milliseconds",
-			Recursive = true,
-		};
-
-		internal static readonly Option<bool> ShowStackOption = new Option<bool>(ShowStackOptionName) {
-			Description = "Show the full stack when an exception has been thrown",
-			Recursive = true,
-		};
-
 		public const string VerbosityOptionName = "--verbosity";
 		public const string FormatOptionName = "--format";
-		public const string BenchmarkOptionName = "--benchmark";
-		public const string ShowStackOptionName = "--show-stack";
-
-		void AddVerbosityOption(Command command) {
-			var allowedValues = new[] { "Verbose", "Debug", "Information", "Info", "Warning", "Error", "Err", "Fatal" };
-			var option = new Option<string?>(VerbosityOptionName, "-v") {
-				Description = "Set the verbosity level of logging",
-				DefaultValueFactory = _ => "Error",
-			};
-			option.CompletionSources.Add(allowedValues);
-			option.Validators.Add(result => {
-				var value = result.GetValue<string?>(VerbosityOptionName);
-				if (value != null && !allowedValues.Contains(value, StringComparer.OrdinalIgnoreCase)) {
-					result.AddError($"Invalid verbosity level '{value}'. Allowed values are: {string.Join(", ", allowedValues)}");
-				}
-			});
-			command.Add(option);
-		}
-
 
 		/// <summary>
 		/// Parse the command text and return the immediate (last) sub command and its complete parent command
@@ -85,23 +57,23 @@ namespace Albatross.CommandLine {
 			}
 		}
 
-		internal void GetOrCreateCommand(string key, out Command command) {
+		internal void GetOrCreateCommand(string key, GlobalCommandAction globalCommandAction, out Command command) {
 			if (!commands.TryGetValue(key, out command)) {
 				ParseCommandText(key, out var parent, out var self);
 				command = new Command(self);
-				command.SetAction(HelpAction.Invoke);
+				command.SetAction(globalCommandAction.InvokeAsync);
 				commands.Add(key, command);
-				GetOrCreateCommand(parent, out var parentCommand);
+				GetOrCreateCommand(parent, globalCommandAction, out var parentCommand);
 				parentCommand.Add(command);
 			}
 		}
 
-		internal void AddToParentCommand(string key, Command command) {
+		internal void AddToParentCommand(string key, Command command, GlobalCommandAction globalCommandAction) {
 			if (string.IsNullOrEmpty(key)) {
 				throw new ArgumentException("Cannot perform AddToParentCommand action with the RootCommand");
 			}
 			ParseCommandText(key, out var parent, out var self);
-			GetOrCreateCommand(parent, out var parentCommand);
+			GetOrCreateCommand(parent, globalCommandAction, out var parentCommand);
 			parentCommand.Add(command);
 		}
 
@@ -109,7 +81,7 @@ namespace Albatross.CommandLine {
 			var globalCommandAction = new GlobalCommandAction(hostFactory);
 			foreach (var item in this.commands.OrderBy(x => x.Key).ToArray()) {
 				if (!string.IsNullOrEmpty(item.Key)) {
-					AddToParentCommand(item.Key, item.Value);
+					AddToParentCommand(item.Key, item.Value, globalCommandAction);
 				}
 				if (item.Value.Action == null) {
 					item.Value.SetAction(globalCommandAction.InvokeAsync);

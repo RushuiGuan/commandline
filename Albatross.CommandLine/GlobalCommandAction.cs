@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.CommandLine;
-using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,51 +12,40 @@ namespace Albatross.CommandLine {
 		public GlobalCommandAction(Func<IHost> hostFactory) {
 			this.hostFactory = hostFactory;
 		}
-		const int ErrorExitCode = -1;
+
+		/// <summary>
+		/// Windows exit code is int but unix is only byte, so we use 255 so that it will have the same value on both platforms.
+		/// </summary>
+		const int ErrorExitCode = 255;
 		private readonly Func<IHost> hostFactory;
 
 		public async Task<int> InvokeAsync(ParseResult result, CancellationToken cancellationToken) {
 			var host = this.hostFactory();
+			var logger = host.Services.GetRequiredService<ILogger<GlobalCommandAction>>();
 			var commandNames = result.CommandResult.Command.GetCommandNames();
 			var key = string.Join(' ', commandNames);
-			var benchmark = result.GetValue<bool>(CommandBuilder.BenchmarkOptionName);
-			var showStack = result.GetValue<bool>(CommandBuilder.ShowStackOptionName);
-			var logger = host.Services.GetRequiredService<ILogger<GlobalCommandAction>>();
+			logger.LogInformation("Executing command '{command}'", key);
 			ICommandAction? handler = null;
 			try {
 				handler = host.Services.GetKeyedService<ICommandAction>(key);
 			} catch (Exception err) {
-				if (showStack == true) {
-					logger.LogError(err, "Error creating CommandAction for command {command}", key);
-				} else {
-					logger.LogError("Error creating CommandAction for command {command}: {msg}", key, err.Message);
-				}
+				logger.LogError(err, "Error creating CommandAction for command {command}", key);
 				return ErrorExitCode;
 			}
 			if (handler == null) {
-				logger.LogError("No CommandAction is registered for command {command}", key);
-				return ErrorExitCode;
-			} else {
-				Stopwatch? stopwatch;
-				if (benchmark == true) {
-					stopwatch = Stopwatch.StartNew();
+				// if the command is a parent command, simply print the help
+				if (result.CommandResult.Command.Subcommands.Any()) {
+					return HelpCommandAction.Invoke(result);
 				} else {
-					stopwatch = null;
+					logger.LogError("No CommandAction is registered for command {command}", key);
+					return ErrorExitCode;
 				}
+			} else {
 				try {
 					return await handler.Invoke(cancellationToken);
 				} catch (Exception err) {
-					if (showStack == true) {
-						logger.LogError(err, "Error invoking command {command}", key);
-					} else {
-						logger.LogError("Error invoking command {command}: {message}", key, err.Message);
-					}
+					logger.LogError(err, "Error invoking command {command}", key);
 					return ErrorExitCode;
-				} finally {
-					if (stopwatch != null) {
-						stopwatch.Stop();
-						logger.LogInformation("Command {command} took {time:#,#0} ms", key, stopwatch.ElapsedMilliseconds);
-					}
 				}
 			}
 		}

@@ -10,19 +10,16 @@ namespace Sample.CommandLine {
 		private readonly ILogger<RedCommandAction> logger;
 		private readonly ColorCommandOptions myOptions;
 
-		private GlobalOptions GlobalOptions { get; }
 		public MyColorPicker Picker { get; }
 
-		public RedCommandAction(MyColorPicker picker, ILogger<RedCommandAction> logger, IOptions<GlobalOptions> globalOptions, IOptions<ColorCommandOptions> myOptions) {
+		public RedCommandAction(MyColorPicker picker, ILogger<RedCommandAction> logger,  IOptions<ColorCommandOptions> myOptions) {
 			Picker = picker;
 			this.logger = logger;
 			this.myOptions = myOptions.Value;
-			this.GlobalOptions = globalOptions.Value;
 		}
 
 		public Task<int> Invoke(CancellationToken token) {
 			logger.LogInformation("i am here");
-			logger.LogInformation("global options: {global}", this.GlobalOptions);
 			logger.LogInformation("my options: {myOptions}", this.myOptions);
 			logger.LogInformation("file input: {myOptions}", this.myOptions.MyFile);
 			logger.LogInformation("color picker: {@color}", this.Picker);

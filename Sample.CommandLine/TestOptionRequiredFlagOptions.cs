@@ -1,9 +1,8 @@
 ﻿using Albatross.CommandLine;
 
 namespace Sample.CommandLine {
-	[Verb("test option-required-flag", Description = "By default, nullable value, collection and booleans are not required.  But Required flag can be used to overwritten")]
+	[Verb<DefaultCommandAction<TestOptionRequiredFlagOptions>>("test option-required-flag", Description = "By default, nullable value, collection and booleans are not required.  But Required flag can be used to overwritten")]
 	public record class TestOptionRequiredFlagOptions {
-
 		[Option(Required = true, Description = "Collection with required flag")]
 		public required int[] IntValues { get; init; }
 
@@ -28,7 +27,7 @@ namespace Sample.CommandLine {
 		[Option(Required = false, Description = "Non Nullable struct value with Required = false")]
 		public int OptionalIntValue { get; init; }
 
-		[Option(Required = false, Description = "Non Nullable reference value with Required = false")]
+		[Option(Required = false, Description = "Non Nullable reference value with Required = false.  The generated code will create a compiler warning when creating the instance since the value is nullable")]
 		public string NonNullableOptionalTextValue { get; init; } = string.Empty;
 
 		[Option(Required = true, Description = "Nullable reference value with Required = true")]

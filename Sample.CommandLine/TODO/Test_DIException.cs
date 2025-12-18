@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	[Verb("di-error", typeof(TestDIExceptionCommandAction),
+	[Verb<TestDIExceptionCommandAction>("di-error",
 		Description = "The handler of this command cannot be constructed by dependency injection because of its invalid dependency")]
 	public class TestDIExceptionCommandOptions { }
 

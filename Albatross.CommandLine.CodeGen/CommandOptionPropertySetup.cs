@@ -12,6 +12,7 @@ namespace Albatross.CommandLine.CodeGen {
 
 		public CommandOptionPropertySetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute)
 			: base(propertySymbol, propertyAttribute) {
+			this.Key = $"--{this.Key}";
 			if (propertyAttribute.ConstructorArguments.Any()) {
 				this.Aliases = propertyAttribute.ConstructorArguments[0].Values.Select(x => x.Value?.ToString() ?? string.Empty)
 					.Where(x => !string.IsNullOrEmpty(x)).Select(CreateAlias)

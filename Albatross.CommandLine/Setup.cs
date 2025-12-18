@@ -8,7 +8,6 @@ using Serilog;
 using Serilog.Events;
 using System;
 using System.CommandLine;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
@@ -18,9 +17,9 @@ namespace Albatross.CommandLine {
 	public class Setup {
 		protected IConfiguration configuration;
 		protected IHostBuilder hostBuilder;
-		ParseResult? result;
+		ParseResult? parseResult;
 		IHost? host;
-		protected ParseResult RequiredResult => this.result ?? throw new InvalidOperationException("Parse() has not been called yet");
+		protected ParseResult RequiredResult => this.parseResult ?? throw new InvalidOperationException("Parse() has not been called yet");
 		protected SetupSerilog setupSerilog;
 		public CommandBuilder CommandBuilder { get; }
 
@@ -30,6 +29,7 @@ namespace Albatross.CommandLine {
 			var environment = EnvironmentSetting.DOTNET_ENVIRONMENT;
 			this.hostBuilder = Host.CreateDefaultBuilder().UseSerilog();
 			this.setupSerilog = new SetupSerilog().UseConsole(LogEventLevel.Error);
+			this.setupSerilog.Create();
 			var configBuilder = new ConfigurationBuilder()
 				.SetBasePath(AppContext.BaseDirectory)
 				.AddJsonFile("appsettings.json", false, true);
@@ -47,13 +47,14 @@ namespace Albatross.CommandLine {
 		/// <param name="args"></param>
 		/// <returns></returns>
 		public Setup Parse(string[] args) {
+			Serilog.Log.Logger.Information("Parsing commandline arguments");
 			this.CommandBuilder.BuildTree(GetHost);
-			result = this.CommandBuilder.RootCommand.Parse(args);
-			this.hostBuilder.ConfigureServices(services => services.AddSingleton(result));
+			parseResult = this.CommandBuilder.RootCommand.Parse(args);
+			this.hostBuilder.ConfigureServices(services => services.AddSingleton(parseResult));
 			// right after parsing is the earliest time to configure logging level
-			var logLevel = Extensions.GetLogEventLevel(result.GetValue<string?>(CommandBuilder.VerbosityOptionName));
+			var logLevel = parseResult.GetValue<LogLevel?>(CommandBuilder.VerbosityOptionName);
 			if (logLevel != null) {
-				SetupSerilog.SwitchConsoleLoggingLevel(logLevel.Value);
+				SetupSerilog.SwitchConsoleLoggingLevel(logLevel.Value.Translate());
 			}
 			return this;
 		}
@@ -64,14 +65,17 @@ namespace Albatross.CommandLine {
 			return this;
 		}
 		protected virtual void RegisterServices(ParseResult result, IConfiguration configuration, EnvironmentSetting envSetting, IServiceCollection services) {
-			Serilog.Log.Debug("Registering services");
+			Serilog.Log.Information("Registering services");
 			services.AddSingleton(new ProgramSetting(configuration));
 			services.AddSingleton(envSetting);
 			services.AddSingleton(provider => provider.GetRequiredService<ILoggerFactory>().CreateLogger("default"));
 			services.AddSingleton<IHostEnvironment, MyHostEnvironment>();
 		}
-		public virtual void Configure(ParseResult result, ProgramSetting programSetting, EnvironmentSetting environmentSetting, ILogger<Setup> logger) { }
+		public virtual void Configure(ParseResult result, ProgramSetting programSetting, EnvironmentSetting environmentSetting, ILogger<Setup> logger) {
+			logger.LogInformation("Configuring application");
+		}
 		public Setup Build() {
+			Serilog.Log.Information("Building host");
 			this.host = this.hostBuilder.Build();
 			var programSetting = host.Services.GetRequiredService<ProgramSetting>();
 			var environmentSetting = host.Services.GetRequiredService<EnvironmentSetting>();

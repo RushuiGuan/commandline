@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 
-[assembly: Verb("generic1", typeof(MyGenericCommandHandle<string>), Description = "generic1 command", OptionsClass = typeof(MyOptions))]
-[assembly: Verb("generic2", typeof(MyGenericCommandHandle<int>), Description = "generic2 command", OptionsClass = typeof(MyOptions))]
-[assembly: Verb("generic3", typeof(MyGenericCommandHandle<int>), Description = "generic3 command")]
+[assembly: Verb<MyGenericCommandHandle<string>, MyOptions>("generic1", Description = "generic1 command")]
+[assembly: Verb<MyGenericCommandHandle<int>, MyOptions>("generic2", Description = "generic2 command")]
+[assembly: Verb<MyGenericCommandHandle<int>, MyOptions>("generic3",  Description = "generic3 command")]
 namespace Sample.CommandLine {
 	public record class MyOptions {
 		[Argument(Description = "A name")]

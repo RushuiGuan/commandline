@@ -24,12 +24,12 @@ namespace Sample.CommandLine {
 	// parent3 has a subcommand sub1 and they share the same handler.  The sub command options
 	// inherits from the parent options.  In this situation, the sub command in a sense extends
 	// the parent command with additional options
-	[Verb("parent3", typeof(MyParent3Handler), Description ="This command shares the same handler and option class as its sub command")]
+	[Verb<MyParent3Handler>("parent3", Description ="This command shares the same handler and option class as its sub command")]
 	public class MyParent3Options {
 		[Option]
 		public int Id { get; set; }
 	}
-	[Verb("parent3 sub1", typeof(MyParent3Handler), Description ="This command shares the same handler and base option class as its parent command")]
+	[Verb<MyParent3Handler>("parent3 sub1", Description ="This command shares the same handler and base option class as its parent command")]
 	public class MyParent3Sub1Options : MyParent3Options {
 		[Option]
 		public string Name { get; set; } = string.Empty;

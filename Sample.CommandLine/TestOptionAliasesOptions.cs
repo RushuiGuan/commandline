@@ -2,7 +2,7 @@ using Albatross.CommandLine;
 using System;
 
 namespace Sample.CommandLine {
-	[Verb("test option-aliases", Description = "Test creation of aliases for options")]
+	[Verb<DefaultCommandAction<TestOptionAliasesOptions>>("test option-aliases", Description = "Test creation of aliases for options")]
 	public class TestOptionAliasesOptions {
 		[Option("i", "int", Description = "A required integer option")]
 		public required int IntValue { get; init; }

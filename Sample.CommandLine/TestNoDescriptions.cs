@@ -1,8 +1,8 @@
 ﻿using Albatross.CommandLine;
 
 namespace Sample.CommandLine {
-	[Verb("test no-descriptions")]
-	public record class TestNoDescriptionOptions{
+	[Verb<DefaultCommandAction<TestNoDescriptionOptions>>("test no-descriptions")]
+	public record class TestNoDescriptionOptions {
 		[Option]
 		public required int IntValue { get; init; }
 

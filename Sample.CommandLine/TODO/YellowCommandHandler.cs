@@ -10,17 +10,13 @@ namespace Sample.CommandLine {
 		private readonly ILogger<YellowCommandAction> logger;
 		private readonly ColorCommandOptions myOptions;
 
-		private GlobalOptions GlobalOptions { get; }
-
-		public YellowCommandAction(ILogger<YellowCommandAction> logger, IOptions<GlobalOptions> globalOptions, IOptions<ColorCommandOptions> myOptions) {
+		public YellowCommandAction(ILogger<YellowCommandAction> logger, IOptions<ColorCommandOptions> myOptions) {
 			this.logger = logger;
 			this.myOptions = myOptions.Value;
-			this.GlobalOptions = globalOptions.Value;
 		}
 
 		public Task<int> Invoke(CancellationToken token) {
 			logger.LogInformation("i am here");
-			logger.LogInformation("global options: {global}", this.GlobalOptions);
 			logger.LogInformation("my options: {myOptions}", this.myOptions);
 			logger.LogInformation("file input: {myOptions}", this.myOptions.MyFile);
 			throw new InvalidOperationException("i am crazy");

@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	[Verb("hello", typeof(HelloWorldCommandAction), Description = "HelloWorld command")]
+	[Verb<HelloWorldCommandAction>("hello", Description = "HelloWorld command")]
 	public record class HelloWorldOptions {
 		[Option("n", Description = "Give me a name")]
 		public string Name { get; set; } = string.Empty;

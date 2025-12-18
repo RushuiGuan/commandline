@@ -6,41 +6,38 @@ using System.Linq;
 
 namespace Albatross.CommandLine.CodeGen {
 	public record class CommandSetup {
-		public INamedTypeSymbol OptionClass { get; }
-		public AttributeData VerbAttribute { get; }
-
 		public string Key { get; }
 		public string Name { get; }
-		public ITypeSymbol HandlerClass { get; }
+		public INamedTypeSymbol OptionsClass { get; }
+		public ITypeSymbol? HandlerClass { get; }
 		public string CommandClassName { get; private set; }
-		public string CommandClassNamespace => OptionClass.ContainingNamespace.GetFullNamespace();
+		public string CommandClassNamespace => OptionsClass.ContainingNamespace.GetFullNamespace();
 		public string? Description { get; }
 		public string[] Aliases { get; } = Array.Empty<string>();
 		public CommandPropertySetup[] Parameters { get; }
 
 		const string Postfix_Options = "Options";
 
-		public CommandSetup(Compilation compilation, INamedTypeSymbol optionClass, AttributeData verbAttribute) {
-			this.OptionClass = optionClass;
-			this.VerbAttribute = verbAttribute;
-			this.CommandClassName = GetCommandClassName(optionClass);
+		public CommandSetup(Compilation compilation, INamedTypeSymbol optionsClass, AttributeData verbAttribute)
+			: this(compilation, optionsClass, null, verbAttribute) {
+		}
+
+		public CommandSetup(Compilation compilation, INamedTypeSymbol optionsClass, ITypeSymbol? handlerClass, AttributeData verbAttribute) {
+			this.OptionsClass = optionsClass;
+			this.CommandClassName = GetCommandClassName(optionsClass);
+			this.HandlerClass = handlerClass;
 
 			if (verbAttribute.ConstructorArguments.Length > 0) {
-				this.Key = VerbAttribute.ConstructorArguments[0].Value?.ToString() ?? string.Empty;
+				this.Key = verbAttribute.ConstructorArguments[0].Value?.ToString() ?? string.Empty;
 			} else {
 				this.Key = "MissingCommandKey";
 			}
 			this.Name = this.Key.Split(' ').Last();
-			if (verbAttribute.ConstructorArguments.Length > 1) {
-				this.HandlerClass = (verbAttribute.ConstructorArguments[1].Value as ITypeSymbol)
-				                    ?? compilation.HelpCommandAction();
-			} else {
-				this.HandlerClass = compilation.HelpCommandAction();
-			}
-			if (VerbAttribute.TryGetNamedArgument("Description", out var typedConstant)) {
+
+			if (verbAttribute.TryGetNamedArgument("Description", out var typedConstant)) {
 				this.Description = typedConstant.Value?.ToString();
 			}
-			if (VerbAttribute.TryGetNamedArgument("Alias", out typedConstant)) {
+			if (verbAttribute.TryGetNamedArgument("Alias", out typedConstant)) {
 				this.Aliases = typedConstant.Values.Select(x => x.Value?.ToString() ?? string.Empty).ToArray();
 			}
 			var useBaseClasssProperties = true;
@@ -68,11 +65,12 @@ namespace Albatross.CommandLine.CodeGen {
 
 		public void RenameCommandClass(int index) {
 			if (index != 0) {
-				CommandClassName = $"{GetCommandClassName(this.OptionClass)}{index}";
+				CommandClassName = $"{GetCommandClassName(this.OptionsClass)}{index}";
 			}
 		}
+
 		public IEnumerable<CommandPropertySetup> GetCommandParameters(Compilation compilation, bool useBaseClassProperties) {
-			var propertySymbols = OptionClass.GetDistinctProperties(useBaseClassProperties).ToArray();
+			var propertySymbols = OptionsClass.GetDistinctProperties(useBaseClassProperties).ToArray();
 			int index = 0;
 			foreach (var propertySymbol in propertySymbols) {
 				index++;

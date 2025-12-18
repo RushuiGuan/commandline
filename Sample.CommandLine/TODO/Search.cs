@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
 	// this declaration is not required.  The system will auto generate the parent command with a HelpCommandAction if it is not declared
-	[Verb("search", typeof(HelpCommandAction))]
+	[Verb<HelpCommandAction>("search")]
 	public record class SearchOptions { }
 
-	[Verb("search id", typeof(SearchCommandAction))]
+	[Verb<SearchCommandAction>("search id")]
 	public class SearchByIdOptions {
 		[Option]
 		public int Id { get; set; }
 	}
-	[Verb("search name", typeof(SearchCommandAction))]
+	[Verb<SearchCommandAction>("search name")]
 	public class SearchByNameOptions {
 		[Option]
 		public string Name { get; set; } = string.Empty;

@@ -2,7 +2,7 @@ using Albatross.CommandLine;
 using System;
 
 namespace Sample.CommandLine {
-	[Verb("test arguments", Description = "A command to test arguments parsing")]
+	[Verb<DefaultCommandAction<TestArgumentsOptions>>("test arguments", Description = "A command to test arguments parsing")]
 	public class TestArgumentsOptions {
 		[Argument(Description = "A required string argument")]
 		public required string StringArg { get; init; }

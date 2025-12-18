@@ -1,25 +1,45 @@
 ﻿using System;
 
 namespace Albatross.CommandLine {
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = true)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+	public class VerbAttribute<THandler> : VerbAttribute where THandler : ICommandAction {
+		public VerbAttribute(string name) : base(name, typeof(THandler)) { }
+	}
+
+	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+	public class VerbAttribute<THandler, TOptions> : VerbAttribute where THandler : ICommandAction {
+		public VerbAttribute(string name) : base(name, typeof(THandler), typeof(TOptions)) { }
+	}
+
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	public class VerbAttribute : Attribute {
 		public VerbAttribute(string name) {
 			Name = name;
 			this.Handler = null;
 		}
-		public VerbAttribute(string name, Type handler) {
+
+		protected VerbAttribute(string name, Type handler) {
 			Name = name;
 			this.Handler = handler;
 		}
+
+		protected VerbAttribute(string name, Type handler, Type? optionsClass) {
+			Name = name;
+			this.Handler = handler;
+			this.OptionsClass = optionsClass;
+		}
+
 		public Type? Handler { get; }
+
 		/// <summary>
 		/// When targetting an option class, this property has no effect since the OptionsClass is the target class.  When targetting the assembly, this property is required.
-		//  It allows a command to be created without creating a new Options Class.
+		/// It allows a command to be created without creating a new Options Class.
 		/// </summary>
-		public Type? OptionsClass { get; set; }
+		public Type? OptionsClass { get; }
 		public string Name { get; }
 		public string? Description { get; set; }
-		public string[] Alias { get; set; } = new string[0];
+		public string[] Alias { get; set; } = [];
+
 		/// <summary>
 		/// When true, the properties of the base class are included in the options.  
 		/// When false, only the properties of the current class are included.
