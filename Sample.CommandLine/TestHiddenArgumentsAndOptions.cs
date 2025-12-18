@@ -3,7 +3,7 @@ using System;
 
 namespace Sample.CommandLine {
 	[Verb<DefaultCommandAction<TestHiddenPropertiesOptions>>("test hidden", Description = "Test hidden arguments and options: --hidden-string-value, --hidden-int-value")]
-	public class TestHiddenPropertiesOptions {
+	public record class TestHiddenPropertiesOptions {
 		[Argument(Description = "A string value")]
 		public required string StringValue { get; init; }
 

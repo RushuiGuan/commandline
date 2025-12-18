@@ -3,7 +3,7 @@ using Sample.CommandLine.Core;
 
 namespace Sample.CommandLine {
 	[Verb<DefaultCommandAction<TestEnumValueOptions>>("test enum", Description = "Test use of enum value as arguments and options")]
-	public class TestEnumValueOptions {
+	public record class TestEnumValueOptions {
 		[Argument(Description = "First required shade of gray")]
 		public ShadesOfGray Gray1 { get; init; }
 

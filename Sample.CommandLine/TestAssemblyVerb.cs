@@ -1,5 +1,5 @@
 
 namespace Sample.CommandLine {
-	public class TestAssemblyVerb {
+	public record class TestAssemblyVerb {
 	}
 }

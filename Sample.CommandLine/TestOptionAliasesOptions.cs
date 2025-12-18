@@ -3,7 +3,7 @@ using System;
 
 namespace Sample.CommandLine {
 	[Verb<DefaultCommandAction<TestOptionAliasesOptions>>("test option-aliases", Description = "Test creation of aliases for options")]
-	public class TestOptionAliasesOptions {
+	public record class TestOptionAliasesOptions {
 		[Option("i", "int", Description = "A required integer option")]
 		public required int IntValue { get; init; }
 

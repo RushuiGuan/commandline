@@ -1,5 +1,5 @@
 namespace Sample.CommandLine {
-	public class TestNullableOptions {
+	public record class TestNullableOptions {
 		
 	}
 }

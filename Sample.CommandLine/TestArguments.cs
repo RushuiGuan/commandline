@@ -3,7 +3,7 @@ using System;
 
 namespace Sample.CommandLine {
 	[Verb<DefaultCommandAction<TestArgumentsOptions>>("test arguments", Description = "A command to test arguments parsing")]
-	public class TestArgumentsOptions {
+	public record class TestArgumentsOptions {
 		[Argument(Description = "A required string argument")]
 		public required string StringArg { get; init; }
 

@@ -1,5 +1,5 @@
 namespace Sample.CommandLine {
-	public class TestBaseClassPropertiesOptions {
+	public record class TestBaseClassPropertiesOptions {
 		
 	}
 }

@@ -1,4 +1,4 @@
 namespace Sample.CommandLine {
-	public class TestNullableArguments {
+	public record class TestNullableArguments {
 	}
 }

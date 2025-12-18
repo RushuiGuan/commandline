@@ -2,6 +2,6 @@ using Albatross.CommandLine;
 
 namespace Sample.CommandLine {
 	[Verb<DefaultCommandAction<TestCommandAliasesOptions>>("test command-aliases", Alias = ["a", "cmd-alias"], Description = "Test the use of command aliases")]
-	public class TestCommandAliasesOptions {
+	public record class TestCommandAliasesOptions {
 	}
 }
