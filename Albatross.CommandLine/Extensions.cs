@@ -20,6 +20,12 @@ namespace Albatross.CommandLine {
 			return stack.ToArray();
 		}
 
+		public static CommandBuilder AddWithParentKey(this CommandBuilder builder, string? parentKey, Command command) {
+			var fullKey = string.IsNullOrEmpty(parentKey) ? command.Name : $"{parentKey} {command.Name}";
+			builder.Add(fullKey, command);
+			return builder;
+		}
+
 		public static LogEventLevel Translate(this LogLevel logLevel)
 			=> logLevel switch {
 				LogLevel.Verbose => LogEventLevel.Verbose,

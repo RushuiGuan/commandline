@@ -20,14 +20,14 @@ namespace Albatross.CommandLine {
 			commands.Add(string.Empty, RootCommand);
 		}
 
-		public void Add<T>(string commandText) where T : Command, new()
-			=> Add(commandText, new T());
+		public void Add<T>(string key) where T : Command, new()
+			=> Add(key, new T());
 
-		public void Add<T>(string commandText, T command) where T : Command {
+		public void Add<T>(string key, T command) where T : Command {
 			try {
-				commands.Add(commandText, command);
+				commands.Add(key, command);
 			} catch (ArgumentException) {
-				throw new ArgumentException($"The command '{commandText}' has already been added");
+				throw new ArgumentException($"The command '{key}' has already been added");
 			}
 		}
 
