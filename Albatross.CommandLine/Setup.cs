@@ -32,7 +32,7 @@ namespace Albatross.CommandLine {
 			this.setupSerilog.Create();
 			var configBuilder = new ConfigurationBuilder()
 				.SetBasePath(AppContext.BaseDirectory)
-				.AddJsonFile("appsettings.json", false, true);
+				.AddJsonFile("appsettings.json", true, true);
 			if (!string.IsNullOrEmpty(environment.Value)) { configBuilder.AddJsonFile($"appsettings.{environment.Value}.json", true, true); }
 			this.configuration = configBuilder.AddEnvironmentVariables().Build();
 			hostBuilder.ConfigureAppConfiguration(builder => {

@@ -14,12 +14,4 @@
 		</ProjectReference>
 		<ProjectReference Include="..\Albatross.CommandLine\Albatross.CommandLine.csproj" />
 	</ItemGroup>
-	<ItemGroup>
-		<None Update="appsettings.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="appsettings.staging.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
 </Project>
