@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
 	public class CommandBuilder {
@@ -57,23 +59,23 @@ namespace Albatross.CommandLine {
 			}
 		}
 
-		internal void GetOrCreateCommand(string key, GlobalCommandAction globalCommandAction, out Command command) {
+		internal void GetOrCreateCommand(string key, Func<ParseResult, CancellationToken, Task<int>> globalHandler, out Command command) {
 			if (!commands.TryGetValue(key, out command)) {
 				ParseCommandText(key, out var parent, out var self);
 				command = new Command(self);
-				command.SetAction(globalCommandAction.InvokeAsync);
+				command.SetAction(globalHandler);
 				commands.Add(key, command);
-				GetOrCreateCommand(parent, globalCommandAction, out var parentCommand);
+				GetOrCreateCommand(parent, globalHandler, out var parentCommand);
 				parentCommand.Add(command);
 			}
 		}
 
-		internal void AddToParentCommand(string key, Command command, GlobalCommandAction globalCommandAction) {
+		internal void AddToParentCommand(string key, Command command, Func<ParseResult, CancellationToken, Task<int>> globalHandler) {
 			if (string.IsNullOrEmpty(key)) {
 				throw new ArgumentException("Cannot perform AddToParentCommand action with the RootCommand");
 			}
 			ParseCommandText(key, out var parent, out var self);
-			GetOrCreateCommand(parent, globalCommandAction, out var parentCommand);
+			GetOrCreateCommand(parent, globalHandler, out var parentCommand);
 			parentCommand.Add(command);
 		}
 
@@ -81,7 +83,7 @@ namespace Albatross.CommandLine {
 			var globalCommandAction = new GlobalCommandAction(hostFactory);
 			foreach (var item in this.commands.OrderBy(x => x.Key).ToArray()) {
 				if (!string.IsNullOrEmpty(item.Key)) {
-					AddToParentCommand(item.Key, item.Value, globalCommandAction);
+					AddToParentCommand(item.Key, item.Value, globalCommandAction.InvokeAsync);
 				}
 				if (item.Value.Action == null) {
 					item.Value.SetAction(globalCommandAction.InvokeAsync);
