@@ -1,8 +1,10 @@
 using Albatross.CommandLine;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	public record class CodeGenOptions {
+	public record class SharedBaseOptions {
 		[Option(Description = "Output directory for generated C# files")]
 		public required DirectoryInfo OutputDirectory { get; init; }
 
@@ -10,15 +12,9 @@ namespace Sample.CommandLine {
 		public required FileInfo Project { get; init; }
 	}
 
-	[Verb("csharp web-client")]
-	public record class CSharpCodeGenOptions : CodeGenOptions {
+	[Verb("test base-class-properties")]
+	public record class TestBaseClassPropertiesOptions : SharedBaseOptions {
 		[Option(Description = "C# language version")]
 		public required string LanguageVersion { get; init; }
-	}
-
-	[Verb("typescript web-client")]
-	public record class TypeScriptCodeGenOptions : CodeGenOptions {
-		[Option(Description = "Javascript ecma version")]
-		public required string EcmaVersion { get; init; }
 	}
 }

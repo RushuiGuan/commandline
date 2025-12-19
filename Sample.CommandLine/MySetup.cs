@@ -19,17 +19,15 @@ namespace Sample.CommandLine {
 			services.RegisterCommands();
 			// register your dependencies here
 			services.AddSingleton<IMyService, MyService>();
-
-
-			services.AddScoped<ColorCommandOptions>(provider => { 
-				var result = provider.GetRequiredService<ParseResult>();
-				return new ColorCommandOptions {
-					Name = result.GetRequiredValue<string>("--name"),
-					Data = result.GetRequiredValue<int>("--data"),
-					MyFile = result.GetRequiredValue<FileInfo>("--myfile")!,
-					SecondFile = result.GetRequiredValue<FileInfo>("--second")!,
-				};
-			});
+			// conditional registration based on command
+			var key = result.CommandResult.Command.GetCommandKey();
+			if (key.StartsWith("csharp ")) {
+				// register csharp command specific services
+				services.AddSingleton<ICodeGenerator, CSharpCodeGenerator>();
+			}else if (key.StartsWith("typescript ")) {
+				// register typescript command specific services
+				services.AddSingleton<ICodeGenerator, TypeScriptCodeGenerator>();
+			}
 		}
 	}
 }

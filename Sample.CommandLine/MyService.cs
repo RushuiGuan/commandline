@@ -1,10 +1,12 @@
-﻿namespace Sample.CommandLine {
+﻿using System.Threading.Tasks;
+
+namespace Sample.CommandLine {
 	public interface IMyService {
-		void DoSomething();
+		Task<string> DoSomething();
 	}
 	public class MyService : IMyService {
-		public void DoSomething() {
-			System.Console.WriteLine("Hello World");
+		public Task<string> DoSomething() {
+			return Task.FromResult("Hello World!");
 		}
 	}
 }
