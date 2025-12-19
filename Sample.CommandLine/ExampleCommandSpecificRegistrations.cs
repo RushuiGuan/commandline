@@ -6,9 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	[Verb<ExampleCodeGenCommandAction>("example csharp web-client")]
-	[Verb<ExampleCodeGenCommandAction>("example typescript web-client")]
-	public record class ExampleCodeGenOptions {
+	[Verb<ExampleCommandSpecificRegistrationsAction>("example csharp web-client")]
+	[Verb<ExampleCommandSpecificRegistrationsAction>("example typescript web-client")]
+	public record class ExampleCommandSpecificRegistrationsOptions {
 		[Option(Description = "Output directory for generated C# files")]
 		public required DirectoryInfo OutputDirectory { get; init; }
 
@@ -16,9 +16,9 @@ namespace Sample.CommandLine {
 		public required FileInfo Project { get; init; }
 	}
 
-	public class ExampleCodeGenCommandAction : CommandAction<ExampleCodeGenOptions> {
+	public class ExampleCommandSpecificRegistrationsAction : CommandAction<ExampleCommandSpecificRegistrationsOptions> {
 		private readonly ICodeGenerator codeGenerator;
-		public ExampleCodeGenCommandAction(ICodeGenerator codeGenerator, IOptions<ExampleCodeGenOptions> options) : base(options) {
+		public ExampleCommandSpecificRegistrationsAction(ICodeGenerator codeGenerator, IOptions<ExampleCommandSpecificRegistrationsOptions> options) : base(options) {
 			this.codeGenerator = codeGenerator;
 		}
 		public override Task<int> Invoke(CancellationToken cancellationToken) {
