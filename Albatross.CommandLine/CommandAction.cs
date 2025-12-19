@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using System;
+﻿using System;
 using System.CommandLine;
 using System.IO;
 using System.Threading;
@@ -13,13 +12,13 @@ namespace Albatross.CommandLine {
 		protected readonly string? format;
 		protected virtual TextWriter Writer => Console.Out;
 
-		protected CommandAction(ParseResult result, IOptions<T> options) : this(options){
+		protected CommandAction(ParseResult result, T options) : this(options){
 			this.result = result;
 			format = result.GetValue<string?>("--format");
 		}
 
-		protected CommandAction(IOptions<T> options) {
-			this.options = options.Value;
+		protected CommandAction(T options) {
+			this.options = options;
 		}
 
 		public abstract Task<int> Invoke(CancellationToken cancellationToken);

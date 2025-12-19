@@ -40,11 +40,7 @@ namespace Albatross.CommandLine.CodeGen {
 			if (verbAttribute.TryGetNamedArgument("Alias", out typedConstant)) {
 				this.Aliases = typedConstant.Values.Select(x => x.Value?.ToString() ?? string.Empty).ToArray();
 			}
-			var useBaseClasssProperties = true;
-			if (verbAttribute.TryGetNamedArgument("UseBaseClassProperties", out typedConstant)) {
-				useBaseClasssProperties = Convert.ToBoolean(typedConstant.Value);
-			}
-			this.Parameters = GetCommandParameters(compilation, useBaseClasssProperties).ToArray();
+			this.Parameters = GetCommandParameters(compilation).ToArray();
 		}
 
 		/// <summary>
@@ -69,8 +65,8 @@ namespace Albatross.CommandLine.CodeGen {
 			}
 		}
 
-		public IEnumerable<CommandPropertySetup> GetCommandParameters(Compilation compilation, bool useBaseClassProperties) {
-			var propertySymbols = OptionsClass.GetDistinctProperties(useBaseClassProperties).ToArray();
+		public IEnumerable<CommandPropertySetup> GetCommandParameters(Compilation compilation) {
+			var propertySymbols = OptionsClass.GetDistinctProperties(true).ToArray();
 			int index = 0;
 			foreach (var propertySymbol in propertySymbols) {
 				index++;

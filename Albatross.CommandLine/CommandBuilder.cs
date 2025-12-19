@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Help;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace Albatross.CommandLine {
 					Recursive = true,
 				}
 			};
-			RootCommand.SetAction(HelpCommandAction.Invoke);
+			RootCommand.SetAction(new HelpAction().Invoke);
 			commands.Add(string.Empty, RootCommand);
 		}
 

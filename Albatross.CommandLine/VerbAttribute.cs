@@ -7,7 +7,7 @@ namespace Albatross.CommandLine {
 	}
 
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-	public class VerbAttribute<THandler, TOptions> : VerbAttribute where THandler : ICommandAction {
+	public class VerbAttribute<TOptions, THandler> : VerbAttribute where THandler : ICommandAction {
 		public VerbAttribute(string name) : base(name, typeof(THandler), typeof(TOptions)) { }
 	}
 
@@ -36,14 +36,9 @@ namespace Albatross.CommandLine {
 		/// It allows a command to be created without creating a new Options Class.
 		/// </summary>
 		public Type? OptionsClass { get; }
+		public Type? UseBaseOptionsClass { get; set; }
 		public string Name { get; }
 		public string? Description { get; set; }
 		public string[] Alias { get; set; } = [];
-
-		/// <summary>
-		/// When true, the properties of the base class are included in the options.  
-		/// When false, only the properties of the current class are included.
-		/// </summary>
-		public bool UseBaseClassProperties { get; set; } = true;
 	}
 }

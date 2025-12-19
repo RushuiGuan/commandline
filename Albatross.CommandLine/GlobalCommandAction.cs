@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.CommandLine;
+using System.CommandLine.Help;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,7 +36,7 @@ namespace Albatross.CommandLine {
 			if (handler == null) {
 				// if the command is a parent command, simply print the help
 				if (result.CommandResult.Command.Subcommands.Any()) {
-					return HelpCommandAction.Invoke(result);
+					return new HelpAction().Invoke(result);
 				} else {
 					logger.LogError("No CommandAction is registered for command {command}", key);
 					return ErrorExitCode;

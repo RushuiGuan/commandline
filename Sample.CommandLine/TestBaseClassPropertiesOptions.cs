@@ -1,19 +1,19 @@
 using Albatross.CommandLine;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	public record class SharedBaseOptions {
+	public record class BaseOptions1 : BaseOptions2 {
 		[Option(Description = "Output directory for generated C# files")]
 		public required DirectoryInfo OutputDirectory { get; init; }
+	}
 
+	public record class BaseOptions2 {
 		[Option(Description = "Project file path")]
 		public required FileInfo Project { get; init; }
 	}
 
-	[Verb("test base-class-properties")]
-	public record class TestBaseClassPropertiesOptions : SharedBaseOptions {
+	[Verb<DefaultCommandAction<TestBaseClassPropertiesOptions>>("test base-class-properties", Description = "When determining option property order, the code generator prioritizes properties declared on the current class over those inherited from base classes.")]
+	public record class TestBaseClassPropertiesOptions : BaseOptions1 {
 		[Option(Description = "C# language version")]
 		public required string LanguageVersion { get; init; }
 	}

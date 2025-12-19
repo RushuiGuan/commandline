@@ -5,7 +5,6 @@ namespace Albatross.CommandLine {
 		public OptionAttribute(params string[] alias) {
 			this.Alias = alias;
 		}
-		public int Order { get; set; }
 		public string? Description { get; set; }
 		public string[] Alias { get; }
 		public bool Hidden { get; set; }

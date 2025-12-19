@@ -1,6 +1,4 @@
 using Albatross.CommandLine;
-using Microsoft.Extensions.Options;
-using System.CommandLine;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +16,7 @@ namespace Sample.CommandLine {
 
 	public class ExampleCommandSpecificRegistrationsAction : CommandAction<ExampleCommandSpecificRegistrationsOptions> {
 		private readonly ICodeGenerator codeGenerator;
-		public ExampleCommandSpecificRegistrationsAction(ICodeGenerator codeGenerator, IOptions<ExampleCommandSpecificRegistrationsOptions> options) : base(options) {
+		public ExampleCommandSpecificRegistrationsAction(ICodeGenerator codeGenerator, ExampleCommandSpecificRegistrationsOptions options) : base(options) {
 			this.codeGenerator = codeGenerator;
 		}
 		public override Task<int> Invoke(CancellationToken cancellationToken) {

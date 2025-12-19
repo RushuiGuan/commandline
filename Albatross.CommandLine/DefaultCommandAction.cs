@@ -9,15 +9,17 @@ namespace Albatross.CommandLine {
 		private readonly T options;
 		private readonly ParseResult result;
 
-		public DefaultCommandAction(IOptions<T> options, ParseResult result) {
-			this.options = options.Value;
+		public DefaultCommandAction(T options, ParseResult result) {
+			this.options = options;
 			this.result = result;
 		}
 
-		public Task<int> Invoke(CancellationToken cancellationToken) {
-			result.InvocationConfiguration.Output.WriteLine(result.ToString());
-			Console.Out.WriteLine(options.ToString());
-			return Task.FromResult(0);
+		public async Task<int> Invoke(CancellationToken cancellationToken) {
+			await Console.Out.WriteLineAsync($"Command Class: {result.CommandResult.Command.GetType().FullName}");
+			await Console.Out.WriteLineAsync($"Command Result: {result}");
+			await Console.Out.WriteLineAsync(options.ToString());
+			
+			return 0;
 		}
 	}
 }

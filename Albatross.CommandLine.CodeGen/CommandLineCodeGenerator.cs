@@ -35,9 +35,9 @@ namespace Albatross.CommandLine.CodeGen {
 									// this one matches [Verb<THandler>("commandKey")] target Options Class Only with Handler Type Argument
 									list.Add(new CommandSetup(compilation, optionsClass, attribueClass.TypeArguments[0], attribute));
 								}
-							} else if (attribueClass.TypeArguments.Length == 2 && attribueClass.TypeArguments[1] is INamedTypeSymbol namedTypeSymbol) {
+							} else if (attribueClass.TypeArguments.Length == 2 && attribueClass.TypeArguments[0] is INamedTypeSymbol namedTypeSymbol) {
 								// this one matches [Verb<THandler, TOptions>("commandKey")] target assembly Only with Handler Type and Options Type Argument
-								list.Add(new CommandSetup(compilation, namedTypeSymbol, attribueClass.TypeArguments[0], attribute));
+								list.Add(new CommandSetup(compilation, namedTypeSymbol, attribueClass.TypeArguments[1], attribute));
 							}
 						}
 					}
@@ -195,7 +195,7 @@ namespace Albatross.CommandLine.CodeGen {
 			return new InvocationExpression {
 				CallableExpression = new IdentifierNameExpression("services.AddScoped") {
 					GenericArguments = {
-						new TypeExpression(MyDefined.Identifiers.IOptions, typeConverter.Convert(setup.OptionsClass))
+						typeConverter.Convert(setup.OptionsClass)
 					}
 				},
 				Arguments = {
@@ -242,10 +242,7 @@ namespace Albatross.CommandLine.CodeGen {
 								}
 							}.EndOfStatement(),
 							new ReturnExpression {
-								Expression = new InvocationExpression {
-									CallableExpression = new IdentifierNameExpression("Options.Create"),
-									Arguments = new(new IdentifierNameExpression("options"))
-								}
+								Expression = new IdentifierNameExpression("options")
 							},
 						]
 					}
