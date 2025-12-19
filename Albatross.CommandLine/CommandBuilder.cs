@@ -34,14 +34,8 @@ namespace Albatross.CommandLine {
 			}
 		}
 
-		internal static readonly Option<string?> FormatOption = new Option<string?>(FormatOptionName) {
-			Description = "Specify the optional output format expression.  See the formatting cheatsheet @https://github.com/RushuiGuan/text/blob/main/Albatross.Text.CliFormat/CheatSheet.md",
-			Recursive = true,
-		};
-
 		public const string VerbosityOptionName = "--verbosity";
-		public const string FormatOptionName = "--format";
-
+		
 		/// <summary>
 		/// Parse the command text and return the immediate (last) sub command and its complete parent command
 		/// if the text is "a b c", it will return "c" as self and "a b" as parent
