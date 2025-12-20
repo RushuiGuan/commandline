@@ -8,7 +8,6 @@ using System.Linq;
 namespace Albatross.CommandLine.CodeGen {
 	public abstract record class CommandPropertySetup {
 		public IPropertySymbol PropertySymbol { get; }
-		protected AttributeData propertyAttribute;
 
 		public int Index { get; init; }
 		public ExpressionSyntax? PropertyInitializer { get; }
@@ -22,7 +21,6 @@ namespace Albatross.CommandLine.CodeGen {
 		
 		protected CommandPropertySetup(IPropertySymbol propertySymbol, AttributeData propertyAttribute) {
 			this.PropertySymbol = propertySymbol;
-			this.propertyAttribute = propertyAttribute;
 
 			this.Key = propertySymbol.Name.Kebaberize();
 			this.Type = propertySymbol.Type.GetFullName();

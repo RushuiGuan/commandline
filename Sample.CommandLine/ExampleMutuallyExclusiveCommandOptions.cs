@@ -4,13 +4,13 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	[Verb<ExampleProjectCommandAction>("example project echo", UseBaseOptionsClass = typeof(BaseOptions1), Description = "This demonstrates the use of mutually exclusive commands using inheritance.")]
+	[Verb<ExampleProjectCommandAction>("example project echo", UseBaseOptionsClass = typeof(SharedProjectOptions), Description = "This demonstrates the use of mutually exclusive commands using inheritance.")]
 	public record class ProjectEchoOptions : SharedProjectOptions {
 		[Option]
 		public required int Echo { get; init; }
 	}
 
-	[Verb<ExampleProjectCommandAction>("example project fubar", UseBaseOptionsClass = typeof(BaseOptions1), Description = "This demonstrates the use of mutually exclusive commands using inheritance.")]
+	[Verb<ExampleProjectCommandAction>("example project fubar", UseBaseOptionsClass = typeof(SharedProjectOptions), Description = "This demonstrates the use of mutually exclusive commands using inheritance.")]
 	public record class ProjectFubarOptions : SharedProjectOptions {
 		[Option]
 		public required int Fubar { get; init; }

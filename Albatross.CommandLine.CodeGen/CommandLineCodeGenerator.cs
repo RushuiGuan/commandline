@@ -4,10 +4,12 @@ using Albatross.CodeGen.CSharp;
 using Albatross.CodeGen.CSharp.Declarations;
 using Albatross.CodeGen.CSharp.Expressions;
 using Albatross.CodeGen.CSharp.TypeConversions;
+using Albatross.Collections;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 
@@ -160,6 +162,7 @@ namespace Albatross.CommandLine.CodeGen {
 		}
 
 		private static IEnumerable<IExpression> CreateCommandActionRegistrations(Compilation compilation, ImmutableArray<CommandSetup> commandSetups, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
+			Dictionary<INamedTypeSymbol, List<CommandSetup>> sharedBasedOptions = new(SymbolEqualityComparer.Default);
 			foreach (var setup in commandSetups) {
 				if (setup.HandlerClass != null) {
 					yield return new InvocationExpression {
@@ -174,7 +177,14 @@ namespace Albatross.CommandLine.CodeGen {
 						}
 					};
 				}
-				yield return CreateCommandOptionsRegistration(compilation, setup, typeConverter);
+				if (setup.BaseOptionsClass == null) {
+					yield return CreateCommandOptionsRegistration(compilation, setup, typeConverter);
+				} else {
+					sharedBasedOptions.GetOrAdd(setup.BaseOptionsClass, () => new List<CommandSetup>()).Add(setup);
+				}
+			}
+			foreach (var keyValuePair in sharedBasedOptions) {
+				yield return CreateCommandSharedOptionsRegistration(compilation, keyValuePair.Key, keyValuePair.Value, typeConverter);
 			}
 		}
 
@@ -189,6 +199,89 @@ namespace Albatross.CommandLine.CodeGen {
 				}
 			}
 			return false;
+		}
+
+		private static IExpression CreateCommandSharedOptionsRegistration(Compilation compilation, INamedTypeSymbol sharedOptionBaseClass, List<CommandSetup> setups, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
+			return new InvocationExpression {
+				CallableExpression = new IdentifierNameExpression("services.AddScoped") {
+					GenericArguments = {
+						typeConverter.Convert(sharedOptionBaseClass)
+					}
+				},
+				Arguments = {
+					new AnonymousMethodExpression {
+						Parameters = [
+							new ParameterDeclaration {
+								Name = new IdentifierNameExpression("provider"),
+								Type = Defined.Types.Var,
+							}
+						],
+						Body = [
+							new AssignmentExpression {
+								Left = new VariableDeclaration {
+									Identifier = new IdentifierNameExpression("result"),
+								},
+								Expression = new InvocationExpression {
+									CallableExpression = new IdentifierNameExpression("provider.GetRequiredService") {
+										GenericArguments = {
+											new TypeExpression(MyDefined.Identifiers.ParserResult)
+										}
+									}
+								}
+							}.EndOfStatement(),
+							new AssignmentExpression {
+								Left = new VariableDeclaration {
+									Identifier = new IdentifierNameExpression("key"),
+								},
+								Expression = new InvocationExpression {
+									CallableExpression = new IdentifierNameExpression("result.CommandResult.Command.GetCommandKey"),
+								}
+							}.EndOfStatement(),
+							new ReturnExpression {
+								Expression = new SwitchExpression {
+									Value = new IdentifierNameExpression("key"),
+									Sections = new ListOfNodes<SwitchCaseExpression> {
+										{
+											true, () => setups.Select(x => new SwitchCaseExpression {
+												Value = new StringLiteralExpression(x.Key),
+												Expression = new NewObjectExpression {
+													Type = typeConverter.Convert(x.OptionsClass),
+													Initializers = new ListOfNodes<AssignmentExpression>(
+														x.Parameters.Select(y => new AssignmentExpression {
+																Left = new IdentifierNameExpression(y.PropertySymbol.Name),
+																Expression = new InvocationExpression {
+																	CallableExpression = new IdentifierNameExpression(ShouldUseRequiredValue(compilation, y) ? "result.GetRequiredValue" : "result.GetValue") {
+																		GenericArguments = new(typeConverter.Convert(y.PropertySymbol.Type))
+																	},
+																	Arguments = new ListOfArguments(
+																		new StringLiteralExpression(y.Key)
+																	)
+																}
+															}
+														)
+													)
+												},
+											})
+										}
+									},
+									DefaultExpression = new ThrowExpression {
+										Expression = new NewObjectExpression {
+											Type = new TypeExpression("System.InvalidOperationException"),
+											Arguments = new ListOfArguments {
+												new StringInterpolationExpression {
+													new StringLiteralExpression("Command "),
+													new IdentifierNameExpression("key"),
+													new StringLiteralExpression($" is not registered for base Options class \"{sharedOptionBaseClass.Name}\"")
+												}
+											}
+										}
+									}
+								}
+							}
+						]
+					}
+				}
+			};
 		}
 
 		private static IExpression CreateCommandOptionsRegistration(Compilation compilation, CommandSetup setup, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {

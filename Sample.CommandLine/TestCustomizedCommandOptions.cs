@@ -9,7 +9,7 @@ namespace Sample.CommandLine {
 	public partial class TestCustomizedCommand {
 		partial void Initialize() {
 			this.Option_Description.Validators.Add(r =>{
-				var text = r.GetValue<string>(this.Option_Description);
+				var text = r.GetRequiredValue(this.Option_Description);
 				if (text.Length < 3) {
 					r.AddError("Description must be at least 3 characters long.");
 				}

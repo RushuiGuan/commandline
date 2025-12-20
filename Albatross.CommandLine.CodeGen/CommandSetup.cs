@@ -9,6 +9,7 @@ namespace Albatross.CommandLine.CodeGen {
 		public string Key { get; }
 		public string Name { get; }
 		public INamedTypeSymbol OptionsClass { get; }
+		public INamedTypeSymbol? BaseOptionsClass { get; }
 		public ITypeSymbol? HandlerClass { get; }
 		public string CommandClassName { get; private set; }
 		public string CommandClassNamespace => OptionsClass.ContainingNamespace.GetFullNamespace();
@@ -34,7 +35,10 @@ namespace Albatross.CommandLine.CodeGen {
 			}
 			this.Name = this.Key.Split(' ').Last();
 
-			if (verbAttribute.TryGetNamedArgument("Description", out var typedConstant)) {
+			if (verbAttribute.TryGetNamedArgument("UseBaseOptionsClass", out var typedConstant)) {
+				this.BaseOptionsClass = typedConstant.Value as INamedTypeSymbol;
+			}
+			if (verbAttribute.TryGetNamedArgument("Description", out typedConstant)) {
 				this.Description = typedConstant.Value?.ToString();
 			}
 			if (verbAttribute.TryGetNamedArgument("Alias", out typedConstant)) {
