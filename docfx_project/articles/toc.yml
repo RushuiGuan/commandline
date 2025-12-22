@@ -1,4 +1,12 @@
-- name: Introduction
-  href: introduction.md
-- name: Getting Started
-  href: getting-started.md
+- name: Conventions
+  href: conventions.md
+- name: Examples
+  href: examples.md  
+- name: Customized Commands
+  href: customized-commands.md
+- name: Code Generator
+  href: code-generator.md
+- name: Manual Command
+  href: manual-command.md
+- name: Shared Options
+  href: shared-options.md

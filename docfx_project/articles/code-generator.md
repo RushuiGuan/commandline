@@ -160,51 +160,54 @@ public sealed partial class TestArgumentsCommand : Command {
 
 ### Service Registration Generation
 
-The generator creates a `CodeGenExtensions` class with methods for dependency injection:
+The generator creates a `CodeGenExtensions.g.cs` class with methods for dependency injection:
 
 ```csharp
 using Albatross.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
+using System;
 using System.CommandLine;
-
-public static class CodeGenExtensions {
-    public static IServiceCollection RegisterCommands(this IServiceCollection services) {
-        // Register command actions with keys
-        services.AddKeyedScoped<ICommandAction, Sample.CommandLine.HelloWorldCommandAction>("hello");
+#nullable enable
+namespace Sample.CommandLine {
+    public static class CodeGenExtensions {
+        public static IServiceCollection RegisterCommands(this IServiceCollection services) {
+            // Register command actions with keys for commands that have handlers
+            services.AddKeyedScoped<ICommandAction, Sample.CommandLine.HelloWorldCommandAction>("hello");
+            
+            // Register options using direct instantiation with ParseResult
+            services.AddScoped<Sample.CommandLine.HelloWorldOptions>(provider => {
+                var result = provider.GetRequiredService<ParseResult>();
+                var options = new Sample.CommandLine.HelloWorldOptions() {
+                    Name = result.GetRequiredValue<string>("--name"),
+                    Date = result.GetValue<System.Nullable<System.DateOnly>>("--date"),
+                    Number = result.GetRequiredValue<int>("--number"),
+                };
+                return options;
+            });
+            
+            // Commands without handlers use DefaultCommandAction<T>
+            services.AddKeyedScoped<ICommandAction, Albatross.CommandLine.DefaultCommandAction<Sample.CommandLine.TestArgumentsOptions>>("test arguments");
+            services.AddScoped<Sample.CommandLine.TestArgumentsOptions>(provider => {
+                var result = provider.GetRequiredService<ParseResult>();
+                var options = new Sample.CommandLine.TestArgumentsOptions() {
+                    StringArg = result.GetRequiredValue<string>("string-arg"),
+                    IntArg = result.GetRequiredValue<int>("int-arg"),
+                    DateArg = result.GetValue<System.Nullable<System.DateOnly>>("date-arg"),
+                };
+                return options;
+            });
+            
+            return services;
+        }
         
-        // Register options binding with IOptions<T> pattern
-        services.AddScoped<IOptions<Sample.CommandLine.HelloWorldOptions>>(provider => {
-            var result = provider.GetRequiredService<ParseResult>();
-            var options = new Sample.CommandLine.HelloWorldOptions() {
-                Name = result.GetRequiredValue<string>("--name"),
-                Date = result.GetValue<System.Nullable<System.DateOnly>>("--date"),
-                Number = result.GetRequiredValue<int>("--number"),
-            };
-            return Options.Create(options);
-        });
-        
-        // Register argument-based commands
-        services.AddKeyedScoped<ICommandAction, DefaultCommandAction<TestArgumentsOptions>>("test arguments");
-        services.AddScoped<IOptions<Sample.CommandLine.TestArgumentsOptions>>(provider => {
-            var result = provider.GetRequiredService<ParseResult>();
-            var options = new Sample.CommandLine.TestArgumentsOptions() {
-                StringArg = result.GetRequiredValue<string>("string-arg"),
-                IntArg = result.GetRequiredValue<int>("int-arg"),
-                DateArg = result.GetValue<System.Nullable<System.DateOnly>>("date-arg"),
-            };
-            return Options.Create(options);
-        });
-        
-        return services;
-    }
-    
-    public static Setup AddCommands(this Setup setup) {
-        setup.CommandBuilder.Add<HelloWorldCommand>("hello");
-        setup.CommandBuilder.Add<TestArgumentsCommand>("test arguments");
-        setup.CommandBuilder.Add<TestCustomizedCommand>("test customized");
-        setup.CommandBuilder.Add<TestUndefinedParentCommand>("p1 p2 new");
-        return setup;
+        public static Setup AddCommands(this Setup setup) {
+            // Commands are registered using setup.CommandBuilder.Add<T>()
+            setup.CommandBuilder.Add<HelloWorldCommand>("hello");
+            setup.CommandBuilder.Add<TestArgumentsCommand>("test arguments");
+            setup.CommandBuilder.Add<TestCustomizedCommand>("test customized");
+            setup.CommandBuilder.Add<TestUndefinedParentCommand>("p1 p2 new");
+            return setup;
+        }
     }
 }
 ```
@@ -215,7 +218,23 @@ Within the command class, option and argument properties are generated with spec
 - **Options**: `Option_PropertyName` (e.g., `Option_Name`, `Option_Date`)
 - **Arguments**: `Argument_PropertyName` (e.g., `Argument_StringArg`, `Argument_InputFile`)
 
-Argument names in the command line are kebab-cased versions of property names, while option names get the standard `--` prefix for full names and `-` prefix for single-character aliases.
+All properties are generated as read-only with `{ get; }` accessors.
+
+### Service Registration Patterns
+
+The generator uses different patterns for service registration:
+
+#### Required vs Optional Values
+- **Required properties**: Use `result.GetRequiredValue<T>("parameter-name")`
+- **Optional properties**: Use `result.GetValue<T>("parameter-name")`
+- **Array properties**: Use `result.GetValue<T[]>("parameter-name") ?? Array.Empty<T>()`
+
+#### Command Action Registration
+- **With handler**: `services.AddKeyedScoped<ICommandAction, HandlerType>("command-key")`
+- **Without handler**: `services.AddKeyedScoped<ICommandAction, DefaultCommandAction<OptionsType>>("command-key")`
+
+#### Options Registration
+Options classes are registered directly (not using `IOptions<T>` pattern) with factory methods that extract values from `ParseResult`.
 
 ### Command Naming and Conflict Resolution
 
@@ -227,13 +246,14 @@ The generator follows specific naming conventions:
 
 ```csharp
 // These would create naming conflicts:
-public class BackupOptions { }        // → BackupCommand
-public class BackupCommandOptions { } // → BackupCommand1
+public class BackupOptions { }        // → BackupCommand.g.cs
+public class BackupCommandOptions { } // → BackupCommand1.g.cs
 
 // Avoid conflicts by using distinctive names
-public class FileBackupOptions { }    // → FileBackupCommand
-public class DatabaseBackupOptions { } // → DatabaseBackupCommand
+public class FileBackupOptions { }    // → FileBackupCommand.g.cs
+public class DatabaseBackupOptions { } // → DatabaseBackupCommand.g.cs
 ```
+
 
 ### Incremental Generation Features
 
@@ -243,21 +263,6 @@ The generator uses incremental compilation for performance:
 - **Change Detection**: Regenerates only when attribute usage changes
 - **Parallel Processing**: Multiple command setups processed concurrently
 - **Caching**: Compilation and symbol information cached between builds
-
-### Debug Output
-
-For troubleshooting, you can enable debug file generation:
-
-```xml
-<PropertyGroup>
-    <EmitAlbatrossCodeGenDebugFile>true</EmitAlbatrossCodeGenDebugFile>
-</PropertyGroup>
-<ItemGroup>
-    <CompilerVisibleProperty Include="EmitAlbatrossCodeGenDebugFile" />
-</ItemGroup>
-```
-
-This creates `albatross-commandline-codegen.debug.txt` with generated source code.
 
 ### Advanced Features
 
@@ -317,24 +322,3 @@ public record class DatabaseRestoreOptions { }
 // - DatabaseBackupCommand (child)
 // - DatabaseRestoreCommand (child)
 ```
-
-### Error Handling
-
-The generator provides diagnostic messages for common issues:
-
-- **Missing Handler**: Warning when no command action is specified
-- **Invalid Types**: Error when handler doesn't implement `ICommandAction`
-- **Naming Conflicts**: Warning when multiple commands have same generated name
-- **Invalid Properties**: Error when properties can't be converted to options/arguments
-
-### Integration with System.CommandLine
-
-Generated commands are full System.CommandLine `Command` instances with:
-
-- **Standard Features**: Options, arguments, validators, completions
-- **Dependency Injection**: Automatic service registration and resolution  
-- **Customization**: Partial class extension points for advanced scenarios
-- **Validation**: Built-in and custom validation support
-- **Help Generation**: Automatic help text from descriptions
-
-This comprehensive code generation system eliminates boilerplate while preserving the full power and flexibility of System.CommandLine.
