@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Albatross.Testing" Version="8.0.1-19.main" />
+		<PackageReference Include="Albatross.Testing" Version="8.0.1" />
 		<PackageReference Include="FluentAssertions" Version="8.8.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
