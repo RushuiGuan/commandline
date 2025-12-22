@@ -4,11 +4,16 @@ using System.CommandLine;
 namespace Sample.CommandLine {
 	public class ManualCommand : Command {
 		public ManualCommand() : base("manual-command", "This command is created manually") {
+			Add(TextArgument);
 			Add(NameOption);
 			SetAction(Invoke);
 		}
 
-		public Option<string> NameOption { get; } = new Option<string>("--name") { 
+		public Argument<string> TextArgument { get; } = new Argument<string>("text") {
+			DefaultValueFactory = (_) => "default text",
+		};
+
+		public Option<string> NameOption { get; } = new Option<string>("--name") {
 			Description = "Name option for the manual command",
 			Required = true,
 		};
