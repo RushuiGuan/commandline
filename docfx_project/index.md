@@ -1,7 +1,3 @@
----
-_layout: landing
----
-
 # Albatross.CommandLine
 
 A powerful .NET library that simplifies the creation of command-line applications using [System.CommandLine](https://learn.microsoft.com/en-us/dotnet/standard/commandline/). It provides automatic code generation, dependency injection, configuration, and logging support.
@@ -114,9 +110,12 @@ The code generator automatically created:
 All with **zero manual configuration**!
 
 ## 📚 Learn More
-
+- **[Quick Start](articles/quick-start.md)** - Get the basics
+- **[Conventions](articles/conventions.md)** - Know the naming conventions!
+- **[Examples](articles/examples.md)** - More examples to show different use cases
+- **[Command Customization](articles/command-customization.md)** - Use partial class to modify the generated command
 - **[Code Generator](articles/code-generator.md)** - Deep dive into automatic code generation
-- **[Dependency Injection](../docs/dependency-injection.md)** - Service registration patterns
+- **[Shared Options](articles/shared-options.md)** - Out of box support for sharing of base option classes
 
 ## 🔧 Prerequisites
 - **C# Compiler 4.10.0+** (included with .NET 8 SDK or Visual Studio 2022)

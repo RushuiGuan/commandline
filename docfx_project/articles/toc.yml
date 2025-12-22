@@ -4,8 +4,8 @@
   href: conventions.md
 - name: Examples
   href: examples.md  
-- name: Customized Commands
-  href: customized-commands.md
+- name: Command Customization
+  href: command-customization.md
 - name: Code Generator
   href: code-generator.md
 - name: Shared Options
