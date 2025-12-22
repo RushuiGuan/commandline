@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
@@ -189,8 +190,12 @@ namespace Albatross.CommandLine.CodeGen {
 		}
 
 		static bool ShouldUseRequiredValue(Compilation compilation, CommandPropertySetup parameter) {
+			// for collection types, always use null-coalescing operator: GetValue(..) ?? new List<T>()
+			if (parameter.PropertySymbol.Type.IsCollection(compilation)) {
+				return false;
+			}
 			if (parameter is CommandOptionPropertySetup optionPropertySetup) {
-				if (optionPropertySetup.Required || optionPropertySetup.ShouldDefaultToInitializer || optionPropertySetup.PropertySymbol.Type.IsCollection(compilation)) {
+				if (optionPropertySetup.Required || optionPropertySetup.ShouldDefaultToInitializer) {
 					return true;
 				}
 			} else if (parameter is CommandArgumentPropertySetup argumentPropertySetup) {
@@ -247,18 +252,7 @@ namespace Albatross.CommandLine.CodeGen {
 												Expression = new NewObjectExpression {
 													Type = typeConverter.Convert(x.OptionsClass),
 													Initializers = new ListOfNodes<AssignmentExpression>(
-														x.Parameters.Select(y => new AssignmentExpression {
-																Left = new IdentifierNameExpression(y.PropertySymbol.Name),
-																Expression = new InvocationExpression {
-																	CallableExpression = new IdentifierNameExpression(ShouldUseRequiredValue(compilation, y) ? "result.GetRequiredValue" : "result.GetValue") {
-																		GenericArguments = new(typeConverter.Convert(y.PropertySymbol.Type))
-																	},
-																	Arguments = new ListOfArguments(
-																		new StringLiteralExpression(y.Key)
-																	)
-																}
-															}
-														)
+														x.Parameters.Select(y => CreateGetOptionPropertyValueExpression(compilation, y, typeConverter))
 													)
 												},
 											})
@@ -281,6 +275,29 @@ namespace Albatross.CommandLine.CodeGen {
 						]
 					}
 				}
+			};
+		}
+		public static AssignmentExpression CreateGetOptionPropertyValueExpression(Compilation compilation, CommandPropertySetup property, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
+			IExpression expression = new InvocationExpression {
+				CallableExpression = new IdentifierNameExpression(ShouldUseRequiredValue(compilation, property) ? "result.GetRequiredValue" : "result.GetValue") {
+					GenericArguments = new(typeConverter.Convert(property.PropertySymbol.Type))
+				},
+				Arguments = new ListOfArguments(new StringLiteralExpression(property.Key))
+			};
+			if (property.PropertySymbol.Type.TryGetCollectionElementType(compilation, out var elementType)) {
+				expression = new InfixExpression {
+					Left = expression,
+					Operator = new Operator("??"),
+					Right = new InvocationExpression {
+						CallableExpression = new QualifiedIdentifierNameExpression("Array.Empty", Defined.Namespaces.System) {
+							GenericArguments = new(typeConverter.Convert(elementType))
+						}
+					}
+				};
+			}
+			return new AssignmentExpression {
+				Left = new IdentifierNameExpression(property.PropertySymbol.Name),
+				Expression = expression
 			};
 		}
 
@@ -319,18 +336,7 @@ namespace Albatross.CommandLine.CodeGen {
 								Expression = new NewObjectExpression {
 									Type = typeConverter.Convert(setup.OptionsClass),
 									Initializers = new ListOfNodes<AssignmentExpression>(
-										setup.Parameters.Select(x => new AssignmentExpression {
-												Left = new IdentifierNameExpression(x.PropertySymbol.Name),
-												Expression = new InvocationExpression {
-													CallableExpression = new IdentifierNameExpression(ShouldUseRequiredValue(compilation, x) ? "result.GetRequiredValue" : "result.GetValue") {
-														GenericArguments = new(typeConverter.Convert(x.PropertySymbol.Type))
-													},
-													Arguments = new ListOfArguments(
-														new StringLiteralExpression(x.Key)
-													)
-												}
-											}
-										)
+										setup.Parameters.Select(x => CreateGetOptionPropertyValueExpression(compilation, x, typeConverter))
 									)
 								}
 							}.EndOfStatement(),
