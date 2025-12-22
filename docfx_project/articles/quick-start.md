@@ -358,10 +358,11 @@ public required string? RequiredNullable { get; init; } // Confusing
 ```
 
 ## Next Steps
-
+- **[Examples](examples.md)** - More Examples
+- **[Conventions](conventions.md)** - Naming and Coding Conventions
+- **[Customization](customization.md)** - Command Customization
 - **[Code Generator](code-generator.md)** - Understanding automatic code generation
 - **[Shared Options](shared-options.md)** - Sharing common options across commands  
 - **[Manual Commands](manual-command.md)** - Creating commands without attributes
-- **[Advanced Topics](../docs/conventions.md)** - Conventions and advanced patterns
 
 With these three core attributes, you can create powerful, type-safe command-line applications with minimal boilerplate code!
