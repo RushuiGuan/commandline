@@ -27,7 +27,9 @@ bld/
 [Aa]rtifacts/
 
 # docfx output folder
-docfx_out
+_site/
+# DocFX generated API metadata
+docfx_project/api/
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 .svn
