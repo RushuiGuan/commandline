@@ -1,4 +1,4 @@
-﻿using Albatross.CodeAnalysis.Symbols;
+﻿using Albatross.CodeAnalysis;
 using Albatross.CodeGen;
 using Albatross.CodeGen.CSharp;
 using Albatross.CodeGen.CSharp.Declarations;
