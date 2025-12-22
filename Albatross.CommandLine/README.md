@@ -1,183 +1,146 @@
 # Albatross.CommandLine
-An integration library that simplifies the creation of console program using the [System.CommandLine](https://learn.microsoft.com/en-us/dotnet/standard/commandline/) library.  It provdes code generation, dependency injection, configuration and logging support.  It uses [Albatross.CommandLine.CodeGen](../Albatross.CommandLine.CodeGen/) to generate commands and options automatically while giving developers the flexibility to fully leverage the capability of [System.CommandLine](https://learn.microsoft.com/en-us/dotnet/standard/commandline/) library.
 
-## Features
-* Quick setup with dependency injection enabled by [Code Generator](../Albatross.CommandLine.CodeGen/).
-* Logging integration with Serilog provided by [Albatross.Logging](https://www.nuget.org/packages/Albatross.Logging).
-* Easy configuration setup provided by [Albatross.Config](https://www.nuget.org/packages/Albatross.Config).
+A powerful .NET library that simplifies creating command-line applications with [System.CommandLine](https://learn.microsoft.com/en-us/dotnet/standard/commandline/). It provides automatic code generation, dependency injection, configuration, and logging support while maintaining full access to System.CommandLine's capabilities.
 
-## Related Articles
-* [Code Generator](../Albatross.CommandLine.CodeGen/README.md)
-* [Conventions](../docs/conventions.md)
-* [Command Options](../docs/command-options.md)
-* [Sub Commands](../docs/sub-commands.md)
-* [How to Create Mutually Exclusive Options](../docs/mutually-exclusive-options.md)
-* [Global Options](#global-options)
-* [Error Handling](#error-handling)
-* [Customizations](#customization)
+🎉 **Now using System.CommandLine v2 stable release** for improved reliability and long-term support.
 
-## Prerequisite
-**Dotnet Compiler version 4.12.0 or higher**
+## ✨ Key Features
 
-`Albatross.CommandLine.CodeGen` - an integrated part of the library that uses Roslyn for code generation takes on 
-the dependency of `Microsoft.CodeAnalysis.CSharp` version 4.12.0, which in term requires the compiler version 4.12.0 or above.  The requirement is met with dotnet SDK version 9 or above or with the latest version of visual studio.  If dotnet SDK 8 is used with Console, VSCode or JetBrain Rider, the compiler version by default would be 4.11.0 or below.  It can be updated at the project level by referencing the `Microsoft.Net.Compilers.Toolset` version 4.12.0 or above in the project file.  The following code snippet shows how to do that.
+- **🚀 Minimal Boilerplate** - Attribute-based command definition with automatic code generation
+- **🔧 Type Safety** - Leverages C# nullable reference types for automatic requirement detection
+- **📦 Dependency Injection** - Built-in DI container integration
+- **📝 Logging** - Seamless Serilog integration via [Albatross.Logging](https://www.nuget.org/packages/Albatross.Logging)
+- **⚙️ Configuration** - Easy appsettings.json support via [Albatross.Config](https://www.nuget.org/packages/Albatross.Config)
+- **🎯 Full Flexibility** - Direct access to System.CommandLine when needed
+
+## 📖 Documentation
+
+**📚 [Complete Documentation](https://rushuiguan.github.io/commandline/)**
+
+### Quick Links
+- **[Quick Start Guide](https://rushuiguan.github.io/commandline/articles/quick-start.html)** - Verb, Option, and Argument attributes
+- **[Code Generator](https://rushuiguan.github.io/commandline/articles/code-generator.html)** - How automatic code generation works
+- **[Shared Options](https://rushuiguan.github.io/commandline/articles/shared-options.html)** - Share common options across commands
+- **[Manual Commands](https://rushuiguan.github.io/commandline/articles/manual-command.html)** - Direct System.CommandLine integration
+
+## 🔧 Prerequisites
+
+- **C# Compiler 4.10.0+** (included with .NET 9 SDK)
+
+## 🚀 Quick Start
+
+### 1. Install Package
+
 ```xml
-<PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.12.0">
-	<PrivateAssets>all</PrivateAssets>
-	<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-</PackageReference>
+<PackageReference Include="Albatross.CommandLine" Version="8.0.1" />
 ```
 
-## Quick Start ([Sample Program](../Sample.CommandLine/))
-* Create a .net8 Console program
-	* Make sure the `Nullable` option is enabled for the project.
-* Reference [Albatross.CommandLine](https://www.nuget.org/packages/Albatross.CommandLine) from nuget.  [Albatross.CommandLine.CodeGen](https://www.nuget.org/packages/Albatross.CommandLine.CodeGen/) should be referenced automatically as a dev dependency.
-* Create a class [MySetup.cs](../Sample.CommandLine/MySetup.cs) that inherits base class [Albatross.CommandLine.Setup](./Setup.cs)
-	```csharp
-	public class MySetup : Setup {
-		protected override string RootCommandDescription => "This a sample command";
-		public override void RegisterServices(InvocationContext context, IConfiguration configuration, EnvironmentSetting envSetting, IServiceCollection services) {
-			base.RegisterServices(context, configuration, envSetting, services);
-			// RegisterCommands method is generated by codegen
-			services.RegisterCommands();
-			// register your dependencies here
-			services.AddSingleton<IMyService, MyService>();
-		}
-	}
-	```
-* Update the [program.cs](../Sample.CommandLine/Program.cs) file
-	```csharp
-	internal class Program {
-		static Task<int> Main(string[] args) =>
-			new MySetup()
-				// this method is generated by CodeGen
-				.AddCommands()
-				.CommandBuilder
-				.Build()
-				// If this call is used, the non async method of the command handler will be invoked
-				//.Invoke(args)
-				.InvokeAsync(args);
-	}
-	```	
-* Create a new class file [TestCommandAction.cs](../Sample.CommandLine/TestCommandAction.cs) with the following code:
-	```csharp
-	[Verb("test", typeof(TestCommandAction), Description = "My Test Command")]
-	public record class TestCommandOptions {
-		// Name is a required option by default since the property is not nullable
-		public string Name { get; set; } = string.Empty;
+### 2. Create Setup Class
 
-		// Description is optional since the property is nullable
-		public string? Description { get; set; }
-
-		// The OptionAttribute can be used the change the default requirement behavior.  In this case, changing the Id option to be optional
-		[Option(Required = false)]
-		public int Id { get; set; }
-	}
-	public class TestCommandAction : ICommandAction {
-		private readonly ILogger logger;
-		private readonly TestCommandOptions options;
-
-		public TestCommandAction(ILogger logger, IOptions<TestCommandOptions> options) {
-			this.logger = logger;
-			this.options = options.Value;
-		}
-
-		public int Invoke(InvocationContext context) {
-			context.Console.WriteLine(context.ParseResult.Diagram());
-			return 0;
-		}
-
-		public Task<int> InvokeAsync(InvocationContext context) {
-			return Task.FromResult(Invoke(context));
-		}
-	}
-	```
-* When the code above is saved, code generator will generate the code below automatically
-	```csharp
-	// ********** TestCommand.cs ********** //
-	using System;
-	using System.CommandLine;
-	using System.IO;
-	using System.Threading.Tasks;
-
-	#nullable enable
-	namespace Sample.CommandLine
-	{
-		public sealed partial class TestCommand : Command
-		{
-			public TestCommand() : base("test", "My Test Command")
-			{
-				this.Option_Name = new Option<string>("--name", null)
-				{
-					IsRequired = true
-				};
-				this.AddOption(Option_Name);
-				this.Option_Description = new Option<string?>("--description", null);
-				this.AddOption(Option_Description);
-				this.Option_Id = new Option<int>("--id", null);
-				this.AddOption(Option_Id);
-			}
-
-			public Option<string> Option_Name { get; }
-			public Option<string?> Option_Description { get; }
-			public Option<int> Option_Id { get; }
-		}
-	}
-	#nullable disable
-	```
-* The following command creation and service registration code are also generated automatically.
-	```csharp
-	// ********** CodeGenExtensions.cs ********** //
-	#nullable enable
-	namespace Sample.CommandLine
-	{
-		public static class CodeGenExtensions
-		{
-			public static IServiceCollection RegisterCommands(this IServiceCollection services)
-			{
-				services.AddKeyedScoped<ICommandAction, Sample.CommandLine.TestCommandAction>("test");
-				services.AddOptions<TestCommandOptions>().BindCommandLine();
-				return services;
-			}
-
-			public static Setup AddCommands(this Setup setup)
-			{
-				var dict = new Dictionary<string, Command>();
-				dict.Add(string.Empty, setup.RootCommand);
-				dict.AddCommand<TestCommand>("test");
-				return setup;
-			}
-		}
-	}
-	#nullable disable
-	```
-* We now have a functional command line program completed with dependency injection, logging and config setup.  Note that the generated code are saved in a file called `albatross-commandline-codegen.debug.txt` for troubleshooting.  Currently there is no option to disable it.  It should be ignored by source control.
-
-
-## Global Options
-This global option class is defined as below.  Its functionalities are baked into the global command handler and available for all commands.
 ```csharp
-public record class GlobalOptions {
-	// default is Error
-	public LogLevel? Verbosity { get; set; }
-	// when true, log the duration of command execution in milliseconds
-	public bool Benchmark { get; set; }
-	// when true, show the full stack when there is an exception
-	public bool ShowStack { get; set; }
+public class MySetup : Setup {
+    public MySetup() : base("My awesome CLI app") {
+    }
+
+    protected override void RegisterServices(ParseResult result, IConfiguration configuration, 
+        EnvironmentSetting envSetting, IServiceCollection services) {
+        base.RegisterServices(result, configuration, envSetting, services);
+        
+        // Auto-generated service registration
+        services.RegisterCommands();
+        
+        // Your services
+        services.AddSingleton<IMyService, MyService>();
+    }
 }
 ```
 
-## Error Handling and Trouble Shooting
-* Unhandled command handler exception will be caught and an error code of `10000` will be returned.  The exception message will be logged as error.  If the `--show-stack` option is set, the full code stack will be logged instead.
-* An error code of `9999` will be returned if there is an issue constructing the command handler instance.  It could happen when the dependency is not property configured.  
-* An error code of `9998` will be returned if the command handler is not registered.  This could happen if the `CodeGenExtensions.RegisterCommands()` method is not called.
-* If none of the defined commands shows up, `CodeGenExtensions.AddCommands()` method is not invoked.
+### 3. Update Program.cs
 
-## Customization
-[Setup](./Setup.cs) has a few methods that can be overwritten to change the behavior of the program.
-* `RegisterServices` method should be used to register services for the purpose of dependency injections
-* `RootCommandDescription` property can be changed to create a custom description for the root command.
-* Overwrite the `ConfigureBuilder` method to customize `System.CommandLine` to the desired behavior.
-* Overwrite the `CreateRootCommand` method to change the global options
-* `Albatross.CommandLine` library does not prevent users from using a manually created command and its handler.  It should just work after the command is added to the root command.
-* Generated Command Customization - It might be easier to modify a generated command instead.  See the [example](../Sample.CommandLine/Example_CustomizeGeneratedCommand.cs) here.
+```csharp
+internal class Program {
+    static Task<int> Main(string[] args) {
+        return new MySetup()
+            .AddCommands()  // Auto-generated
+            .Parse(args)
+            .RegisterServices()
+            .Build()
+            .InvokeAsync();
+    }
+}
+```
+
+### 4. Define Your Command
+
+```csharp
+[Verb<HelloCommandAction>("hello", Description = "Say hello to someone")]
+public record class HelloOptions {
+    // Required argument (position 0)
+    [Argument(Description = "Name to greet")]
+    public required string Name { get; init; }
+    
+    // Optional option
+    [Option(Description = "Number of times to greet")]
+    public int Count { get; init; } = 1;
+}
+
+public class HelloCommandAction : CommandAction<HelloOptions> {
+    public HelloCommandAction(HelloOptions options) : base(options) {
+    }
+
+    public override async Task<int> Invoke(CancellationToken cancellationToken) {
+        for (int i = 0; i < options.Count; i++) {
+            await this.Writer.WriteLineAsync($"Hello, {options.Name}!");
+        }
+        return 0;
+    }
+}
+```
+
+### 5. Run It!
+
+```bash
+dotnet run -- hello "World" --count 3
+```
+
+**That's it!** The code generator automatically creates the command class and service registrations.
+
+## 🌟 Advanced Features
+
+### Sub-Commands
+```csharp
+[Verb<DatabaseBackupAction>("database backup")]
+[Verb<DatabaseRestoreAction>("database restore")]
+// Creates: database backup, database restore
+```
+
+### Shared Options
+```csharp
+[Verb<ProjectCommandAction>("project build", UseBaseOptionsClass = typeof(ProjectOptions))]
+public record class BuildOptions : ProjectOptions {
+    [Option] public string Configuration { get; init; } = "Release";
+}
+```
+
+### Manual Commands
+```csharp
+// Full System.CommandLine control when needed
+setup.CommandBuilder.AddWithParentKey("tools", new CustomCommand());
+```
+
+## 🎯 Global Options
+
+The library creates a single recursive option for logging purposes.
+- `-v, --verbosity` - Logging level (Error, Warning, Information, Info, Debug, Trace)
+
+## 🤝 Samples
+See the [Sample.CommandLine](../Sample.CommandLine/) project for comprehensive examples of all features.
+
+## 📦 Related Packages
+
+- [Albatross.Logging](https://www.nuget.org/packages/Albatross.Logging) - Serilog integration
+- [Albatross.Config](https://www.nuget.org/packages/Albatross.Config) - Configuration support
+
+---
+
+**[📖 Read the Full Documentation →](https://rushuiguan.github.io/commandline/)**

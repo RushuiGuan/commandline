@@ -116,8 +116,6 @@ All with **zero manual configuration**!
 ## 📚 Learn More
 
 - **[Code Generator](articles/code-generator.md)** - Deep dive into automatic code generation
-- **[Conventions](../docs/command-options.md)** - Working with options and arguments
-- **[Sub Commands](../docs/sub-commands.md)** - Building hierarchical commands
 - **[Dependency Injection](../docs/dependency-injection.md)** - Service registration patterns
 
 ## 🔧 Prerequisites

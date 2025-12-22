@@ -1,3 +1,5 @@
+- name: Quick Start
+  href: quick-start.md
 - name: Conventions
   href: conventions.md
 - name: Examples
@@ -6,7 +8,7 @@
   href: customized-commands.md
 - name: Code Generator
   href: code-generator.md
-- name: Manual Command
-  href: manual-command.md
 - name: Shared Options
   href: shared-options.md
+- name: Manual Command
+  href: manual-command.md  
