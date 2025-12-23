@@ -10,7 +10,7 @@ namespace Albatross.CommandLine.Test {
 		[InlineData("", "", "")]
 		public void TestParseCommandText(string commandText, string expectedParent, string expectedSelf) {
 			var builder = new Albatross.CommandLine.CommandBuilder("Test");
-			builder.ParseCommandText(commandText, out var parent, out var self);
+			CommandBuilder.ParseCommandText(commandText, out var parent, out var self);
 			Assert.Equal(expectedParent, parent);
 			Assert.Equal(expectedSelf, self);
 		}
