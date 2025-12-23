@@ -12,7 +12,7 @@ It provides automatic code generation and dependency injection support while mai
 - **🔧 Type Safety** - Leverages C# nullable reference types for automatic requirement detection
 - **📦 Dependency Injection** - Built-in DI container integration
 - **🎯 Full Flexibility** - Direct access to System.CommandLine when needed
-- **🛠️ Handles User Cancellation and Graceful Shutdown** - Built-in Support for cancellation tokens and graceful shutdown
+- **🛠️ Handles User Cancellation and Graceful Shutdown** - Built-in Support for Ctr->C Interruption via Cancellation tokens and graceful shutdown
 - **🌟 Minimum Dependencies** - Only depends on System.CommandLine and Microsoft.Extensions.Hosting.
 - **🌟 Easy Extensions** Use [CommandHost.ConfigureHost](CommandHost.cs) to bootstrap additional services or use [Albatross.CommandLine.Default](https://www.nuget.org/packages/Albatross.CommandLine.Default) to include Serilog logging via [Albatross.Logging](https://www.nuget.org/packages/Albatross.Logging) and Json\Environmental Configuration Support via [Albatross.Config](https://www.nuget.org/packages/Albatross.Config).
 
