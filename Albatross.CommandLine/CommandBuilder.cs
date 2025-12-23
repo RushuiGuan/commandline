@@ -46,7 +46,7 @@ namespace Albatross.CommandLine {
 		/// <param name="commandText"></param>
 		/// <param name="parent"></param>
 		/// <param name="self"></param>
-		public void ParseCommandText(string commandText, out string parent, out string self) {
+		public static void ParseCommandText(string commandText, out string parent, out string self) {
 			var index = commandText.LastIndexOf(' ');
 			if (index == -1) {
 				parent = string.Empty;
@@ -79,6 +79,8 @@ namespace Albatross.CommandLine {
 
 		public void BuildTree(Func<IHost> hostFactory) {
 			var globalCommandAction = new GlobalCommandAction(hostFactory);
+			// ordering is required here to ensure parent commands are created before child commands
+			// ordering cannot be done in code generation because commands can be added manually
 			foreach (var item in this.commands.OrderBy(x => x.Key).ToArray()) {
 				if (!string.IsNullOrEmpty(item.Key)) {
 					AddToParentCommand(item.Key, item.Value, globalCommandAction.InvokeAsync);

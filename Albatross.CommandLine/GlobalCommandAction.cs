@@ -15,7 +15,7 @@ namespace Albatross.CommandLine {
 		}
 
 		/// <summary>
-		/// Windows exit code is int but unix is only byte, so we use 255 so that it will have the same value on both platforms.
+		/// Windows exit code is int but unix is only byte, so we use 255 or less so that it will have the same value on both platforms.
 		/// </summary>
 		const int ErrorExitCode = 255;
 		const int CancelledExitCode = 254;

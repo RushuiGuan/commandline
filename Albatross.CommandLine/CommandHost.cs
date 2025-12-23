@@ -8,14 +8,23 @@ using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
 	/// <summary>
-	/// async using await new CommandHost("My App Description").AddCommands().Parse(args).RegisterServices().Build().InvokeAsync();
+	/// Host for running commands 
+	/// <code>
+	///		await using var host = new CommandHost("Sample Command Line Application")
+	///			.RegisterServices((result, config, services) => {...})
+	///			.AddCommands()
+	///			.Parse(args)
+	///			.ConfigureHost((result, builder) => {...})
+	///			.Build();
+	///		return await host.InvokeAsync();
+	///	</code>
 	/// </summary>
 	public class CommandHost: IAsyncDisposable {
 		protected IConfiguration configuration;
 		protected IHostBuilder hostBuilder;
 		ParseResult? parseResult;
 		IHost? host;
-		protected ParseResult RequiredResult => this.parseResult ?? throw new InvalidOperationException("Parse() has not been called yet");
+		protected ParseResult RequiredResult => this.parseResult ?? throw new InvalidOperationException("Parse(args) has not been called yet");
 		public CommandBuilder CommandBuilder { get; }
 
 		IHost GetHost() => host ?? throw new InvalidOperationException($"Host has not been built, Call the Build() method!");
@@ -38,7 +47,7 @@ namespace Albatross.CommandLine {
 			this.CommandBuilder.BuildTree(GetHost);
 			parseResult = this.CommandBuilder.RootCommand.Parse(args);
 			this.hostBuilder.ConfigureServices(services => services.AddSingleton(parseResult));
-			// configure logging level right after parsing
+			// configure default logging level based on parsed result
 			var logLevel = parseResult.GetRequiredValue(CommandBuilder.VerbosityOption);
 			this.hostBuilder.ConfigureLogging((_, builder) => builder.SetMinimumLevel(logLevel));
 			return this;

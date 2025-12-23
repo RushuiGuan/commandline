@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace Albatross.CommandLine.CodeGen {
 	public record class CommandSetup {
+		public const string CommandClassPostfix = "Command";
 		public string Key { get; }
 		public string Name { get; }
 		public INamedTypeSymbol OptionsClass { get; }
@@ -57,8 +58,8 @@ namespace Albatross.CommandLine.CodeGen {
 			if (optionsClassName.EndsWith(Postfix_Options, StringComparison.InvariantCultureIgnoreCase)) {
 				optionsClassName = optionsClassName.Substring(0, optionsClassName.Length - Postfix_Options.Length);
 			}
-			if (!optionsClassName.EndsWith(My.CommandClassName, StringComparison.InvariantCultureIgnoreCase)) {
-				optionsClassName = optionsClassName + My.CommandClassName;
+			if (!optionsClassName.EndsWith(CommandClassPostfix, StringComparison.InvariantCultureIgnoreCase)) {
+				optionsClassName = optionsClassName + CommandClassPostfix;
 			}
 			return optionsClassName;
 		}

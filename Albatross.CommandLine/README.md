@@ -1,7 +1,7 @@
 # Albatross.CommandLine
 
 A .NET library that simplifies creating command-line applications with [System.CommandLine](https://learn.microsoft.com/en-us/dotnet/standard/commandline/). 
-It provides automatic code generation and dependency injection support while maintaining full access to System.CommandLine's capabilities.  It can be used to quickly create enterprise CLI applications with minimal boilerplate.
+It provides automatic code generation and dependency injection support while maintaining full access to System.CommandLine's capabilities.  It is opionionated toward async actions with out of box support for action cancellation and graceful shutdown.
 
 
 🎉 **Now using System.CommandLine v2 stable release** for improved reliability and long-term support.
@@ -9,10 +9,10 @@ It provides automatic code generation and dependency injection support while mai
 ## ✨ Key Features
 
 - **🚀 Minimal Boilerplate** - Attribute-based command definition with automatic code generation
-- **🔧 Type Safety** - Leverages C# nullable reference types for automatic requirement detection
+- **🔧 Type Safety** - Leverages C# nullable reference\value types for automatic requirement detection
 - **📦 Dependency Injection** - Built-in DI container integration
 - **🎯 Full Flexibility** - Direct access to System.CommandLine when needed
-- **🛠️ Handles User Cancellation and Graceful Shutdown** - Built-in Support for Ctr->C Interruption via Cancellation tokens and graceful shutdown
+- **🛠️ Out of Box Support for Cancellation and Graceful Shutdown** - Built-in Support for Ctr->C Interruption via Cancellation tokens and Graceful Shutdown
 - **🌟 Minimum Dependencies** - Only depends on System.CommandLine and Microsoft.Extensions.Hosting.
 - **🌟 Easy Extensions** Use [CommandHost.ConfigureHost](CommandHost.cs) to bootstrap additional services or use [Albatross.CommandLine.Default](https://www.nuget.org/packages/Albatross.CommandLine.Default) to include Serilog logging via [Albatross.Logging](https://www.nuget.org/packages/Albatross.Logging) and Json\Environmental Configuration Support via [Albatross.Config](https://www.nuget.org/packages/Albatross.Config).
 
