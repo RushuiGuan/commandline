@@ -1,5 +1,4 @@
-﻿using Serilog.Events;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
@@ -25,22 +24,10 @@ namespace Albatross.CommandLine {
 			return string.Join(" ", parts);
 		}
 
-		public static CommandBuilder AddWithParentKey(this CommandBuilder builder, string? parentKey, Command command) {
+		public static CommandHost AddCommand(this CommandHost commandHost, string? parentKey, Command command) {
 			var fullKey = string.IsNullOrEmpty(parentKey) ? command.Name : $"{parentKey} {command.Name}";
-			builder.Add(fullKey, command);
-			return builder;
+			commandHost.CommandBuilder.Add(fullKey, command);
+			return commandHost;
 		}
-
-		public static LogEventLevel Translate(this LogLevel logLevel)
-			=> logLevel switch {
-				LogLevel.Verbose => LogEventLevel.Verbose,
-				LogLevel.Debug => LogEventLevel.Debug,
-				LogLevel.Information => LogEventLevel.Information,
-				LogLevel.Info => LogEventLevel.Information,
-				LogLevel.Warning => LogEventLevel.Warning,
-				LogLevel.Error => LogEventLevel.Error,
-				LogLevel.Fatal => LogEventLevel.Fatal,
-				_ => throw new NotSupportedException($"LogLevel {logLevel} is not supported."),
-			};
 	}
 }

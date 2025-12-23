@@ -14,12 +14,12 @@ namespace Albatross.CommandLine.CodeGen {
 			public static readonly QualifiedIdentifierNameExpression Option = new("Option", Namespaces.SystemCommandLine);
 			public static readonly QualifiedIdentifierNameExpression Argument = new("Argument", Namespaces.SystemCommandLine);
 			public static readonly QualifiedIdentifierNameExpression ICommandAction = new("ICommandAction", Namespaces.AlbatrossCommandLine);
-			public static readonly QualifiedIdentifierNameExpression Setup = new("Setup", Namespaces.AlbatrossCommandLine);
+			public static readonly QualifiedIdentifierNameExpression CommandHost = new("CommandHost", Namespaces.AlbatrossCommandLine);
 			public static readonly QualifiedIdentifierNameExpression ParserResult = new ("ParseResult", Namespaces.SystemCommandLine);
 		}
 		public static class Types {
 			public static readonly TypeExpression ICommandAction = new(Identifiers.ICommandAction);
-			public static readonly TypeExpression Setup = new(Identifiers.Setup);
+			public static readonly TypeExpression CommandHost = new(Identifiers.CommandHost);
 		}
 	}
 }

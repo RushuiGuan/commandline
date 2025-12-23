@@ -8,8 +8,6 @@
 		<PackageReleaseNotes>$(RepositoryProjectRoot)/Albatross.CommandLine/release-notes.md</PackageReleaseNotes>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Albatross.Config" Version="7.5.11" />
-		<PackageReference Include="Albatross.Logging" Version="10.0.1" />
 		<PackageReference Include="Albatross.Text" Version="9.0.1" />
 		<PackageReference Include="System.CommandLine" Version="2.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />

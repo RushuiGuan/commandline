@@ -12,6 +12,12 @@
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
 			<OutputItemType>Analyzer</OutputItemType>
 		</ProjectReference>
+		<ProjectReference Include="..\Albatross.CommandLine.Defaults\Albatross.CommandLine.Defaults.csproj" />
 		<ProjectReference Include="..\Albatross.CommandLine\Albatross.CommandLine.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Update="appsettings.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 </Project>

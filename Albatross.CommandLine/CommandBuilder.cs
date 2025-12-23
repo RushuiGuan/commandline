@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
@@ -14,10 +15,7 @@ namespace Albatross.CommandLine {
 
 		public CommandBuilder(string rootCommandDescription) {
 			RootCommand = new RootCommand(rootCommandDescription) {
-				new Option<LogLevel?>(VerbosityOptionName, "-v") {
-					Description = "Set the logging verbosity level",
-					Recursive = true,
-				}
+				VerbosityOption,
 			};
 			RootCommand.SetAction(new HelpAction().Invoke);
 			commands.Add(string.Empty, RootCommand);
@@ -34,8 +32,13 @@ namespace Albatross.CommandLine {
 			}
 		}
 
-		public const string VerbosityOptionName = "--verbosity";
-		
+		public static Option<LogLevel> VerbosityOption { get; } = new("--verbosity", "-v") {
+			Description = "Set the logging verbosity level",
+			Recursive = true,
+			Required = false,
+			DefaultValueFactory = _ => LogLevel.Error,
+		};
+
 		/// <summary>
 		/// Parse the command text and return the immediate (last) sub command and its complete parent command
 		/// if the text is "a b c", it will return "c" as self and "a b" as parent

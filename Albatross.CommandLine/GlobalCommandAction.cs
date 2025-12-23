@@ -18,6 +18,8 @@ namespace Albatross.CommandLine {
 		/// Windows exit code is int but unix is only byte, so we use 255 so that it will have the same value on both platforms.
 		/// </summary>
 		const int ErrorExitCode = 255;
+		const int CancelledExitCode = 254;
+
 		private readonly Func<IHost> hostFactory;
 
 		public async Task<int> InvokeAsync(ParseResult result, CancellationToken cancellationToken) {
@@ -44,6 +46,9 @@ namespace Albatross.CommandLine {
 			} else {
 				try {
 					return await handler.Invoke(cancellationToken);
+				} catch (OperationCanceledException) {
+					logger.LogWarning("Command {command} was cancelled", key);
+					return CancelledExitCode;
 				} catch (Exception err) {
 					logger.LogError(err, "Error invoking command {command}", key);
 					return ErrorExitCode;

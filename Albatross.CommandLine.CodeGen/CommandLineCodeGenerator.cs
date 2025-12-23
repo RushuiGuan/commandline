@@ -124,11 +124,11 @@ namespace Albatross.CommandLine.CodeGen {
 										IsStatic = true,
 										AccessModifier = Defined.Keywords.Public,
 										Name = new IdentifierNameExpression("AddCommands"),
-										ReturnType = MyDefined.Types.Setup,
+										ReturnType = MyDefined.Types.CommandHost,
 										Parameters = [
 											new ParameterDeclaration {
 												Name = new IdentifierNameExpression("setup"),
-												Type = MyDefined.Types.Setup,
+												Type = MyDefined.Types.CommandHost,
 												UseThisKeyword = true,
 											}
 										],
