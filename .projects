@@ -1,6 +1,7 @@
 # packages
 Albatross.CommandLine
 Albatross.CommandLine.CodeGen
+Albatross.CommandLine.Default
 
 # tests
 Albatross.CommandLine.Test

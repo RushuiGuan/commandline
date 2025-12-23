@@ -13,14 +13,13 @@ command classes. In the example below, the class `TestOptions`, `TestCommandActi
 are created manually and the second `TestCommand` class is generated.
 
 * The command is created as a partial class which allows user to add additional functionalities. To customize a command,
-  create a partial command class of the same name with the
-  interface [Albatross.CommandLine.IRequireInitialization](../Albatross.CommandLine/IRequireInitialization.cs).
+  create a partial command class of the same name and implement the partial method `Initialize`.  The `Initialize` method is invoked at the end of the constructor.
 * Nullable property are declared as optional and vice vesa. However, requirement can be overwritten using
   the [Albatross.CommandLine.OptionAttribute](../Albatross.CommandLine/OptionAttribute.cs) as shown in the `Value`
   property in the example.
 * Option alias can be created using
   the [Albatross.CommandLine.OptionAttribute](../Albatross.CommandLine/OptionAttribute.cs). Aliases are prefixed with a
-  single dash ('-') if the dash has not been prefixed already.
+  single dash ('-') if it is a single character otherwise double dash ('--') is used.
 
 ```csharp
 [Verb("test", typeof(TestCommandAction), Description = "A test command")]
@@ -38,9 +37,9 @@ public record class TestOptions {
 public class TestCommandAction : ICommandAction {
 	...
 }
-public partial class TestCommand : IRequireInitialization {
+public partial class TestCommand  {
 	// this method will be call right after object construction
-	public void Init() {
+	partial void Initialize() {
 		// customize your command here
 		...
 	}
@@ -51,12 +50,12 @@ public sealed partial class TestCommand : Command {
 		this.Option_Name = new Option<string>("--name", null) {
 			IsRequired = true
 		};
-		this.AddOption(Option_Name);
+		this.Add(Option_Name);
 		this.Option_Description = new Option<string?>("--description", null);
-		this.AddOption(Option_Description);
+		this.Add(Option_Description);
 		this.Option_Value = new Option<int>("--value", "An integer value");
 		Option_Value.AddAlias("-v");
-		this.AddOption(Option_Value);
+		this.Add(Option_Value);
 	}
 
 	public Option<string> Option_Name { get; }
@@ -65,8 +64,8 @@ public sealed partial class TestCommand : Command {
 }
 ```
 
-The second part of the code generator will create the service registration and option binding code. The
-`RegisterCommands` method should be invoked by service registration code in the Setup class.  `AddCommands` method is
+The second part of the code generator will create the service registration and the options registration code. The
+`RegisterCommands` method should be invoked by service registration.  `AddCommands` method is
 part of the bootstrap code in `program.cs` file. See [Albatross.CommandLine](../Albatross.CommandLine/README.md) for
 details.
 
@@ -74,34 +73,37 @@ details.
 public static class RegistrationExtensions
 	{
 		public static IServiceCollection RegisterCommands(this IServiceCollection services) {
-			services.AddKeyedScoped<ICommandAction, TestCommandAction>("test");
-			services.AddOptions<TestOptions>().BindCommandLine();
+			services.AddKeyedScoped<ICommandAction, Sample.CommandLine.HelloWorldCommandAction>("hello");
+			services.AddScoped<Sample.CommandLine.HelloWorldOptions>(provider => {
+				var result = provider.GetRequiredService<ParseResult>();
+				var options = new Sample.CommandLine.HelloWorldOptions() {
+					Argument1 = result.GetRequiredValue<string>("argument1"),
+					Argument2 = result.GetValue<string?>("argument2"),
+					Name = result.GetRequiredValue<string>("--name"),
+					Value = result.GetRequiredValue<int>("--value"),
+					NumericValue = result.GetValue<decimal>("--numeric-value"),
+					Date = result.GetRequiredValue<System.DateOnly>("--date"),
+				};
+				return options;
+			});
 			return services;
 		}
 
-		public static Setup AddCommands(this Setup setup) {
-			setup.AddCommand<TestCommand>();
-			return setup;
+		public static CommandHost AddCommands(this CommandHost host) {
+			host.CommandBuilder.Add<HelloWorldCommand>("hello");
+			return host;
 		}
 	}
 ```
 
 ## Troubleshooting
-
-In visual studio, `EmitCompilerGeneratedFiles` property can be added to view the generated code but Visual Studio
-doesn't work reliably. As an alternative, the code generator will output the debug file
-`albatross.commandline.codegen.txt` if the following properties are set in the project file.
-
+In visual studio, `EmitCompilerGeneratedFiles` property can be added to view the generated code.
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <EmitAlbatrossCodeGenDebugFile>true</EmitAlbatrossCodeGenDebugFile>
     </PropertyGroup>
-    <ItemGroup>
-        <CompilerVisibleProperty Include="EmitAlbatrossCodeGenDebugFile"/>
-    </ItemGroup>
 </Project>
 ```
-
-Rider can display the roslyn generated file reliably. They can be found under
+For Rider, generated code can be found under
 `Project -> Dependencies -> .NET (Version) -> Source Generators`. 
