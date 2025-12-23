@@ -93,75 +93,25 @@ public class ExampleProjectCommandAction : CommandAction<SharedProjectOptions> {
 }
 ```
 
-## Advanced Usage
-
-### Multiple Base Classes
-
-You can have different base classes for different command families:
-
+## Under the Hood
+Code generator automatically registers the Shared Options class based on the parse result:
 ```csharp
-// Database operations base
-public record class DatabaseOptions {
-    [Option(Description = "Database connection string")]
-    public required string ConnectionString { get; init; }
-    
-    [Option(Description = "Command timeout in seconds")]
-    public int Timeout { get; init; } = 30;
-}
-
-// File operations base  
-public record class FileOptions {
-    [Option(Description = "Input file path")]
-    public required string InputFile { get; init; }
-    
-    [Option(Description = "Output directory")]
-    public string? OutputDir { get; init; }
-}
-
-// Database backup command
-[Verb<DatabaseCommandAction>("db backup", 
-    UseBaseOptionsClass = typeof(DatabaseOptions))]
-public record class DatabaseBackupOptions : DatabaseOptions {
-    [Option(Description = "Backup file name")]
-    public required string BackupName { get; init; }
-}
-
-// Database restore command
-[Verb<DatabaseCommandAction>("db restore", 
-    UseBaseOptionsClass = typeof(DatabaseOptions))]
-public record class DatabaseRestoreOptions : DatabaseOptions {
-    [Option(Description = "Backup file to restore")]
-    public required string BackupFile { get; init; }
-}
-```
-
-### Nested Inheritance
-
-You can create inheritance hierarchies for more complex scenarios:
-
-```csharp
-// Base for all commands
-public record class BaseOptions {
-    [Option(Description = "Enable debug output")]
-    public bool Debug { get; init; }
-}
-
-// Base for server commands
-public record class ServerOptions : BaseOptions {
-    [Option(Description = "Server host")]
-    public string Host { get; init; } = "localhost";
-    
-    [Option(Description = "Server port")]
-    public int Port { get; init; } = 8080;
-}
-
-// Specific server command
-[Verb<ServerCommandAction>("server start", 
-    UseBaseOptionsClass = typeof(ServerOptions))]
-public record class ServerStartOptions : ServerOptions {
-    [Option(Description = "Enable SSL")]
-    public bool UseSsl { get; init; }
-}
+// generated code
+services.AddScoped<Sample.CommandLine.SharedProjectOptions>(provider => {
+	var result = provider.GetRequiredService<ParseResult>();
+	var key = result.CommandResult.Command.GetCommandKey();
+	return key switch {
+		"example project echo" => new Sample.CommandLine.ProjectEchoOptions() {
+			Echo = result.GetRequiredValue<int>("--echo"),
+			Id = result.GetRequiredValue<int>("--id"),
+		},
+		"example project fubar" => new Sample.CommandLine.ProjectFubarOptions() {
+			Fubar = result.GetRequiredValue<int>("--fubar"),
+			Id = result.GetRequiredValue<int>("--id"),
+		},
+		_ => throw new System.InvalidOperationException($"Command {key} is not registered for base Options class \"SharedProjectOptions\"")
+	};
+});
 ```
 
 ## Command Line Usage
@@ -175,46 +125,6 @@ dotnet run -- example project echo --id 123 --project-path "./myproject" --verbo
 # Using the project build command  
 dotnet run -- example project build --id 123 --project-path "./myproject" --configuration Debug --skip-tests
 ```
-
-## Generated Code
-
-The code generator creates commands that include both shared and specific options:
-
-```csharp
-// Generated ProjectEchoCommand.g.cs
-public sealed partial class ProjectEchoCommand : Command {
-    public ProjectEchoCommand() : base("echo", "Echo command with shared project options") {
-        // Shared options from base class
-        this.Option_Id = new Option<int>("--id") {
-            Description = "Project identifier",
-            Required = true
-        };
-        this.Add(this.Option_Id);
-        
-        this.Option_ProjectPath = new Option<string?>("--project-path") {
-            Description = "Project directory path"
-        };
-        this.Add(this.Option_ProjectPath);
-        
-        // Command-specific options
-        this.Option_Echo = new Option<int>("--echo") {
-            Description = "Number of times to echo", 
-            Required = true
-        };
-        this.Add(this.Option_Echo);
-        
-        this.Initialize();
-    }
-    
-    // Properties for all options
-    public Option<int> Option_Id { get; }
-    public Option<string?> Option_ProjectPath { get; }
-    public Option<int> Option_Echo { get; }
-    
-    partial void Initialize();
-}
-```
-
 ## Benefits
 
 ### Code Reuse
