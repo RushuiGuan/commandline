@@ -115,7 +115,7 @@ All with **zero manual configuration**!
 - **[Examples](articles/examples.md)** - More examples to show different use cases
 - **[Command Customization](articles/command-customization.md)** - Use partial class to modify the generated command
 - **[Code Generator](articles/code-generator.md)** - Deep dive into automatic code generation
-- **[Shared Options](articles/shared-options.md)** - Out of box support for sharing of base option classes
+- **[Mutually Exclusive Options Set](articles/mutually-exclusive-options-set.md)** - Support for Mutually Exclusive Options Set using Base Classes
 
 ## 🔧 Prerequisites
 - **C# Compiler 4.10.0+** (included with .NET 8 SDK or Visual Studio 2022)

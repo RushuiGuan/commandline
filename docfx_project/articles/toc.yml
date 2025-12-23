@@ -8,7 +8,7 @@
   href: command-customization.md
 - name: Code Generator
   href: code-generator.md
-- name: Shared Options
-  href: shared-options.md
+- name: Mutually Exclusive Options Set
+  href: mutually-exclusive-options-set.md
 - name: Manual Command
   href: manual-command.md  
