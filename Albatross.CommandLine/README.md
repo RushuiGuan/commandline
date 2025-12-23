@@ -23,8 +23,7 @@ It provides automatic code generation and dependency injection support while mai
 ### Quick Links
 - **[Quick Start Guide](https://rushuiguan.github.io/commandline/articles/quick-start.html)** - Verb, Option, and Argument attributes
 - **[Code Generator](https://rushuiguan.github.io/commandline/articles/code-generator.html)** - How automatic code generation works
-- **[Shared Options](https://rushuiguan.github.io/commandline/articles/shared-options.html)** - Share common options across commands
-- **[Manual Commands](https://rushuiguan.github.io/commandline/articles/manual-command.html)** - Direct System.CommandLine integration
+- **[Commands Customization](https://rushuiguan.github.io/commandline/articles/command-customization.html)** - Customize generated Command using partial class
 
 ## 🔧 Dependencies
 - **System.CommandLine 2.0.1+**
