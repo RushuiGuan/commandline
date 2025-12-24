@@ -68,7 +68,7 @@ namespace Albatross.CommandLine.CodeGen {
 			context.RegisterSourceOutput(
 				aggregated,
 				static (context, data) => {
-					var typeConverter = new DefaultTypeConverter(data.compilation);
+					var typeConverter = new DefaultTypeConverter();
 					var (compilation, commandSetups) = data;
 					var builder = new CommandClassBuilder(compilation, typeConverter);
 					foreach (var group in commandSetups.GroupBy(x => x.CommandClassName)) {
