@@ -6,11 +6,8 @@ using Albatross.CodeGen.CSharp.Expressions;
 using Albatross.CodeGen.CSharp.TypeConversions;
 using Albatross.Collections;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.ComponentModel;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 
@@ -68,7 +65,7 @@ namespace Albatross.CommandLine.CodeGen {
 			context.RegisterSourceOutput(
 				aggregated,
 				static (context, data) => {
-					var typeConverter = new DefaultTypeConverter(data.compilation);
+					var typeConverter = new DefaultTypeConverter();
 					var (compilation, commandSetups) = data;
 					var builder = new CommandClassBuilder(compilation, typeConverter);
 					foreach (var group in commandSetups.GroupBy(x => x.CommandClassName)) {
@@ -110,7 +107,7 @@ namespace Albatross.CommandLine.CodeGen {
 												UseThisKeyword = true,
 											}
 										],
-										Body = new CSharpCodeBlock {
+										Body = {
 											{
 												true,
 												() => CreateCommandActionRegistrations(compilation, commandSetups, typeConverter)
@@ -132,7 +129,7 @@ namespace Albatross.CommandLine.CodeGen {
 												UseThisKeyword = true,
 											}
 										],
-										Body = new CSharpCodeBlock {
+										Body = {
 											{ true, () => CreateAddCommandsBody(commandSetups) },
 											new ReturnExpression {
 												Expression = new IdentifierNameExpression("setup")
@@ -155,7 +152,7 @@ namespace Albatross.CommandLine.CodeGen {
 							new TypeExpression(setup.CommandClassName)
 						}
 					},
-					Arguments = new ListOfArguments {
+					Arguments = {
 						new StringLiteralExpression(setup.Key)
 					}
 				};
@@ -173,7 +170,7 @@ namespace Albatross.CommandLine.CodeGen {
 								typeConverter.Convert(setup.HandlerClass)
 							}
 						},
-						Arguments = new ListOfArguments {
+						Arguments = {
 							new StringLiteralExpression(setup.Key)
 						}
 					};
@@ -215,13 +212,13 @@ namespace Albatross.CommandLine.CodeGen {
 				},
 				Arguments = {
 					new AnonymousMethodExpression {
-						Parameters = [
+						Parameters = {
 							new ParameterDeclaration {
 								Name = new IdentifierNameExpression("provider"),
 								Type = Defined.Types.Var,
 							}
-						],
-						Body = [
+						},
+						Body = {
 							new AssignmentExpression {
 								Left = new VariableDeclaration {
 									Identifier = new IdentifierNameExpression("result"),
@@ -233,7 +230,7 @@ namespace Albatross.CommandLine.CodeGen {
 										}
 									}
 								}
-							}.EndOfStatement(),
+							},
 							new AssignmentExpression {
 								Left = new VariableDeclaration {
 									Identifier = new IdentifierNameExpression("key"),
@@ -241,7 +238,7 @@ namespace Albatross.CommandLine.CodeGen {
 								Expression = new InvocationExpression {
 									CallableExpression = new IdentifierNameExpression("result.CommandResult.Command.GetCommandKey"),
 								}
-							}.EndOfStatement(),
+							},
 							new ReturnExpression {
 								Expression = new SwitchExpression {
 									Value = new IdentifierNameExpression("key"),
@@ -251,9 +248,9 @@ namespace Albatross.CommandLine.CodeGen {
 												Value = new StringLiteralExpression(x.Key),
 												Expression = new NewObjectExpression {
 													Type = typeConverter.Convert(x.OptionsClass),
-													Initializers = new ListOfNodes<AssignmentExpression>(
+													Initializers = {
 														x.Parameters.Select(y => CreateGetOptionPropertyValueExpression(compilation, y, typeConverter))
-													)
+													}
 												},
 											})
 										}
@@ -261,18 +258,20 @@ namespace Albatross.CommandLine.CodeGen {
 									DefaultExpression = new ThrowExpression {
 										Expression = new NewObjectExpression {
 											Type = new TypeExpression("System.InvalidOperationException"),
-											Arguments = new ListOfArguments {
+											Arguments = {
 												new StringInterpolationExpression {
-													new StringLiteralExpression("Command "),
-													new IdentifierNameExpression("key"),
-													new StringLiteralExpression($" is not registered for base Options class \"{sharedOptionBaseClass.Name}\"")
+													Items = {
+														new StringLiteralExpression("Command "),
+														new IdentifierNameExpression("key"),
+														new StringLiteralExpression($" is not registered for base Options class \"{sharedOptionBaseClass.Name}\"")
+													}
 												}
 											}
 										}
 									}
 								}
 							}
-						]
+						}
 					}
 				}
 			};
@@ -280,9 +279,9 @@ namespace Albatross.CommandLine.CodeGen {
 		public static AssignmentExpression CreateGetOptionPropertyValueExpression(Compilation compilation, CommandPropertySetup property, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
 			IExpression expression = new InvocationExpression {
 				CallableExpression = new IdentifierNameExpression(ShouldUseRequiredValue(compilation, property) ? "result.GetRequiredValue" : "result.GetValue") {
-					GenericArguments = new(typeConverter.Convert(property.PropertySymbol.Type))
+					GenericArguments = { typeConverter.Convert(property.PropertySymbol.Type) }
 				},
-				Arguments = new ListOfArguments(new StringLiteralExpression(property.Key))
+				Arguments = { new StringLiteralExpression(property.Key) }
 			};
 			if (property.PropertySymbol.Type.TryGetCollectionElementType(compilation, out var elementType)) {
 				expression = new InfixExpression {
@@ -290,7 +289,7 @@ namespace Albatross.CommandLine.CodeGen {
 					Operator = new Operator("??"),
 					Right = new InvocationExpression {
 						CallableExpression = new QualifiedIdentifierNameExpression("Array.Empty", Defined.Namespaces.System) {
-							GenericArguments = new(typeConverter.Convert(elementType))
+							GenericArguments = { typeConverter.Convert(elementType) }
 						}
 					}
 				};
@@ -310,13 +309,13 @@ namespace Albatross.CommandLine.CodeGen {
 				},
 				Arguments = {
 					new AnonymousMethodExpression {
-						Parameters = [
+						Parameters = {
 							new ParameterDeclaration {
 								Name = new IdentifierNameExpression("provider"),
 								Type = Defined.Types.Var,
 							}
-						],
-						Body = [
+						},
+						Body = {
 							new AssignmentExpression {
 								Left = new VariableDeclaration {
 									Identifier = new IdentifierNameExpression("result"),
@@ -328,22 +327,22 @@ namespace Albatross.CommandLine.CodeGen {
 										}
 									}
 								}
-							}.EndOfStatement(),
+							},
 							new AssignmentExpression {
 								Left = new VariableDeclaration {
 									Identifier = new IdentifierNameExpression("options"),
 								},
 								Expression = new NewObjectExpression {
 									Type = typeConverter.Convert(setup.OptionsClass),
-									Initializers = new ListOfNodes<AssignmentExpression>(
+									Initializers = {
 										setup.Parameters.Select(x => CreateGetOptionPropertyValueExpression(compilation, x, typeConverter))
-									)
+									}
 								}
-							}.EndOfStatement(),
+							},
 							new ReturnExpression {
 								Expression = new IdentifierNameExpression("options")
 							},
-						]
+						}
 					}
 				}
 			};

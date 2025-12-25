@@ -35,13 +35,13 @@ namespace Albatross.CommandLine.CodeGen {
 						Name = new IdentifierNameExpression(setup.CommandClassName),
 						BaseConstructorInvocation = new InvocationExpression {
 							CallableExpression = new IdentifierNameExpression("base"),
-							Arguments = new ListOfArguments{
+							Arguments = {
 								new StringLiteralExpression(setup.Name),
 								{ !string.IsNullOrEmpty(setup.Description), () => new StringLiteralExpression(setup.Description!) },
 							}
 						},
 						AccessModifier = Defined.Keywords.Public,
-						Body = new CodeBlock(CreateConstructorBody(setup)),
+						Body = { CreateConstructorBody(setup) },
 					}
 				],
 				Methods = [
@@ -71,8 +71,8 @@ namespace Albatross.CommandLine.CodeGen {
 			foreach (var alias in setup.Aliases) {
 				yield return new InvocationExpression {
 					CallableExpression = new IdentifierNameExpression("this.Aliases.Add"),
-					Arguments = new ListOfArguments(new StringLiteralExpression(alias))
-				}.EndOfStatement();
+					Arguments = { new StringLiteralExpression(alias) }
+				};
 			}
 			foreach (var parameter in setup.Parameters) {
 				yield return new AssignmentExpression {
@@ -116,31 +116,31 @@ namespace Albatross.CommandLine.CodeGen {
 								parameter.ShouldDefaultToInitializer, () => new AssignmentExpression {
 									Left = new IdentifierNameExpression("DefaultValueFactory"),
 									Expression = new AnonymousMethodExpression{
-										Parameters = [
+										Parameters = {
 											new ParameterDeclaration {
 												Name = new IdentifierNameExpression("_"),
 												Type = Defined.Types.Var,
 											},
-										],
-										Body = [
+										},
+										Body = {
 											new SyntaxNodeExpression(parameter.PropertyInitializer!, compilation.GetSemanticModel(parameter.PropertyInitializer!.SyntaxTree))
-										]
+										}
 									}
 								}
 							}
 						},
-					}.EndOfStatement()
+					}
 				};
 				yield return new InvocationExpression {
 					CallableExpression = new IdentifierNameExpression("this.Add"),
-					Arguments = new ListOfArguments {
+					Arguments = {
 						new IdentifierNameExpression("this." + parameter.CommandPropertyName)
 					}
-				}.EndOfStatement();
+				};
 			}
 			yield return new InvocationExpression {
 				CallableExpression = new IdentifierNameExpression("this.Initialize"),
-			}.EndOfStatement();
+			};
 		}
 	}
 }
