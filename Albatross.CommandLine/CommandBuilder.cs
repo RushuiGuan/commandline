@@ -16,7 +16,6 @@ namespace Albatross.CommandLine {
 		public CommandBuilder(string rootCommandDescription) {
 			RootCommand = new RootCommand(rootCommandDescription) {
 				VerbosityOption,
-				new TestOption()
 			};
 			RootCommand.SetAction(new HelpAction().Invoke);
 			commands.Add(string.Empty, RootCommand);
