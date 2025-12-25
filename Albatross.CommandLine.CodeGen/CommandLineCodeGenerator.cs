@@ -12,6 +12,11 @@ using System.IO;
 using System.Linq;
 
 namespace Albatross.CommandLine.CodeGen {
+	/// <summary>
+	/// TODO: code gen can be created for manual command too.  user doesn't need to wire it up manually
+	/// TODO: Need a warning if the Option Class does derive from the value of VerbAttribute.UseBaseOptionsClass
+	/// 
+	/// </summary>
 	[Generator]
 	public class CommandLineCodeGenerator : IIncrementalGenerator {
 		static IncrementalValuesProvider<CommandSetup> BuildVerbsCommandSetups(IncrementalGeneratorInitializationContext context,
@@ -110,7 +115,7 @@ namespace Albatross.CommandLine.CodeGen {
 										Body = {
 											{
 												true,
-												() => CreateCommandActionRegistrations(compilation, commandSetups, typeConverter)
+												() => CreateCommandHandlerRegistrations(compilation, commandSetups, typeConverter)
 											},
 											new ReturnExpression {
 												Expression = new IdentifierNameExpression("services")
@@ -159,14 +164,14 @@ namespace Albatross.CommandLine.CodeGen {
 			}
 		}
 
-		private static IEnumerable<IExpression> CreateCommandActionRegistrations(Compilation compilation, ImmutableArray<CommandSetup> commandSetups, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
+		private static IEnumerable<IExpression> CreateCommandHandlerRegistrations(Compilation compilation, ImmutableArray<CommandSetup> commandSetups, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
 			Dictionary<INamedTypeSymbol, List<CommandSetup>> sharedBasedOptions = new(SymbolEqualityComparer.Default);
 			foreach (var setup in commandSetups) {
 				if (setup.HandlerClass != null) {
 					yield return new InvocationExpression {
 						CallableExpression = new IdentifierNameExpression("services.AddKeyedScoped") {
 							GenericArguments = new ListOfGenericArguments {
-								MyDefined.Types.ICommandAction,
+								MyDefined.Types.ICommandHandler,
 								typeConverter.Convert(setup.HandlerClass)
 							}
 						},

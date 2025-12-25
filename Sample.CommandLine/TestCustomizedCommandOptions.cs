@@ -1,7 +1,7 @@
 ﻿using Albatross.CommandLine;
 
 namespace Sample.CommandLine {
-	[Verb<DefaultCommandAction<TestCustomizedCommandOptions>>("test customized", Description = "Commands can be customized by extending its partial class")]
+	[Verb<DefaultCommandHandler<TestCustomizedCommandOptions>>("test customized", Description = "Commands can be customized by extending its partial class")]
 	public record class TestCustomizedCommandOptions {
 		[Option("d")]
 		public required string Description { get; init; }

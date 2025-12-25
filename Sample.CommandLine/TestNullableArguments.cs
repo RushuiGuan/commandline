@@ -1,7 +1,7 @@
 using Albatross.CommandLine;
 
 namespace Sample.CommandLine {
-	[Verb<DefaultCommandAction<TestNullableArguments>>("test nullable-arguments", Description = "Optional arguments should be placed after the required arguments")]
+	[Verb<DefaultCommandHandler<TestNullableArguments>>("test nullable-arguments", Description = "Optional arguments should be placed after the required arguments")]
 	public record class TestNullableArguments {
 		[Argument(Description = "Required string value")]
 		public required string RequiredStringValue { get; init; }

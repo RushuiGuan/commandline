@@ -9,8 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
-	public class GlobalCommandAction {
-		public GlobalCommandAction(Func<IHost> hostFactory) {
+	public class GlobalCommandHandler {
+		public GlobalCommandHandler(Func<IHost> hostFactory) {
 			this.hostFactory = hostFactory;
 		}
 
@@ -24,15 +24,15 @@ namespace Albatross.CommandLine {
 
 		public async Task<int> InvokeAsync(ParseResult result, CancellationToken cancellationToken) {
 			var host = this.hostFactory();
-			var logger = host.Services.GetRequiredService<ILogger<GlobalCommandAction>>();
+			var logger = host.Services.GetRequiredService<ILogger<GlobalCommandHandler>>();
 			var commandNames = result.CommandResult.Command.GetCommandNames();
 			var key = string.Join(' ', commandNames);
 			logger.LogInformation("Executing command '{command}'", key);
-			ICommandAction? handler = null;
+			ICommandHandler? handler = null;
 			try {
-				handler = host.Services.GetKeyedService<ICommandAction>(key);
+				handler = host.Services.GetKeyedService<ICommandHandler>(key);
 			} catch (Exception err) {
-				logger.LogError(err, "Error creating CommandAction for command {command}", key);
+				logger.LogError(err, "Error creating CommandHandler for command {command}", key);
 				return ErrorExitCode;
 			}
 			if (handler == null) {
@@ -40,12 +40,12 @@ namespace Albatross.CommandLine {
 				if (result.CommandResult.Command.Subcommands.Any()) {
 					return new HelpAction().Invoke(result);
 				} else {
-					logger.LogError("No CommandAction is registered for command {command}", key);
+					logger.LogError("No CommandHandler is registered for command {command}", key);
 					return ErrorExitCode;
 				}
 			} else {
 				try {
-					return await handler.Invoke(cancellationToken);
+					return await handler.InvokeAsync(cancellationToken);
 				} catch (OperationCanceledException) {
 					logger.LogWarning("Command {command} was cancelled", key);
 					return CancelledExitCode;

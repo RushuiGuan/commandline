@@ -66,7 +66,7 @@ internal class Program {
 ### 3. Define Your Command
 
 ```csharp
-[Verb<HelloCommandAction>("hello", Description = "Say hello to someone")]
+[Verb<HelloCommandHandler>("hello", Description = "Say hello to someone")]
 public record class HelloOptions {
     // Required argument (position 0)
     [Argument(Description = "Name to greet")]
@@ -77,8 +77,8 @@ public record class HelloOptions {
     public int Count { get; init; } = 1;
 }
 
-public class HelloCommandAction : CommandAction<HelloOptions> {
-    public HelloCommandAction(HelloOptions options) : base(options) {
+public class HelloCommandHandler : CommandHandler<HelloOptions> {
+    public HelloCommandHandler(HelloOptions options) : base(options) {
     }
 
     public override async Task<int> Invoke(CancellationToken cancellationToken) {
@@ -109,7 +109,7 @@ dotnet run -- hello "World" --count 3
 
 ### Shared Options
 ```csharp
-[Verb<ProjectCommandAction>("project build", UseBaseOptionsClass = typeof(ProjectOptions))]
+[Verb<ProjectCommandHandler>("project build", UseBaseOptionsClass = typeof(ProjectOptions))]
 public record class BuildOptions : ProjectOptions {
     [Option] public string Configuration { get; init; } = "Release";
 }

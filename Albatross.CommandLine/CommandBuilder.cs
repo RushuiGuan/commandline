@@ -16,6 +16,7 @@ namespace Albatross.CommandLine {
 		public CommandBuilder(string rootCommandDescription) {
 			RootCommand = new RootCommand(rootCommandDescription) {
 				VerbosityOption,
+				new TestOption()
 			};
 			RootCommand.SetAction(new HelpAction().Invoke);
 			commands.Add(string.Empty, RootCommand);
@@ -78,15 +79,15 @@ namespace Albatross.CommandLine {
 		}
 
 		public void BuildTree(Func<IHost> hostFactory) {
-			var globalCommandAction = new GlobalCommandAction(hostFactory);
+			var globalCommandHandler = new GlobalCommandHandler(hostFactory);
 			// ordering is required here to ensure parent commands are created before child commands
 			// ordering cannot be done in code generation because commands can be added manually
 			foreach (var item in this.commands.OrderBy(x => x.Key).ToArray()) {
 				if (!string.IsNullOrEmpty(item.Key)) {
-					AddToParentCommand(item.Key, item.Value, globalCommandAction.InvokeAsync);
+					AddToParentCommand(item.Key, item.Value, globalCommandHandler.InvokeAsync);
 				}
 				if (item.Value.Action == null) {
-					item.Value.SetAction(globalCommandAction.InvokeAsync);
+					item.Value.SetAction(globalCommandHandler.InvokeAsync);
 				}
 			}
 		}

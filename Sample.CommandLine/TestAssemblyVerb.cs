@@ -4,9 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 /// <summary>
-/// assembly verb is used when both Options class and the CommandAction class are defined in a different assembly.
+/// assembly verb is used when both Options class and the CommandHandler class are defined in a different assembly.
 /// </summary>
-[assembly: Verb<TestAssemblyVerbOptions, TestAssemblyVerbAction>("test assembly-verb", Description = "This verb demonstrates how to define verb for options and its handler in an assembly level")]
+[assembly: Verb<TestAssemblyVerbOptions, TestAssemblyVerbHandler>("test assembly-verb", Description = "This verb demonstrates how to define verb for options and its handler in an assembly level")]
 
 namespace Sample.CommandLine {
 	public record class TestAssemblyVerbOptions{
@@ -14,9 +14,9 @@ namespace Sample.CommandLine {
 		public string Name { get; set; } = "World"; 
 	}
 	
-	public class TestAssemblyVerbAction : CommandAction<TestAssemblyVerbOptions> {
-		public TestAssemblyVerbAction(TestAssemblyVerbOptions options) : base(options) { }
-		public override async Task<int> Invoke(CancellationToken token) {
+	public class TestAssemblyVerbHandler : CommandHandler<TestAssemblyVerbOptions> {
+		public TestAssemblyVerbHandler(TestAssemblyVerbOptions options) : base(options) { }
+		public override async Task<int> InvokeAsync(CancellationToken token) {
 			await this.Writer.WriteLineAsync($"Hello, {options.Name}!");
 			return 0;
 		}

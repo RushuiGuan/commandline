@@ -7,8 +7,8 @@
           "src": "..",
           "files": [
             "Albatross.CommandLine/Albatross.CommandLine.csproj",
-			"Albatross.CommandLine.CodeGen/Albatross.CommandLine.CodeGen.csproj",
-			"Albatross.CommandLine.Default/Albatross.CommandLine.Default.csproj"
+            "Albatross.CommandLine.CodeGen/Albatross.CommandLine.CodeGen.csproj",
+            "Albatross.CommandLine.Default/Albatross.CommandLine.Default.csproj"
           ]
         }
       ],
@@ -41,7 +41,8 @@
     "globalMetadata": {
       "_appName": "Albatross.CommandLine",
       "_appTitle": "Albatross.CommandLine",
-	  "_appLogoPath":"./images/logo.svg",
+      "_appLogoPath": "./images/logo.svg",
+      "_appFaviconPath": "./images/favicon.svg",
       "_enableSearch": true,
       "pdf": false
     }

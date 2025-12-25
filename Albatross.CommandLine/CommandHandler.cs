@@ -5,20 +5,20 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
-	public abstract class CommandAction<T> : ICommandAction where T : class {
+	public abstract class CommandHandler<T> : ICommandHandler where T : class {
 		private readonly ParseResult? result;
 		protected ParseResult Result => result ?? throw new InvalidOperationException("ParseResult is not available.");
 		protected readonly T options;
 		protected virtual TextWriter Writer => Console.Out;
 
-		protected CommandAction(ParseResult result, T options) : this(options){
+		protected CommandHandler(ParseResult result, T options) : this(options){
 			this.result = result;
 		}
 
-		protected CommandAction(T options) {
+		protected CommandHandler(T options) {
 			this.options = options;
 		}
 
-		public abstract Task<int> Invoke(CancellationToken cancellationToken);
+		public abstract Task<int> InvokeAsync(CancellationToken cancellationToken);
 	}
 }

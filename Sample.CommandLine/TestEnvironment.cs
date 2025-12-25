@@ -9,7 +9,7 @@ namespace Sample.CommandLine {
 	public record class TestEnvironmentOptions {
 	}
 
-	public class TestEnvironment : CommandAction<TestEnvironmentOptions> {
+	public class TestEnvironment : CommandHandler<TestEnvironmentOptions> {
 		private readonly ProgramSetting programSetting;
 		private readonly EnvironmentSetting environmentSetting;
 		private readonly IHostEnvironment hostEnvironment;
@@ -20,7 +20,7 @@ namespace Sample.CommandLine {
 			this.hostEnvironment = hostEnvironment;
 		}
 
-		public override async Task<int> Invoke(CancellationToken cancellationToken) {
+		public override async Task<int> InvokeAsync(CancellationToken cancellationToken) {
 			await this.Writer.WriteLineAsync($"App: {this.programSetting.App}; Group: {this.programSetting.Group}");
 			await this.Writer.WriteLineAsync($"Environment: {this.environmentSetting.HostName}; IsProd: {this.environmentSetting.IsProd}; Environment: {this.environmentSetting.Value}");
 			await this.Writer.WriteLineAsync($"IHostEnvironment: {this.hostEnvironment.EnvironmentName}; App: {this.hostEnvironment.ApplicationName}");

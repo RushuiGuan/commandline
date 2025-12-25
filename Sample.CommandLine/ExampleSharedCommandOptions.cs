@@ -4,13 +4,13 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	[Verb<ExampleProjectCommandAction>("example project echo", UseBaseOptionsClass = typeof(SharedProjectOptions), Description = "This demonstrates the use of mutually exclusive commands using inheritance.")]
+	[Verb<ExampleProjectCommandHandler>("example project echo", UseBaseOptionsClass = typeof(SharedProjectOptions), Description = "This demonstrates the use of mutually exclusive commands using inheritance.")]
 	public record class ProjectEchoOptions : SharedProjectOptions {
 		[Option]
 		public required int Echo { get; init; }
 	}
 
-	[Verb<ExampleProjectCommandAction>("example project fubar", UseBaseOptionsClass = typeof(SharedProjectOptions), Description = "This demonstrates the use of mutually exclusive commands using inheritance.")]
+	[Verb<ExampleProjectCommandHandler>("example project fubar", UseBaseOptionsClass = typeof(SharedProjectOptions), Description = "This demonstrates the use of mutually exclusive commands using inheritance.")]
 	public record class ProjectFubarOptions : SharedProjectOptions {
 		[Option]
 		public required int Fubar { get; init; }
@@ -21,11 +21,11 @@ namespace Sample.CommandLine {
 		public required int Id { get; init; }
 	}
 
-	public class ExampleProjectCommandAction : CommandAction<SharedProjectOptions> {
-		public ExampleProjectCommandAction(SharedProjectOptions options) : base(options) {
+	public class ExampleProjectCommandHandler : CommandHandler<SharedProjectOptions> {
+		public ExampleProjectCommandHandler(SharedProjectOptions options) : base(options) {
 		}
 
-		public override Task<int> Invoke(CancellationToken cancellationToken) {
+		public override Task<int> InvokeAsync(CancellationToken cancellationToken) {
 			if (options is ProjectEchoOptions echoOptions) {
 				this.Writer.WriteLine($"Invoked project echo: {echoOptions}");
 			} else if (options is ProjectFubarOptions fubarOptions) {

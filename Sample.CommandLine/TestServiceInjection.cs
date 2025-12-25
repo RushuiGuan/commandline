@@ -3,18 +3,18 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	[Verb<TestServiceInjectionCommandAction>("test service-injection", Description = "This verb demonstrats the use of service injection in command actions")]
-	[Verb<TestInvalidServiceInjectionCommandAction>("test invalid-service-injection", Description = "This verb demonstrats the error condition when service is not registered")]
+	[Verb<TestServiceInjectionCommandHandler>("test service-injection", Description = "This verb demonstrats the use of service injection in command actions")]
+	[Verb<TestInvalidServiceInjectionCommandHandler>("test invalid-service-injection", Description = "This verb demonstrats the error condition when service is not registered")]
 	public record class TestServiceInjectionOptions {
 		[Option]
 		public required string TextValue { get; init; }
 	}
-	public class TestServiceInjectionCommandAction : CommandAction<TestServiceInjectionOptions> {
+	public class TestServiceInjectionCommandHandler : CommandHandler<TestServiceInjectionOptions> {
 		private readonly IMyService myService;
-		public TestServiceInjectionCommandAction(IMyService myService, TestServiceInjectionOptions options) : base(options) {
+		public TestServiceInjectionCommandHandler(IMyService myService, TestServiceInjectionOptions options) : base(options) {
 			this.myService = myService;
 		}
-		public override async Task<int> Invoke(CancellationToken cancellationToken) {
+		public override async Task<int> InvokeAsync(CancellationToken cancellationToken) {
 			var text = await this.myService.DoSomething();
 			await this.Writer.WriteLineAsync(text);
 			await this.Writer.WriteLineAsync(this.options.ToString());
@@ -25,12 +25,12 @@ namespace Sample.CommandLine {
 	public interface INotRegisteredService {
 		Task<string> DoSomething();
 	}
-	public class TestInvalidServiceInjectionCommandAction : CommandAction<TestServiceInjectionOptions> {
+	public class TestInvalidServiceInjectionCommandHandler : CommandHandler<TestServiceInjectionOptions> {
 		private readonly INotRegisteredService myService;
-		public TestInvalidServiceInjectionCommandAction(INotRegisteredService myService, TestServiceInjectionOptions options) : base(options) {
+		public TestInvalidServiceInjectionCommandHandler(INotRegisteredService myService, TestServiceInjectionOptions options) : base(options) {
 			this.myService = myService;
 		}
-		public override async Task<int> Invoke(CancellationToken cancellationToken) {
+		public override async Task<int> InvokeAsync(CancellationToken cancellationToken) {
 			var text = await this.myService.DoSomething();
 			await this.Writer.WriteLineAsync(text);
 			await this.Writer.WriteLineAsync(this.options.ToString());

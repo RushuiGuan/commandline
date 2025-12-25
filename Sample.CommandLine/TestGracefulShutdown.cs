@@ -7,14 +7,14 @@ namespace Sample.CommandLine {
 	public record class TestGracefulShutdownOptions {
 	}
 
-	public class TestGracefulShutdown : CommandAction<TestGracefulShutdownOptions> {
+	public class TestGracefulShutdown : CommandHandler<TestGracefulShutdownOptions> {
 		private readonly IMyService myService;
 
 		public TestGracefulShutdown(IMyService myService, TestGracefulShutdownOptions options) : base(options) {
 			this.myService = myService;
 		}
 
-		public override async Task<int> Invoke(CancellationToken cancellationToken) {
+		public override async Task<int> InvokeAsync(CancellationToken cancellationToken) {
 			await myService.DoSomething();
 			await this.Writer.WriteLineAsync("TestGracefulShutdown started. Press Ctrl+C to trigger cancellation.");
 			// Simulate long-running work

@@ -7,14 +7,14 @@ namespace Sample.CommandLine {
 	[Verb<TestLogging>("test logging", Description = "Use this command to verify logging outputs")]
 	public record class TestLoggingOptions {
 	}
-	public class TestLogging : CommandAction<TestLoggingOptions> {
+	public class TestLogging : CommandHandler<TestLoggingOptions> {
 		private readonly ILogger<TestLogging> logger;
 
 		public TestLogging(ILogger<TestLogging> logger, TestLoggingOptions options) : base(options) {
 			this.logger = logger;
 		}
 
-		public override Task<int> Invoke(CancellationToken cancellationToken) {
+		public override Task<int> InvokeAsync(CancellationToken cancellationToken) {
 			logger.LogTrace("This is a Trace log");
 			logger.LogDebug("This is a Debug log");
 			logger.LogInformation("This is an Information log");

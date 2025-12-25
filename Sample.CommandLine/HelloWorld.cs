@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	[Verb<HelloWorldCommandAction>("hello", Description = "The HelloWorld command")]
+	[Verb<HelloWorldCommandHandler>("hello", Description = "The HelloWorld command")]
 	public record class HelloWorldOptions {
 		[Argument(Description = "The order of declaration determines the position of the argument")]
 		public required string Argument1 { get; init; }
@@ -39,11 +39,11 @@ namespace Sample.CommandLine {
 		}
 	}
 
-	public class HelloWorldCommandAction : CommandAction<HelloWorldOptions> {
-		public HelloWorldCommandAction(HelloWorldOptions options) : base(options) {
+	public class HelloWorldCommandHandler : CommandHandler<HelloWorldOptions> {
+		public HelloWorldCommandHandler(HelloWorldOptions options) : base(options) {
 		}
 
-		public override async Task<int> Invoke(CancellationToken cancellationToken) {
+		public override async Task<int> InvokeAsync(CancellationToken cancellationToken) {
 			await this.Writer.WriteLineAsync(options.ToString());
 			return 0;
 		}

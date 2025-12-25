@@ -2,12 +2,12 @@
 
 namespace Albatross.CommandLine {
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	public class VerbAttribute<THandler> : VerbAttribute where THandler : ICommandAction {
+	public class VerbAttribute<THandler> : VerbAttribute where THandler : ICommandHandler {
 		public VerbAttribute(string name) : base(name, typeof(THandler)) { }
 	}
 
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-	public class VerbAttribute<TOptions, THandler> : VerbAttribute where THandler : ICommandAction {
+	public class VerbAttribute<TOptions, THandler> : VerbAttribute where THandler : ICommandHandler {
 		public VerbAttribute(string name) : base(name, typeof(THandler), typeof(TOptions)) { }
 	}
 
