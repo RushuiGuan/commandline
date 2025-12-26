@@ -27,7 +27,7 @@ namespace Albatross.CommandLine.Test {
 			var builder = new Albatross.CommandLine.CommandBuilder("Test");
 			var cmd = new System.CommandLine.Command("cmd1");
 			builder.Add("cmd1", cmd);
-			builder.BuildTree(() => new Microsoft.Extensions.Hosting.HostBuilder().Build());
+			builder.BuildTree(() => new Microsoft.Extensions.Hosting.HostBuilder().Build().Services);
 			// Assert.Single(builder.RootCommand.Children);
 			Assert.Contains(cmd, builder.RootCommand.Children);
 		}

@@ -1,11 +1,12 @@
 using Albatross.CommandLine;
+using System.CommandLine;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	[Verb<ExampleCommandSpecificRegistrationsHandler>("example csharp web-client")]
-	[Verb<ExampleCommandSpecificRegistrationsHandler>("example typescript web-client")]
+	[Verb<ExampleBaseSpecificRegistrationsHandler>("example csharp web-client")]
+	[Verb<ExampleBaseSpecificRegistrationsHandler>("example typescript web-client")]
 	public record class ExampleCommandSpecificRegistrationsOptions {
 		[Option(Description = "Output directory for generated C# files")]
 		public required DirectoryInfo OutputDirectory { get; init; }
@@ -14,9 +15,9 @@ namespace Sample.CommandLine {
 		public required FileInfo Project { get; init; }
 	}
 
-	public class ExampleCommandSpecificRegistrationsHandler : CommandHandler<ExampleCommandSpecificRegistrationsOptions> {
+	public class ExampleBaseSpecificRegistrationsHandler : BaseHandler<ExampleCommandSpecificRegistrationsOptions> {
 		private readonly ICodeGenerator codeGenerator;
-		public ExampleCommandSpecificRegistrationsHandler(ICodeGenerator codeGenerator, ExampleCommandSpecificRegistrationsOptions options) : base(options) {
+		public ExampleBaseSpecificRegistrationsHandler(ICodeGenerator codeGenerator, ParseResult result, ExampleCommandSpecificRegistrationsOptions options) : base(result, options) {
 			this.codeGenerator = codeGenerator;
 		}
 		public override Task<int> InvokeAsync(CancellationToken cancellationToken) {

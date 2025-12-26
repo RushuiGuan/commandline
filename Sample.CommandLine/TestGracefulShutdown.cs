@@ -1,4 +1,5 @@
 using Albatross.CommandLine;
+using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,10 +8,10 @@ namespace Sample.CommandLine {
 	public record class TestGracefulShutdownOptions {
 	}
 
-	public class TestGracefulShutdown : CommandHandler<TestGracefulShutdownOptions> {
+	public class TestGracefulShutdown : BaseHandler<TestGracefulShutdownOptions> {
 		private readonly IMyService myService;
 
-		public TestGracefulShutdown(IMyService myService, TestGracefulShutdownOptions options) : base(options) {
+		public TestGracefulShutdown(IMyService myService,ParseResult result, TestGracefulShutdownOptions options) : base(result, options) {
 			this.myService = myService;
 		}
 

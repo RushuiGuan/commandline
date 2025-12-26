@@ -19,15 +19,16 @@ namespace Albatross.CommandLine {
 	///		return await host.InvokeAsync();
 	///	</code>
 	/// </summary>
-	public class CommandHost: IAsyncDisposable {
+	public class CommandHost : IAsyncDisposable {
 		protected IConfiguration configuration;
 		protected IHostBuilder hostBuilder;
 		ParseResult? parseResult;
 		IHost? host;
+		private Action<ParseResult, IServiceProvider> configApplication = (result, provider) => { };
 		protected ParseResult RequiredResult => this.parseResult ?? throw new InvalidOperationException("Parse(args) has not been called yet");
 		public CommandBuilder CommandBuilder { get; }
 
-		IHost GetHost() => host ?? throw new InvalidOperationException($"Host has not been built, Call the Build() method!");
+		IServiceProvider GetServiceProvider() => host?.Services ?? throw new InvalidOperationException($"Host has not been built, Call the Build() method!");
 
 		public CommandHost(string description) {
 			this.hostBuilder = Host.CreateDefaultBuilder();
@@ -43,8 +44,14 @@ namespace Albatross.CommandLine {
 		/// </summary>
 		/// <param name="args"></param>
 		/// <returns></returns>
-		public CommandHost Parse(string[] args) {
-			this.CommandBuilder.BuildTree(GetHost);
+		public CommandHost Parse(string[] args, Action<Func<IServiceProvider>>? adjust = null) {
+			Console.WriteLine("Before parsing");
+			this.CommandBuilder.BuildTree(GetServiceProvider);
+			Console.WriteLine("before adjusting");
+			if(adjust != null) {
+				adjust(GetServiceProvider);
+			}
+			Console.WriteLine("after parsing");
 			parseResult = this.CommandBuilder.RootCommand.Parse(args);
 			this.hostBuilder.ConfigureServices(services => services.AddSingleton(parseResult));
 			// configure default logging level based on parsed result
@@ -52,11 +59,12 @@ namespace Albatross.CommandLine {
 			this.hostBuilder.ConfigureLogging((_, builder) => builder.SetMinimumLevel(logLevel));
 			return this;
 		}
-		
+
 		public CommandHost ConfigureHost(Action<IHostBuilder> configure) {
 			configure(this.hostBuilder);
 			return this;
 		}
+
 		public CommandHost ConfigureHost(Action<ParseResult, IHostBuilder> configure) {
 			configure(this.RequiredResult, this.hostBuilder);
 			return this;
@@ -67,17 +75,21 @@ namespace Albatross.CommandLine {
 			return this;
 		}
 
-		public virtual void Configure(ParseResult result, ILogger<CommandHost> logger) {
-			logger.LogInformation("Configuring application");
+		public CommandHost ConfigureApplication(Action<ParseResult, IServiceProvider> action) {
+			configApplication += action;
+			return this;
 		}
 
 		public CommandHost Build() {
 			this.host = this.hostBuilder.Build();
-			this.Configure(this.RequiredResult, host.Services.GetRequiredService<ILogger<CommandHost>>());
+			this.configApplication(this.RequiredResult, host.Services);
 			return this;
 		}
 
-		public Task<int> InvokeAsync() => this.RequiredResult.InvokeAsync();
+		public Task<int> InvokeAsync() {
+			Console.WriteLine("Before invoking");
+			return this.RequiredResult.InvokeAsync();
+		}
 
 		public async ValueTask DisposeAsync() {
 			if (host is IAsyncDisposable hostAsyncDisposable) {

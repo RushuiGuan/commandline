@@ -1,4 +1,6 @@
 using Albatross.CommandLine;
+using Albatross.CommandLine.Experimental;
+using Sample.CommandLine.SelfContainedOptions;
 using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +11,7 @@ namespace Sample.CommandLine {
 		public InstrumentSummary Instrument { get; }
 	}
 	
-	public class TestSelfContainedPattern : CommandHandler<TestSelfContainedPatternOptions> {
+	public class TestSelfContainedPattern : BaseHandler<TestSelfContainedPatternOptions> {
 		public TestSelfContainedPattern(ParseResult result, TestSelfContainedPatternOptions options) : base(result, options) {
 		}
 

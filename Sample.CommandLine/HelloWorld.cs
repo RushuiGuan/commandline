@@ -1,10 +1,11 @@
 ﻿using Albatross.CommandLine;
 using System;
+using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
-	[Verb<HelloWorldCommandHandler>("hello", Description = "The HelloWorld command")]
+	[Verb<HelloWorldBaseHandler>("hello", Description = "The HelloWorld command")]
 	public record class HelloWorldOptions {
 		[Argument(Description = "The order of declaration determines the position of the argument")]
 		public required string Argument1 { get; init; }
@@ -39,8 +40,8 @@ namespace Sample.CommandLine {
 		}
 	}
 
-	public class HelloWorldCommandHandler : CommandHandler<HelloWorldOptions> {
-		public HelloWorldCommandHandler(HelloWorldOptions options) : base(options) {
+	public class HelloWorldBaseHandler : BaseHandler<HelloWorldOptions> {
+		public HelloWorldBaseHandler(ParseResult result, HelloWorldOptions options) : base(result, options) {
 		}
 
 		public override async Task<int> InvokeAsync(CancellationToken cancellationToken) {

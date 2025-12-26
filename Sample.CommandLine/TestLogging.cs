@@ -1,5 +1,6 @@
 using Albatross.CommandLine;
 using Microsoft.Extensions.Logging;
+using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,10 +8,11 @@ namespace Sample.CommandLine {
 	[Verb<TestLogging>("test logging", Description = "Use this command to verify logging outputs")]
 	public record class TestLoggingOptions {
 	}
-	public class TestLogging : CommandHandler<TestLoggingOptions> {
+
+	public class TestLogging : BaseHandler<TestLoggingOptions> {
 		private readonly ILogger<TestLogging> logger;
 
-		public TestLogging(ILogger<TestLogging> logger, TestLoggingOptions options) : base(options) {
+		public TestLogging(ILogger<TestLogging> logger, ParseResult result, TestLoggingOptions options) : base(result, options) {
 			this.logger = logger;
 		}
 

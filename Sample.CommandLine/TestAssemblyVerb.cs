@@ -1,5 +1,6 @@
 using Albatross.CommandLine;
 using Sample.CommandLine;
+using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,8 +15,8 @@ namespace Sample.CommandLine {
 		public string Name { get; set; } = "World"; 
 	}
 	
-	public class TestAssemblyVerbHandler : CommandHandler<TestAssemblyVerbOptions> {
-		public TestAssemblyVerbHandler(TestAssemblyVerbOptions options) : base(options) { }
+	public class TestAssemblyVerbHandler : BaseHandler<TestAssemblyVerbOptions> {
+		public TestAssemblyVerbHandler(ParseResult result,TestAssemblyVerbOptions options) : base(result, options) { }
 		public override async Task<int> InvokeAsync(CancellationToken token) {
 			await this.Writer.WriteLineAsync($"Hello, {options.Name}!");
 			return 0;

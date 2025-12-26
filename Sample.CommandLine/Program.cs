@@ -1,10 +1,16 @@
 ﻿using System.Threading.Tasks;
 using Albatross.CommandLine;
 using Albatross.CommandLine.Defaults;
+using Albatross.CommandLine.Experimental;
 using Albatross.Config;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Sample.CommandLine.SelfContainedOptions;
+using System;
 using System.CommandLine;
+using System.Threading;
 
 namespace Sample.CommandLine {
 	internal class Program {
@@ -15,12 +21,27 @@ namespace Sample.CommandLine {
 				.AddCommands()
 				// this is a custom command added manually
 				.AddCommand("test", new ManualCommand())
-				.Parse(args)
+				.AddCommand("example instrument", Test)
+				.Parse(args, Adjust)
 				.WithDefaults()
 				.Build();
 			return await host.InvokeAsync();
 		}
 
+		static void Adjust(Func<IServiceProvider> serviceLocator) {
+			Func<ParseResult, CancellationToken, Task> handler = async (parseResult, cancellationToken) => {
+				System.Console.WriteLine("I am also called");	
+				var service = serviceLocator();
+				var handler = service.GetRequiredService<InstrumentOptionHandler>();
+				await handler.InvokeAsync(Test.InstrumentOption, parseResult, cancellationToken);
+			};
+			Test.InstrumentOption.Action = new AsycActionHandler(handler, serviceLocator) {
+				Symbol = Test.InstrumentOption,
+			};
+			System.Console.WriteLine("instrument option action configured");
+		}
+
+		static GetInstrumentDetailCommand Test = new();
 
 		static void RegisterServices(ParseResult result, IConfiguration configuration, IServiceCollection services) {
 			services.AddConfig<SampleConfig>();
@@ -39,6 +60,19 @@ namespace Sample.CommandLine {
 				// register typescript command specific services
 				services.AddSingleton<ICodeGenerator, TypeScriptCodeGenerator>();
 			}
+
+			// self-contained option handler registration
+			services.AddKeyedScoped<ICommandHandler, GetInstrumentDetails>("example instrument detail");
+			services.AddScoped<InstrumentOptionHandler>();
+			services.AddScoped<InstrumentProxy>();
+			services.AddScoped<GetInstrumentDetailOptions>(provider => {
+				var result = provider.GetRequiredService<ParseResult>();
+				var command = (GetInstrumentDetailCommand)result.CommandResult.Command;
+				var options = new GetInstrumentDetailOptions() {
+					Summary = command.InstrumentOption.Summary,
+				};
+				return options;
+			});
 		}
 	}
 }

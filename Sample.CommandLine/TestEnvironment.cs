@@ -1,6 +1,7 @@
 using Albatross.CommandLine;
 using Albatross.Config;
 using Microsoft.Extensions.Hosting;
+using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,12 +10,12 @@ namespace Sample.CommandLine {
 	public record class TestEnvironmentOptions {
 	}
 
-	public class TestEnvironment : CommandHandler<TestEnvironmentOptions> {
+	public class TestEnvironment : BaseHandler<TestEnvironmentOptions> {
 		private readonly ProgramSetting programSetting;
 		private readonly EnvironmentSetting environmentSetting;
 		private readonly IHostEnvironment hostEnvironment;
 
-		public TestEnvironment(ProgramSetting programSetting, EnvironmentSetting environmentSetting, IHostEnvironment hostEnvironment, TestEnvironmentOptions options) : base(options) {
+		public TestEnvironment(ProgramSetting programSetting, EnvironmentSetting environmentSetting, IHostEnvironment hostEnvironment, ParseResult result, TestEnvironmentOptions options) : base(result, options) {
 			this.programSetting = programSetting;
 			this.environmentSetting = environmentSetting;
 			this.hostEnvironment = hostEnvironment;

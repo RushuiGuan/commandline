@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
 	public class GlobalCommandHandler {
-		public GlobalCommandHandler(Func<IHost> hostFactory) {
-			this.hostFactory = hostFactory;
+		public GlobalCommandHandler(Func<IServiceProvider> serviceFactory) {
+			this.serviceFactory = serviceFactory;
 		}
 
 		/// <summary>
@@ -20,17 +20,17 @@ namespace Albatross.CommandLine {
 		const int ErrorExitCode = 255;
 		const int CancelledExitCode = 254;
 
-		private readonly Func<IHost> hostFactory;
+		private readonly Func<IServiceProvider> serviceFactory;
 
 		public async Task<int> InvokeAsync(ParseResult result, CancellationToken cancellationToken) {
-			var host = this.hostFactory();
-			var logger = host.Services.GetRequiredService<ILogger<GlobalCommandHandler>>();
+			var services = this.serviceFactory();
+			var logger = services.GetRequiredService<ILogger<GlobalCommandHandler>>();
 			var commandNames = result.CommandResult.Command.GetCommandNames();
 			var key = string.Join(' ', commandNames);
 			logger.LogInformation("Executing command '{command}'", key);
 			ICommandHandler? handler = null;
 			try {
-				handler = host.Services.GetKeyedService<ICommandHandler>(key);
+				handler = services.GetKeyedService<ICommandHandler>(key);
 			} catch (Exception err) {
 				logger.LogError(err, "Error creating CommandHandler for command {command}", key);
 				return ErrorExitCode;
@@ -44,6 +44,11 @@ namespace Albatross.CommandLine {
 					return ErrorExitCode;
 				}
 			} else {
+				// skip System.CommandLine.Invocation.DefaultExceptionHandler
+				// while using System.Console.Error is the standard way to report errors, it actually makes it harder
+				// to capture the error output since we have to capture 2 (stdout and stderr) instead of stdout only.
+				// Using logging for all output makes it easier to redirect output and standardizes the output format so that it
+				// is easier to read
 				try {
 					return await handler.InvokeAsync(cancellationToken);
 				} catch (OperationCanceledException) {

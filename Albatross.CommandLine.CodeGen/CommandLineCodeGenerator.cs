@@ -129,7 +129,7 @@ namespace Albatross.CommandLine.CodeGen {
 										ReturnType = MyDefined.Types.CommandHost,
 										Parameters = [
 											new ParameterDeclaration {
-												Name = new IdentifierNameExpression("setup"),
+												Name = new IdentifierNameExpression("host"),
 												Type = MyDefined.Types.CommandHost,
 												UseThisKeyword = true,
 											}
@@ -137,7 +137,7 @@ namespace Albatross.CommandLine.CodeGen {
 										Body = {
 											{ true, () => CreateAddCommandsBody(commandSetups) },
 											new ReturnExpression {
-												Expression = new IdentifierNameExpression("setup")
+												Expression = new IdentifierNameExpression("host")
 											}
 										}
 									}
@@ -152,9 +152,9 @@ namespace Albatross.CommandLine.CodeGen {
 		private static IEnumerable<IExpression> CreateAddCommandsBody(ImmutableArray<CommandSetup> commandSetups) {
 			foreach (var setup in commandSetups) {
 				yield return new InvocationExpression {
-					CallableExpression = new IdentifierNameExpression("setup.CommandBuilder.Add") {
+					CallableExpression = new IdentifierNameExpression("host.CommandBuilder.Add") {
 						GenericArguments = new ListOfGenericArguments {
-							new TypeExpression(setup.CommandClassName)
+							new TypeExpression(new QualifiedIdentifierNameExpression(setup.CommandClassName, new NamespaceExpression(setup.CommandClassNamespace)))
 						}
 					},
 					Arguments = {

@@ -3,6 +3,10 @@
     "test logging": {
       "commandName": "Project",
       "commandLineArgs": "test logging"
+    },
+    "test self-contained-options": {
+      "commandName": "Project",
+      "commandLineArgs": "example instrument detail --instrument 1 -v information"
     }
   }
 }

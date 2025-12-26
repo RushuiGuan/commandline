@@ -1,6 +1,7 @@
 using Albatross.CommandLine;
 using Albatross.Config;
 using Microsoft.Extensions.Configuration;
+using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,11 +9,12 @@ namespace Sample.CommandLine {
 	[Verb<TestConfiguration>("test config", Description = "Verify the configuration settings")]
 	public record class TestConfigurationOptions {
 	}
-	public class TestConfiguration: CommandHandler<TestConfigurationOptions> {
+
+	public class TestConfiguration : BaseHandler<TestConfigurationOptions> {
 		private readonly SampleConfig sampleConfig;
 		private readonly IConfiguration configuration;
 
-		public TestConfiguration(SampleConfig sampleConfig, IConfiguration configuration, TestConfigurationOptions options) : base(options) {
+		public TestConfiguration(SampleConfig sampleConfig, IConfiguration configuration, ParseResult result, TestConfigurationOptions options) : base(result, options) {
 			this.sampleConfig = sampleConfig;
 			this.configuration = configuration;
 		}
