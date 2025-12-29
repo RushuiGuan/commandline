@@ -14,12 +14,12 @@ using System.Linq;
 namespace Albatross.CommandLine.CodeGen {
 	/// <summary>
 	/// TODO: code gen can be created for manual command too.  user doesn't need to wire it up manually
-	/// TODO: Need a warning if the Params Class does derive from the value of VerbAttribute.UseBaseParamsClass
+	/// TODO: Need a warning if the Params Class does derive from the value of VerbAttribute.BaseParamsClass
 	/// 
 	/// </summary>
 	[Generator]
 	public class CommandLineCodeGenerator : IIncrementalGenerator {
-		static IncrementalValuesProvider<CommandSetup> BuildVerbsCommandSetups(IncrementalGeneratorInitializationContext context,
+		static IncrementalValuesProvider<CommandSetup> CreateCommandSetups(IncrementalGeneratorInitializationContext context,
 			IncrementalValueProvider<Compilation> compilationProvider,
 			string attributeMetadataName) {
 			return context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -53,9 +53,9 @@ namespace Albatross.CommandLine.CodeGen {
 		public void Initialize(IncrementalGeneratorInitializationContext context) {
 			// System.Diagnostics.Debugger.Launch();
 			var compilationProvider = context.CompilationProvider.Select(static (x, _) => x);
-			var commandSetups = BuildVerbsCommandSetups(context, compilationProvider, MySymbolProvider.VerbAttributeClassName);
-			var commandSetups1 = BuildVerbsCommandSetups(context, compilationProvider, MySymbolProvider.VerbAttributeClassNameGeneric1);
-			var commandSetups2 = BuildVerbsCommandSetups(context, compilationProvider, MySymbolProvider.VerbAttributeClassNameGeneric2);
+			var commandSetups = CreateCommandSetups(context, compilationProvider, MySymbolProvider.VerbAttributeClassName);
+			var commandSetups1 = CreateCommandSetups(context, compilationProvider, MySymbolProvider.VerbAttributeClassNameGeneric1);
+			var commandSetups2 = CreateCommandSetups(context, compilationProvider, MySymbolProvider.VerbAttributeClassNameGeneric2);
 
 			var aggregated = compilationProvider.Combine(commandSetups.Collect()).Select((tuple, _) => {
 				var (compilation, setups) = tuple;
@@ -101,47 +101,8 @@ namespace Albatross.CommandLine.CodeGen {
 								AccessModifier = Defined.Keywords.Public,
 								IsStatic = true,
 								Methods = [
-									new MethodDeclaration {
-										IsStatic = true,
-										AccessModifier = Defined.Keywords.Public,
-										Name = new IdentifierNameExpression("RegisterCommands"),
-										ReturnType = Defined.Types.IServiceCollection,
-										Parameters = [
-											new ParameterDeclaration {
-												Name = new IdentifierNameExpression("services"),
-												Type = Defined.Types.IServiceCollection,
-												UseThisKeyword = true,
-											}
-										],
-										Body = {
-											{
-												true,
-												() => CreateCommandHandlerRegistrations(compilation, commandSetups, typeConverter)
-											},
-											new ReturnExpression {
-												Expression = new IdentifierNameExpression("services")
-											}
-										},
-									},
-									new MethodDeclaration {
-										IsStatic = true,
-										AccessModifier = Defined.Keywords.Public,
-										Name = new IdentifierNameExpression("AddCommands"),
-										ReturnType = MyDefined.Types.CommandHost,
-										Parameters = [
-											new ParameterDeclaration {
-												Name = new IdentifierNameExpression("host"),
-												Type = MyDefined.Types.CommandHost,
-												UseThisKeyword = true,
-											}
-										],
-										Body = {
-											{ true, () => CreateAddCommandsBody(commandSetups) },
-											new ReturnExpression {
-												Expression = new IdentifierNameExpression("host")
-											}
-										}
-									}
+									new RegisterCommandsMethodBuilder(compilation, typeConverter).Convert(commandSetups),
+									new AddCommandsMethodBuilder().Convert(commandSetups),
 								]
 							}
 						]
@@ -150,208 +111,5 @@ namespace Albatross.CommandLine.CodeGen {
 				});
 		}
 
-		private static IEnumerable<IExpression> CreateAddCommandsBody(ImmutableArray<CommandSetup> commandSetups) {
-			foreach (var setup in commandSetups) {
-				yield return new InvocationExpression {
-					CallableExpression = new IdentifierNameExpression("host.CommandBuilder.Add") {
-						GenericArguments = new ListOfGenericArguments {
-							new TypeExpression(new QualifiedIdentifierNameExpression(setup.CommandClassName, new NamespaceExpression(setup.CommandClassNamespace)))
-						}
-					},
-					Arguments = {
-						new StringLiteralExpression(setup.Key)
-					}
-				};
-			}
-		}
-
-		private static IEnumerable<IExpression> CreateCommandHandlerRegistrations(Compilation compilation, ImmutableArray<CommandSetup> commandSetups, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
-			Dictionary<INamedTypeSymbol, List<CommandSetup>> sharedBasedParams = new(SymbolEqualityComparer.Default);
-			foreach (var setup in commandSetups) {
-				if (setup.HandlerClass != null) {
-					yield return new InvocationExpression {
-						CallableExpression = new IdentifierNameExpression("services.AddKeyedScoped") {
-							GenericArguments = new ListOfGenericArguments {
-								MyDefined.Types.IAsyncCommandHandler,
-								typeConverter.Convert(setup.HandlerClass)
-							}
-						},
-						Arguments = {
-							new StringLiteralExpression(setup.Key)
-						}
-					};
-				}
-				if (setup.BaseParamsClass == null) {
-					yield return CreateCommandParamsRegistration(compilation, setup, typeConverter);
-				} else {
-					sharedBasedParams.GetOrAdd(setup.BaseParamsClass, () => new List<CommandSetup>()).Add(setup);
-				}
-			}
-			foreach (var keyValuePair in sharedBasedParams) {
-				yield return CreateCommandSharedParamsRegistration(compilation, keyValuePair.Key, keyValuePair.Value, typeConverter);
-			}
-		}
-
-		static bool ShouldUseRequiredValue(Compilation compilation, CommandParameterSetup parameter) {
-			// for collection types, always use null-coalescing operator: GetValue(..) ?? new List<T>()
-			if (parameter.PropertySymbol.Type.IsCollection(compilation)) {
-				return false;
-			}
-			if (parameter is CommandOptionParameterSetup optionPropertySetup) {
-				if (optionPropertySetup.Required || optionPropertySetup.ShouldDefaultToInitializer) {
-					return true;
-				}
-			} else if (parameter is CommandArgumentParameterSetup argumentPropertySetup) {
-				if (argumentPropertySetup is not { ArityMin: 0, ArityMax: 1 }) {
-					return true;
-				}
-			}
-			return false;
-		}
-
-		private static IExpression CreateCommandSharedParamsRegistration(Compilation compilation, INamedTypeSymbol sharedOptionBaseClass, List<CommandSetup> setups, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
-			return new InvocationExpression {
-				CallableExpression = new IdentifierNameExpression("services.AddScoped") {
-					GenericArguments = {
-						typeConverter.Convert(sharedOptionBaseClass)
-					}
-				},
-				Arguments = {
-					new AnonymousMethodExpression {
-						Parameters = {
-							new ParameterDeclaration {
-								Name = new IdentifierNameExpression("provider"),
-								Type = Defined.Types.Var,
-							}
-						},
-						Body = {
-							new AssignmentExpression {
-								Left = new VariableDeclaration {
-									Identifier = new IdentifierNameExpression("result"),
-								},
-								Expression = new InvocationExpression {
-									CallableExpression = new IdentifierNameExpression("provider.GetRequiredService") {
-										GenericArguments = {
-											new TypeExpression(MyDefined.Identifiers.ParserResult)
-										}
-									}
-								}
-							},
-							new AssignmentExpression {
-								Left = new VariableDeclaration {
-									Identifier = new IdentifierNameExpression("key"),
-								},
-								Expression = new InvocationExpression {
-									CallableExpression = new IdentifierNameExpression("result.CommandResult.Command.GetCommandKey"),
-								}
-							},
-							new ReturnExpression {
-								Expression = new SwitchExpression {
-									Value = new IdentifierNameExpression("key"),
-									Sections = new ListOfNodes<SwitchCaseExpression> {
-										{
-											true, () => setups.Select(x => new SwitchCaseExpression {
-												Value = new StringLiteralExpression(x.Key),
-												Expression = new NewObjectExpression {
-													Type = typeConverter.Convert(x.ParamsClass),
-													Initializers = {
-														x.Parameters.Select(y => CreateGetOptionPropertyValueExpression(compilation, y, typeConverter))
-													}
-												},
-											})
-										}
-									},
-									DefaultExpression = new ThrowExpression {
-										Expression = new NewObjectExpression {
-											Type = new TypeExpression("System.InvalidOperationException"),
-											Arguments = {
-												new StringInterpolationExpression {
-													Items = {
-														new StringLiteralExpression("Command "),
-														new IdentifierNameExpression("key"),
-														new StringLiteralExpression($" is not registered for base Params class \"{sharedOptionBaseClass.Name}\"")
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			};
-		}
-		public static AssignmentExpression CreateGetOptionPropertyValueExpression(Compilation compilation, CommandParameterSetup parameter, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
-			IExpression expression = new InvocationExpression {
-				CallableExpression = new IdentifierNameExpression(ShouldUseRequiredValue(compilation, parameter) ? "result.GetRequiredValue" : "result.GetValue") {
-					GenericArguments = { typeConverter.Convert(parameter.PropertySymbol.Type) }
-				},
-				Arguments = { new StringLiteralExpression(parameter.Key) }
-			};
-			if (parameter.PropertySymbol.Type.TryGetCollectionElementType(compilation, out var elementType)) {
-				expression = new InfixExpression {
-					Left = expression,
-					Operator = new Operator("??"),
-					Right = new InvocationExpression {
-						CallableExpression = new QualifiedIdentifierNameExpression("Array.Empty", Defined.Namespaces.System) {
-							GenericArguments = { typeConverter.Convert(elementType) }
-						}
-					}
-				};
-			}
-			return new AssignmentExpression {
-				Left = new IdentifierNameExpression(parameter.PropertySymbol.Name),
-				Expression = expression
-			};
-		}
-
-		private static IExpression CreateCommandParamsRegistration(Compilation compilation, CommandSetup setup, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
-			return new InvocationExpression {
-				CallableExpression = new IdentifierNameExpression("services.AddScoped") {
-					GenericArguments = {
-						typeConverter.Convert(setup.ParamsClass)
-					}
-				},
-				Arguments = {
-					new AnonymousMethodExpression {
-						Parameters = {
-							new ParameterDeclaration {
-								Name = new IdentifierNameExpression("provider"),
-								Type = Defined.Types.Var,
-							}
-						},
-						Body = {
-							new AssignmentExpression {
-								Left = new VariableDeclaration {
-									Identifier = new IdentifierNameExpression("result"),
-								},
-								Expression = new InvocationExpression {
-									CallableExpression = new IdentifierNameExpression("provider.GetRequiredService") {
-										GenericArguments = {
-											new TypeExpression(MyDefined.Identifiers.ParserResult)
-										}
-									}
-								}
-							},
-							new AssignmentExpression {
-								Left = new VariableDeclaration {
-									Identifier = new IdentifierNameExpression("parameters"),
-								},
-								Expression = new NewObjectExpression {
-									Type = typeConverter.Convert(setup.ParamsClass),
-									Initializers = {
-										setup.Parameters.Select(x => CreateGetOptionPropertyValueExpression(compilation, x, typeConverter))
-									}
-								}
-							},
-							new ReturnExpression {
-								Expression = new IdentifierNameExpression("parameters")
-							},
-						}
-					}
-				}
-			};
-		}
 	}
 }

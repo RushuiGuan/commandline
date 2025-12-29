@@ -109,7 +109,7 @@ dotnet run -- hello "World" --count 3
 
 ### Shared Options
 ```csharp
-[Verb<ProjectCommandHandler>("project build", UseBaseOptionsClass = typeof(ProjectOptions))]
+[Verb<ProjectCommandHandler>("project build", UseBaseParamsClass = typeof(ProjectOptions))]
 public record class BuildOptions : ProjectOptions {
     [Option] public string Configuration { get; init; } = "Release";
 }

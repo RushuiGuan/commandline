@@ -11,7 +11,7 @@ namespace Albatross.CommandLine.Test {
 			var key = "--key";
 			var value = "test";
 			context.SetValue(key, value);
-			Assert.Equal(value, context.GetReferenceValue<string>(key));
+			Assert.Equal(value, context.GetValue<string>(key));
 		}
 
 		[Fact]
@@ -20,9 +20,9 @@ namespace Albatross.CommandLine.Test {
 			var result = command.Parse("test");
 			var context = new CommandContext(result);
 			var key = "--key";
-			var value = 1;
+			int? value = 1;
 			context.SetValue(key, value);
-			Assert.Equal(value, context.GetStructValue<int>(key));
+			Assert.Equal(value, context.GetValue<int>(key));
 		}
 
 		[Fact]
@@ -31,7 +31,7 @@ namespace Albatross.CommandLine.Test {
 			var result = command.Parse("test");
 			var context = new CommandContext(result);
 			var key = "--key";
-			Assert.Null(context.GetReferenceValue<string>(key));
+			Assert.Null(context.GetValue<string>(key));
 		}
 
 		[Fact]
@@ -40,7 +40,7 @@ namespace Albatross.CommandLine.Test {
 			var result = command.Parse("test");
 			var context = new CommandContext(result);
 			var key = "--key";
-			Assert.Null(context.GetStructValue<int>(key));
+			Assert.Null(context.GetValue<int?>(key));
 		}
 
 		[Fact]

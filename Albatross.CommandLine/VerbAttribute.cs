@@ -36,7 +36,7 @@ namespace Albatross.CommandLine {
 		/// It allows a command to be created without creating a new Params Class.
 		/// </summary>
 		public Type? ParamsClass { get; }
-		public Type? UseBaseParamsClass { get; set; }
+		public Type? BaseParamsClass { get; set; }
 		public string Name { get; }
 		public string? Description { get; set; }
 		public string[] Alias { get; set; } = [];

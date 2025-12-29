@@ -13,14 +13,12 @@ namespace Albatross.CommandLine {
 	/// </summary>
 	internal sealed class AsyncCommandParameterHandler<T> : AsynchronousCommandLineAction where T : Symbol {
 		private readonly Func<IServiceProvider> serviceFactory;
-		private readonly Func<T, ParseResult, CancellationToken, Task> func;
 		public override bool Terminating => false;
 		public T Symbol { get; }
 
-		public AsyncCommandParameterHandler(T symbol, Func<IServiceProvider> serviceFactory, Func<T, ParseResult, CancellationToken, Task> func) {
+		public AsyncCommandParameterHandler(T symbol, Func<IServiceProvider> serviceFactory) {
 			this.Symbol = symbol;
 			this.serviceFactory = serviceFactory;
-			this.func = func;
 		}
 
 
@@ -31,7 +29,8 @@ namespace Albatross.CommandLine {
 				var logger = serviceProvider.GetRequiredService<ILogger<AsyncCommandParameterHandler<T>>>();
 				try {
 					logger.LogInformation("Invoking AsyncActionHandler for [ {CommandName} [ {SymbolName} ] ]", parseResult.CommandResult.Command.GetCommandKey(), Symbol.Name);
-					await func(this.Symbol, parseResult, cancellationToken);
+					var handler = serviceProvider.GetRequiredService<IAsyncCommandParameterHandler<T>>();
+					await handler.InvokeAsync(this.Symbol, parseResult, cancellationToken);
 				} catch (OperationCanceledException err) {
 					var msg = $"Operation cancelled while processing argument or option [ {Symbol.Name} ]";
 					logger.LogWarning(msg);

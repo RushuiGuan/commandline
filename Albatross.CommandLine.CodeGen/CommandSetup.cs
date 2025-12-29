@@ -36,7 +36,7 @@ namespace Albatross.CommandLine.CodeGen {
 			}
 			this.Name = this.Key.Split(' ').Last();
 
-			if (verbAttribute.TryGetNamedArgument("UseBaseParamsClass", out var typedConstant)) {
+			if (verbAttribute.TryGetNamedArgument("BaseParamsClass", out var typedConstant)) {
 				this.BaseParamsClass = typedConstant.Value as INamedTypeSymbol;
 			}
 			if (verbAttribute.TryGetNamedArgument("Description", out typedConstant)) {

@@ -1,7 +1,7 @@
 ﻿using Albatross.CommandLine;
 
 namespace Sample.CommandLine {
-	[Verb<DefaultAsyncCommandHandler<TestCommandNameConflictsOptions>>("test command-name-conflicts-1", Description = "Command class name is derived from the Options class name by removing the 'Params' suffix and add 'Command' suffix.")]
+	[Verb<DefaultAsyncCommandHandler<TestCommandNameConflictsParams>>("test command-name-conflicts-1", Description = "Command class name is derived from the Options class name by removing the 'Params' suffix and add 'Command' suffix.")]
 	public record class TestCommandNameConflictsParams {
 	}
 	

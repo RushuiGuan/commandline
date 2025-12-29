@@ -16,6 +16,7 @@ namespace Albatross.CommandLine.CodeGen {
 			public static readonly QualifiedIdentifierNameExpression IAsyncCommandHandler = new("IAsyncCommandHandler", Namespaces.AlbatrossCommandLine);
 			public static readonly QualifiedIdentifierNameExpression IAsyncCommandParameterHandler = new("IAsyncCommandParameterHandler", Namespaces.AlbatrossCommandLine);
 			public static readonly QualifiedIdentifierNameExpression CommandHost = new("CommandHost", Namespaces.AlbatrossCommandLine);
+			public static readonly QualifiedIdentifierNameExpression ICommandContext = new("ICommandContext", Namespaces.AlbatrossCommandLine);
 		}
 		public static class Types {
 			public static readonly TypeExpression IAsyncCommandHandler = new(Identifiers.IAsyncCommandHandler);
