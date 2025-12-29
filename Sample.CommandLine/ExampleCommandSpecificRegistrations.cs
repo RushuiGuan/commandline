@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Sample.CommandLine {
 	[Verb<ExampleBaseSpecificRegistrationsHandler>("example csharp web-client")]
 	[Verb<ExampleBaseSpecificRegistrationsHandler>("example typescript web-client")]
-	public record class ExampleCommandSpecificRegistrationsOptions {
+	public record class ExampleCommandSpecificRegistrationsParams {
 		[Option(Description = "Output directory for generated C# files")]
 		public required DirectoryInfo OutputDirectory { get; init; }
 
@@ -15,13 +15,13 @@ namespace Sample.CommandLine {
 		public required FileInfo Project { get; init; }
 	}
 
-	public class ExampleBaseSpecificRegistrationsHandler : BaseHandler<ExampleCommandSpecificRegistrationsOptions> {
+	public class ExampleBaseSpecificRegistrationsHandler : BaseHandler<ExampleCommandSpecificRegistrationsParams> {
 		private readonly ICodeGenerator codeGenerator;
-		public ExampleBaseSpecificRegistrationsHandler(ICodeGenerator codeGenerator, ParseResult result, ExampleCommandSpecificRegistrationsOptions options) : base(result, options) {
+		public ExampleBaseSpecificRegistrationsHandler(ICodeGenerator codeGenerator, ParseResult result, ExampleCommandSpecificRegistrationsParams parameters) : base(result, parameters) {
 			this.codeGenerator = codeGenerator;
 		}
 		public override Task<int> InvokeAsync(CancellationToken cancellationToken) {
-			this.Writer.WriteLine(this.codeGenerator.Generate(this.options));
+			this.Writer.WriteLine(this.codeGenerator.Generate(this.parameters));
 			return Task.FromResult(0);
 		}
 	}

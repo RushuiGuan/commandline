@@ -1,8 +1,8 @@
 ﻿using Albatross.CommandLine;
 
 namespace Sample.CommandLine {
-	[Verb<DefaultAsyncCommandHandler<TestOptionRequiredFlagOptions>>("test option-required-flag", Description = "By default, nullable value, collection and booleans are not required.  But Required flag can be used to overwritten")]
-	public record class TestOptionRequiredFlagOptions {
+	[Verb<DefaultAsyncCommandHandler<TestOptionRequiredFlagParams>>("test option-required-flag", Description = "By default, nullable value, collection and booleans are not required.  But Required flag can be used to overwritten")]
+	public record class TestOptionRequiredFlagParams {
 		[Option(Required = true, Description = "Collection with required flag")]
 		public required int[] IntValues { get; init; }
 

@@ -1,8 +1,8 @@
 ﻿using Albatross.CommandLine;
 
-namespace Sample.CommandLine.MutuallyExclusiveOptions {
-	[Verb<ExampleProjectBaseHandler>("example project echo", UseBaseOptionsClass = typeof(ProjectOptions), Description = "This demonstrates the use of mutually exclusive commands using inheritance.")]
-	public record class ProjectEchoOptions : ProjectOptions {
+namespace Sample.CommandLine.MutuallyExclusiveParams {
+	[Verb<ExampleProjectBaseHandler>("example project echo", UseBaseOptionsClass = typeof(ProjectParams), Description = "This demonstrates the use of mutually exclusive commands using inheritance.")]
+	public record class ProjectEchoOptions : ProjectParams {
 		[Option]
 		public required int Echo { get; init; }
 	}

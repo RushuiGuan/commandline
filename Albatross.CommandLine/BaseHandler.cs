@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 namespace Albatross.CommandLine {
 	public abstract class BaseHandler<T> : IAsyncCommandHandler where T : class {
 		protected ParseResult result;
-		protected readonly T options;
+		protected readonly T parameters;
 		protected virtual TextWriter Writer => Console.Out;
 
-		protected BaseHandler(ParseResult result, T options){
+		protected BaseHandler(ParseResult result, T parameters){
 			this.result = result;
-			this.options = options;	
+			this.parameters = parameters;	
 		}
 
 		public abstract Task<int> InvokeAsync(CancellationToken cancellationToken);

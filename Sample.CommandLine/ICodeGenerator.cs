@@ -1,15 +1,15 @@
 namespace Sample.CommandLine {
 	public interface ICodeGenerator {
-		string Generate(ExampleCommandSpecificRegistrationsOptions options);
+		string Generate(ExampleCommandSpecificRegistrationsParams parameters);
 	}
 	public class CSharpCodeGenerator : ICodeGenerator {
-		public string Generate(ExampleCommandSpecificRegistrationsOptions options) {
-			return $"generating c# code: {options}";
+		public string Generate(ExampleCommandSpecificRegistrationsParams parameters) {
+			return $"generating c# code: {parameters}";
 		}
 	}
 	public class TypeScriptCodeGenerator : ICodeGenerator {
-		public string Generate(ExampleCommandSpecificRegistrationsOptions options) {
-			return $"type script: {options}";
+		public string Generate(ExampleCommandSpecificRegistrationsParams parameters) {
+			return $"type script: {parameters}";
 		}
 	}
 }

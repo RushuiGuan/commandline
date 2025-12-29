@@ -9,24 +9,24 @@ namespace Albatross.CommandLine.CodeGen {
 		public const string CommandClassPostfix = "Command";
 		public string Key { get; }
 		public string Name { get; }
-		public INamedTypeSymbol OptionsClass { get; }
-		public INamedTypeSymbol? BaseOptionsClass { get; }
+		public INamedTypeSymbol ParamsClass { get; }
+		public INamedTypeSymbol? BaseParamsClass { get; }
 		public ITypeSymbol? HandlerClass { get; }
 		public string CommandClassName { get; private set; }
-		public string CommandClassNamespace => OptionsClass.ContainingNamespace.GetFullNamespace();
+		public string CommandClassNamespace => ParamsClass.ContainingNamespace.GetFullNamespace();
 		public string? Description { get; }
 		public string[] Aliases { get; } = Array.Empty<string>();
 		public CommandParameterSetup[] Parameters { get; }
 
-		const string Postfix_Options = "Params";
+		const string Postfix_Params = "Params";
 
-		public CommandSetup(Compilation compilation, INamedTypeSymbol optionsClass, AttributeData verbAttribute)
-			: this(compilation, optionsClass, null, verbAttribute) {
+		public CommandSetup(Compilation compilation, INamedTypeSymbol parametersClass, AttributeData verbAttribute)
+			: this(compilation, parametersClass, null, verbAttribute) {
 		}
 
-		public CommandSetup(Compilation compilation, INamedTypeSymbol optionsClass, ITypeSymbol? handlerClass, AttributeData verbAttribute) {
-			this.OptionsClass = optionsClass;
-			this.CommandClassName = GetCommandClassName(optionsClass);
+		public CommandSetup(Compilation compilation, INamedTypeSymbol parametersClass, ITypeSymbol? handlerClass, AttributeData verbAttribute) {
+			this.ParamsClass = parametersClass;
+			this.CommandClassName = GetCommandClassName(parametersClass);
 			this.HandlerClass = handlerClass;
 
 			if (verbAttribute.ConstructorArguments.Length > 0) {
@@ -36,8 +36,8 @@ namespace Albatross.CommandLine.CodeGen {
 			}
 			this.Name = this.Key.Split(' ').Last();
 
-			if (verbAttribute.TryGetNamedArgument("UseBaseOptionsClass", out var typedConstant)) {
-				this.BaseOptionsClass = typedConstant.Value as INamedTypeSymbol;
+			if (verbAttribute.TryGetNamedArgument("UseBaseParamsClass", out var typedConstant)) {
+				this.BaseParamsClass = typedConstant.Value as INamedTypeSymbol;
 			}
 			if (verbAttribute.TryGetNamedArgument("Description", out typedConstant)) {
 				this.Description = typedConstant.Value?.ToString();
@@ -49,29 +49,29 @@ namespace Albatross.CommandLine.CodeGen {
 		}
 
 		/// <summary>
-		/// Command class name is derived from the options class name by:
-		/// 1. Remove the postfix "Options" if exists
+		/// Command class name is derived from the parameters class name by:
+		/// 1. Remove the postfix "Params" if exists
 		/// 2. Append "Command" if the remaining string does not end with "Command"
 		/// </summary>
 		public static string GetCommandClassName(INamedTypeSymbol optionClass) {
-			string optionsClassName = optionClass.Name;
-			if (optionsClassName.EndsWith(Postfix_Options, StringComparison.InvariantCultureIgnoreCase)) {
-				optionsClassName = optionsClassName.Substring(0, optionsClassName.Length - Postfix_Options.Length);
+			string parametersClassName = optionClass.Name;
+			if (parametersClassName.EndsWith(Postfix_Params, StringComparison.InvariantCultureIgnoreCase)) {
+				parametersClassName = parametersClassName.Substring(0, parametersClassName.Length - Postfix_Params.Length);
 			}
-			if (!optionsClassName.EndsWith(CommandClassPostfix, StringComparison.InvariantCultureIgnoreCase)) {
-				optionsClassName = optionsClassName + CommandClassPostfix;
+			if (!parametersClassName.EndsWith(CommandClassPostfix, StringComparison.InvariantCultureIgnoreCase)) {
+				parametersClassName = parametersClassName + CommandClassPostfix;
 			}
-			return optionsClassName;
+			return parametersClassName;
 		}
 
 		public void RenameCommandClass(int index) {
 			if (index != 0) {
-				CommandClassName = $"{GetCommandClassName(this.OptionsClass)}{index}";
+				CommandClassName = $"{GetCommandClassName(this.ParamsClass)}{index}";
 			}
 		}
 
 		public IEnumerable<CommandParameterSetup> GetCommandParameters(Compilation compilation) {
-			var propertySymbols = OptionsClass.GetDistinctProperties(true).ToArray();
+			var propertySymbols = ParamsClass.GetDistinctProperties(true).ToArray();
 			int index = 0;
 			foreach (var propertySymbol in propertySymbols) {
 				index++;

@@ -3,8 +3,8 @@ using Sample.CommandLine.Core;
 using System;
 
 namespace Sample.CommandLine {
-	[Verb<DefaultAsyncCommandHandler<TestDefaultValuesOptions>>("test defaults", Description = "Test setting of default values")]
-	public record class TestDefaultValuesOptions {
+	[Verb<DefaultAsyncCommandHandler<TestDefaultValuesParams>>("test defaults", Description = "Test setting of default values")]
+	public record class TestDefaultValuesParams {
 		[Option(DefaultToInitializer = true)]
 		public int IntValue { get; init; } = 42;
 

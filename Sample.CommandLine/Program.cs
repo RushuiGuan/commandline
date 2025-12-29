@@ -4,7 +4,7 @@ using Albatross.CommandLine.Defaults;
 using Albatross.Config;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Sample.CommandLine.SelfContainedOptions;
+using Sample.CommandLine.SelfContainedParams;
 using System.CommandLine;
 
 namespace Sample.CommandLine {

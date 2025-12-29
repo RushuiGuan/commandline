@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sample.CommandLine.SelfContainedOptions {
+namespace Sample.CommandLine.SelfContainedParams {
 	public class InstrumentProxy {
 		public async Task<InstrumentSummary> GetInstrumentSummary(string text, CancellationToken cancellationToken) {
 			await Task.Delay(10, cancellationToken);

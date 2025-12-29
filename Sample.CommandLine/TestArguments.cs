@@ -2,8 +2,8 @@ using Albatross.CommandLine;
 using System;
 
 namespace Sample.CommandLine {
-	[Verb<DefaultAsyncCommandHandler<TestArgumentsOptions>>("test arguments", Description = "A command to test arguments parsing")]
-	public record class TestArgumentsOptions {
+	[Verb<DefaultAsyncCommandHandler<TestArgumentsParams>>("test arguments", Description = "A command to test arguments parsing")]
+	public record class TestArgumentsParams {
 		[Argument(Description = "A required string argument")]
 		public required string StringArg { get; init; }
 

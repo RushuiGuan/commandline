@@ -14,7 +14,7 @@ using System.Linq;
 namespace Albatross.CommandLine.CodeGen {
 	/// <summary>
 	/// TODO: code gen can be created for manual command too.  user doesn't need to wire it up manually
-	/// TODO: Need a warning if the Option Class does derive from the value of VerbAttribute.UseBaseOptionsClass
+	/// TODO: Need a warning if the Params Class does derive from the value of VerbAttribute.UseBaseParamsClass
 	/// 
 	/// </summary>
 	[Generator]
@@ -32,16 +32,16 @@ namespace Albatross.CommandLine.CodeGen {
 					foreach (var attribute in ctx.Attributes) {
 						var attribueClass = attribute.AttributeClass;
 						if (attribueClass != null) {
-							if (ctx.TargetSymbol is INamedTypeSymbol optionsClass) {
+							if (ctx.TargetSymbol is INamedTypeSymbol parametersClass) {
 								if (!attribueClass.IsGenericType) {
-									// this one matches [Verb("commandKey")] target Options Class Only
-									list.Add(new CommandSetup(compilation, optionsClass, attribute));
+									// this one matches [Verb("commandKey")] target Params Class Only
+									list.Add(new CommandSetup(compilation, parametersClass, attribute));
 								} else if (attribueClass.TypeArguments.Length == 1) {
-									// this one matches [Verb<THandler>("commandKey")] target Options Class Only with Handler Type Argument
-									list.Add(new CommandSetup(compilation, optionsClass, attribueClass.TypeArguments[0], attribute));
+									// this one matches [Verb<THandler>("commandKey")] target Params Class Only with Handler Type Argument
+									list.Add(new CommandSetup(compilation, parametersClass, attribueClass.TypeArguments[0], attribute));
 								}
 							} else if (attribueClass.TypeArguments.Length == 2 && attribueClass.TypeArguments[0] is INamedTypeSymbol namedTypeSymbol) {
-								// this one matches [Verb<THandler, TOptions>("commandKey")] target assembly Only with Handler Type and Options Type Argument
+								// this one matches [Verb<THandler, TParams>("commandKey")] target assembly Only with Handler Type and Params Type Argument
 								list.Add(new CommandSetup(compilation, namedTypeSymbol, attribueClass.TypeArguments[1], attribute));
 							}
 						}
@@ -166,7 +166,7 @@ namespace Albatross.CommandLine.CodeGen {
 		}
 
 		private static IEnumerable<IExpression> CreateCommandHandlerRegistrations(Compilation compilation, ImmutableArray<CommandSetup> commandSetups, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
-			Dictionary<INamedTypeSymbol, List<CommandSetup>> sharedBasedOptions = new(SymbolEqualityComparer.Default);
+			Dictionary<INamedTypeSymbol, List<CommandSetup>> sharedBasedParams = new(SymbolEqualityComparer.Default);
 			foreach (var setup in commandSetups) {
 				if (setup.HandlerClass != null) {
 					yield return new InvocationExpression {
@@ -181,14 +181,14 @@ namespace Albatross.CommandLine.CodeGen {
 						}
 					};
 				}
-				if (setup.BaseOptionsClass == null) {
-					yield return CreateCommandOptionsRegistration(compilation, setup, typeConverter);
+				if (setup.BaseParamsClass == null) {
+					yield return CreateCommandParamsRegistration(compilation, setup, typeConverter);
 				} else {
-					sharedBasedOptions.GetOrAdd(setup.BaseOptionsClass, () => new List<CommandSetup>()).Add(setup);
+					sharedBasedParams.GetOrAdd(setup.BaseParamsClass, () => new List<CommandSetup>()).Add(setup);
 				}
 			}
-			foreach (var keyValuePair in sharedBasedOptions) {
-				yield return CreateCommandSharedOptionsRegistration(compilation, keyValuePair.Key, keyValuePair.Value, typeConverter);
+			foreach (var keyValuePair in sharedBasedParams) {
+				yield return CreateCommandSharedParamsRegistration(compilation, keyValuePair.Key, keyValuePair.Value, typeConverter);
 			}
 		}
 
@@ -209,7 +209,7 @@ namespace Albatross.CommandLine.CodeGen {
 			return false;
 		}
 
-		private static IExpression CreateCommandSharedOptionsRegistration(Compilation compilation, INamedTypeSymbol sharedOptionBaseClass, List<CommandSetup> setups, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
+		private static IExpression CreateCommandSharedParamsRegistration(Compilation compilation, INamedTypeSymbol sharedOptionBaseClass, List<CommandSetup> setups, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
 			return new InvocationExpression {
 				CallableExpression = new IdentifierNameExpression("services.AddScoped") {
 					GenericArguments = {
@@ -253,7 +253,7 @@ namespace Albatross.CommandLine.CodeGen {
 											true, () => setups.Select(x => new SwitchCaseExpression {
 												Value = new StringLiteralExpression(x.Key),
 												Expression = new NewObjectExpression {
-													Type = typeConverter.Convert(x.OptionsClass),
+													Type = typeConverter.Convert(x.ParamsClass),
 													Initializers = {
 														x.Parameters.Select(y => CreateGetOptionPropertyValueExpression(compilation, y, typeConverter))
 													}
@@ -269,7 +269,7 @@ namespace Albatross.CommandLine.CodeGen {
 													Items = {
 														new StringLiteralExpression("Command "),
 														new IdentifierNameExpression("key"),
-														new StringLiteralExpression($" is not registered for base Options class \"{sharedOptionBaseClass.Name}\"")
+														new StringLiteralExpression($" is not registered for base Params class \"{sharedOptionBaseClass.Name}\"")
 													}
 												}
 											}
@@ -306,11 +306,11 @@ namespace Albatross.CommandLine.CodeGen {
 			};
 		}
 
-		private static IExpression CreateCommandOptionsRegistration(Compilation compilation, CommandSetup setup, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
+		private static IExpression CreateCommandParamsRegistration(Compilation compilation, CommandSetup setup, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
 			return new InvocationExpression {
 				CallableExpression = new IdentifierNameExpression("services.AddScoped") {
 					GenericArguments = {
-						typeConverter.Convert(setup.OptionsClass)
+						typeConverter.Convert(setup.ParamsClass)
 					}
 				},
 				Arguments = {
@@ -336,17 +336,17 @@ namespace Albatross.CommandLine.CodeGen {
 							},
 							new AssignmentExpression {
 								Left = new VariableDeclaration {
-									Identifier = new IdentifierNameExpression("options"),
+									Identifier = new IdentifierNameExpression("parameters"),
 								},
 								Expression = new NewObjectExpression {
-									Type = typeConverter.Convert(setup.OptionsClass),
+									Type = typeConverter.Convert(setup.ParamsClass),
 									Initializers = {
 										setup.Parameters.Select(x => CreateGetOptionPropertyValueExpression(compilation, x, typeConverter))
 									}
 								}
 							},
 							new ReturnExpression {
-								Expression = new IdentifierNameExpression("options")
+								Expression = new IdentifierNameExpression("parameters")
 							},
 						}
 					}

@@ -4,18 +4,18 @@ using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sample.CommandLine.MutuallyExclusiveOptions {
-	public class ExampleProjectBaseHandler : BaseHandler<ProjectOptions> {
-		public ExampleProjectBaseHandler(ParseResult result,ProjectOptions options) : base(result, options) {
+namespace Sample.CommandLine.MutuallyExclusiveParams {
+	public class ExampleProjectBaseHandler : BaseHandler<ProjectParams> {
+		public ExampleProjectBaseHandler(ParseResult result,ProjectParams parameters) : base(result, parameters) {
 		}
 
 		public override Task<int> InvokeAsync(CancellationToken cancellationToken) {
-			if (options is ProjectEchoOptions echoOptions) {
-				this.Writer.WriteLine($"Invoked project echo: {echoOptions}");
-			} else if (options is ProjectFubarOptions fubarOptions) {
-				this.Writer.WriteLine($"Invoked project fubar: {fubarOptions}");
+			if (parameters is ProjectEchoOptions echoParams) {
+				this.Writer.WriteLine($"Invoked project echo: {echoParams}");
+			} else if (parameters is ProjectFubarOptions fubarParams) {
+				this.Writer.WriteLine($"Invoked project fubar: {fubarParams}");
 			} else {
-				throw new NotSupportedException($"Unsupported options: {options}");
+				throw new NotSupportedException($"Unsupported parameters: {parameters}");
 			}
 			return Task.FromResult(0);
 		}

@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
 	[Verb<TestGracefulShutdown>("test graceful-shutdown", Description = "Use this command to verify graceful shutdown behavior")]
-	public record class TestGracefulShutdownOptions {
+	public record class TestGracefulShutdownParams {
 	}
 
-	public class TestGracefulShutdown : BaseHandler<TestGracefulShutdownOptions> {
+	public class TestGracefulShutdown : BaseHandler<TestGracefulShutdownParams> {
 		private readonly IMyService myService;
 
-		public TestGracefulShutdown(IMyService myService,ParseResult result, TestGracefulShutdownOptions options) : base(result, options) {
+		public TestGracefulShutdown(IMyService myService,ParseResult result, TestGracefulShutdownParams parameters) : base(result, parameters) {
 			this.myService = myService;
 		}
 

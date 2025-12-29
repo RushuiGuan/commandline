@@ -41,11 +41,11 @@ namespace Sample.CommandLine {
 	}
 
 	public class HelloWorldBaseHandler : BaseHandler<HelloWorldParams> {
-		public HelloWorldBaseHandler(ParseResult result, HelloWorldParams options) : base(result, options) {
+		public HelloWorldBaseHandler(ParseResult result, HelloWorldParams parameters) : base(result, parameters) {
 		}
 
 		public override async Task<int> InvokeAsync(CancellationToken cancellationToken) {
-			await this.Writer.WriteLineAsync(options.ToString());
+			await this.Writer.WriteLineAsync(parameters.ToString());
 			return 0;
 		}
 	}

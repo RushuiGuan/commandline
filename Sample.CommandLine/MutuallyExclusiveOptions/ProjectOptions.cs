@@ -1,7 +1,7 @@
 ﻿using Albatross.CommandLine;
 
-namespace Sample.CommandLine.MutuallyExclusiveOptions {
-	public record class ProjectOptions {
+namespace Sample.CommandLine.MutuallyExclusiveParams {
+	public record class ProjectParams {
 		[Option]
 		public required int Id { get; init; }
 	}

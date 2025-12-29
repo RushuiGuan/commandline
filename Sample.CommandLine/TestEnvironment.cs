@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
 	[Verb<TestEnvironment>("test environment", Description = "Verify the current host environment")]
-	public record class TestEnvironmentOptions {
+	public record class TestEnvironmentParams {
 	}
 
-	public class TestEnvironment : BaseHandler<TestEnvironmentOptions> {
+	public class TestEnvironment : BaseHandler<TestEnvironmentParams> {
 		private readonly ProgramSetting programSetting;
 		private readonly EnvironmentSetting environmentSetting;
 		private readonly IHostEnvironment hostEnvironment;
 
-		public TestEnvironment(ProgramSetting programSetting, EnvironmentSetting environmentSetting, IHostEnvironment hostEnvironment, ParseResult result, TestEnvironmentOptions options) : base(result, options) {
+		public TestEnvironment(ProgramSetting programSetting, EnvironmentSetting environmentSetting, IHostEnvironment hostEnvironment, ParseResult result, TestEnvironmentParams parameters) : base(result, parameters) {
 			this.programSetting = programSetting;
 			this.environmentSetting = environmentSetting;
 			this.hostEnvironment = hostEnvironment;

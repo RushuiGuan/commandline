@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
 	[Verb<TestLogging>("test logging", Description = "Use this command to verify logging outputs")]
-	public record class TestLoggingOptions {
+	public record class TestLoggingParams {
 	}
 
-	public class TestLogging : BaseHandler<TestLoggingOptions> {
+	public class TestLogging : BaseHandler<TestLoggingParams> {
 		private readonly ILogger<TestLogging> logger;
 
-		public TestLogging(ILogger<TestLogging> logger, ParseResult result, TestLoggingOptions options) : base(result, options) {
+		public TestLogging(ILogger<TestLogging> logger, ParseResult result, TestLoggingParams parameters) : base(result, parameters) {
 			this.logger = logger;
 		}
 

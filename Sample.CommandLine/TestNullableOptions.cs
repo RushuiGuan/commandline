@@ -1,8 +1,8 @@
 using Albatross.CommandLine;
 
 namespace Sample.CommandLine {
-	[Verb<DefaultAsyncCommandHandler<TestNullableOptions>>("test nullable", Description = "A command to test nullable options")]
-	public record class TestNullableOptions {
+	[Verb<DefaultAsyncCommandHandler<TestNullableParams>>("test nullable", Description = "A command to test nullable parameters")]
+	public record class TestNullableParams {
 		[Option(Description = "A nullable string")]
 		public string? NullableString { get; init; }
 

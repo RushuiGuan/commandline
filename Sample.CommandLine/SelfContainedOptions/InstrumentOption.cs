@@ -3,7 +3,7 @@ using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sample.CommandLine.SelfContainedOptions {
+namespace Sample.CommandLine.SelfContainedParams {
 	[DefaultActionHandler(typeof(InstrumentOptionHandler))]
 	public class InstrumentOption : Option<string> {
 		public InstrumentOption() : this("--instrument", "-i") { }

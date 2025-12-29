@@ -1,7 +1,7 @@
 using Albatross.CommandLine;
 
 namespace Sample.CommandLine {
-	[Verb<DefaultAsyncCommandHandler<TestUndefinedParentCommandOptions>>("p1 p2 new", Description = "The parent command project is not defined explicitly.  It will be created automatically.")]
-	public record class TestUndefinedParentCommandOptions {
+	[Verb<DefaultAsyncCommandHandler<TestUndefinedParentCommandParams>>("p1 p2 new", Description = "The parent command project is not defined explicitly.  It will be created automatically.")]
+	public record class TestUndefinedParentCommandParams {
 	}
 }
