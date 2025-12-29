@@ -6,24 +6,27 @@ using System;
 using System.Linq;
 
 namespace Albatross.CommandLine.CodeGen {
-	public abstract record class CommandPropertySetup {
+	public abstract record class CommandParameterSetup {
 		public IPropertySymbol PropertySymbol { get; }
 
 		public int Index { get; init; }
 		public ExpressionSyntax? PropertyInitializer { get; }
 		public bool DefaultToInitializer { get; }
 		public string Key { get; protected set; }
-		public string Type { get; }
 		public string? Description { get; }
 		public bool Hidden { get; }
-		public bool ShouldDefaultToInitializer => DefaultToInitializer && PropertyInitializer != null;
+		public bool ShouldDefaultToInitializer => DefaultToInitializer && PropertyInitializer != null && ExplicitParameterClass == null;
 		public abstract string CommandPropertyName { get; }
-		
-		protected CommandPropertySetup(IPropertySymbol propertySymbol, AttributeData propertyAttribute) {
-			this.PropertySymbol = propertySymbol;
 
+		public INamedTypeSymbol ParameterClass => ExplicitParameterClass ?? DefaultParameterClass;
+		public INamedTypeSymbol? ExplicitParameterClass { get; init; }
+		public abstract INamedTypeSymbol DefaultParameterClass { get; }
+		public INamedTypeSymbol? ExplicitParameterHandlerClass { get; init; }
+		
+
+		protected CommandParameterSetup(IPropertySymbol propertySymbol, AttributeData propertyAttribute) {
+			this.PropertySymbol = propertySymbol;
 			this.Key = propertySymbol.Name.Kebaberize();
-			this.Type = propertySymbol.Type.GetFullName();
 
 			if (propertyAttribute.TryGetNamedArgument("DefaultToInitializer", out var defaultToInitializer)) {
 				this.DefaultToInitializer = Convert.ToBoolean(defaultToInitializer.Value);

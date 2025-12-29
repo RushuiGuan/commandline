@@ -12,7 +12,7 @@ namespace Sample.CommandLine {
 		public required FileInfo Project { get; init; }
 	}
 
-	[Verb<DefaultCommandHandler<TestBaseClassPropertiesOptions>>("test base-class-properties", Description = "When determining option property order, the code generator prioritizes properties declared on the current class over those inherited from base classes.")]
+	[Verb<DefaultAsyncCommandHandler<TestBaseClassPropertiesOptions>>("test base-class-properties", Description = "When determining option property order, the code generator prioritizes properties declared on the current class over those inherited from base classes.")]
 	public record class TestBaseClassPropertiesOptions : BaseOptions1 {
 		[Option(Description = "C# language version")]
 		public required string LanguageVersion { get; init; }

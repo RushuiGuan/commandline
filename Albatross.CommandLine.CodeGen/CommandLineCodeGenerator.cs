@@ -171,7 +171,7 @@ namespace Albatross.CommandLine.CodeGen {
 					yield return new InvocationExpression {
 						CallableExpression = new IdentifierNameExpression("services.AddKeyedScoped") {
 							GenericArguments = new ListOfGenericArguments {
-								MyDefined.Types.ICommandHandler,
+								MyDefined.Types.IAsyncCommandHandler,
 								typeConverter.Convert(setup.HandlerClass)
 							}
 						},
@@ -191,16 +191,16 @@ namespace Albatross.CommandLine.CodeGen {
 			}
 		}
 
-		static bool ShouldUseRequiredValue(Compilation compilation, CommandPropertySetup parameter) {
+		static bool ShouldUseRequiredValue(Compilation compilation, CommandParameterSetup parameter) {
 			// for collection types, always use null-coalescing operator: GetValue(..) ?? new List<T>()
 			if (parameter.PropertySymbol.Type.IsCollection(compilation)) {
 				return false;
 			}
-			if (parameter is CommandOptionPropertySetup optionPropertySetup) {
+			if (parameter is CommandOptionParameterSetup optionPropertySetup) {
 				if (optionPropertySetup.Required || optionPropertySetup.ShouldDefaultToInitializer) {
 					return true;
 				}
-			} else if (parameter is CommandArgumentPropertySetup argumentPropertySetup) {
+			} else if (parameter is CommandArgumentParameterSetup argumentPropertySetup) {
 				if (argumentPropertySetup is not { ArityMin: 0, ArityMax: 1 }) {
 					return true;
 				}
@@ -281,14 +281,14 @@ namespace Albatross.CommandLine.CodeGen {
 				}
 			};
 		}
-		public static AssignmentExpression CreateGetOptionPropertyValueExpression(Compilation compilation, CommandPropertySetup property, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
+		public static AssignmentExpression CreateGetOptionPropertyValueExpression(Compilation compilation, CommandParameterSetup parameter, IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
 			IExpression expression = new InvocationExpression {
-				CallableExpression = new IdentifierNameExpression(ShouldUseRequiredValue(compilation, property) ? "result.GetRequiredValue" : "result.GetValue") {
-					GenericArguments = { typeConverter.Convert(property.PropertySymbol.Type) }
+				CallableExpression = new IdentifierNameExpression(ShouldUseRequiredValue(compilation, parameter) ? "result.GetRequiredValue" : "result.GetValue") {
+					GenericArguments = { typeConverter.Convert(parameter.PropertySymbol.Type) }
 				},
-				Arguments = { new StringLiteralExpression(property.Key) }
+				Arguments = { new StringLiteralExpression(parameter.Key) }
 			};
-			if (property.PropertySymbol.Type.TryGetCollectionElementType(compilation, out var elementType)) {
+			if (parameter.PropertySymbol.Type.TryGetCollectionElementType(compilation, out var elementType)) {
 				expression = new InfixExpression {
 					Left = expression,
 					Operator = new Operator("??"),
@@ -300,7 +300,7 @@ namespace Albatross.CommandLine.CodeGen {
 				};
 			}
 			return new AssignmentExpression {
-				Left = new IdentifierNameExpression(property.PropertySymbol.Name),
+				Left = new IdentifierNameExpression(parameter.PropertySymbol.Name),
 				Expression = expression
 			};
 		}

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
-	public interface ICommandHandler {
+	public interface IAsyncCommandHandler {
 		Task<int> InvokeAsync(CancellationToken cancellationToken);
 	}
 }

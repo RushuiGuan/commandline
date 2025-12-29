@@ -16,7 +16,7 @@ namespace Albatross.CommandLine.CodeGen {
 		public string CommandClassNamespace => OptionsClass.ContainingNamespace.GetFullNamespace();
 		public string? Description { get; }
 		public string[] Aliases { get; } = Array.Empty<string>();
-		public CommandPropertySetup[] Parameters { get; }
+		public CommandParameterSetup[] Parameters { get; }
 
 		const string Postfix_Options = "Options";
 
@@ -70,19 +70,46 @@ namespace Albatross.CommandLine.CodeGen {
 			}
 		}
 
-		public IEnumerable<CommandPropertySetup> GetCommandParameters(Compilation compilation) {
+		public IEnumerable<CommandParameterSetup> GetCommandParameters(Compilation compilation) {
 			var propertySymbols = OptionsClass.GetDistinctProperties(true).ToArray();
 			int index = 0;
 			foreach (var propertySymbol in propertySymbols) {
 				index++;
-				if (propertySymbol.TryGetAttribute(compilation.ArgumentAttributeClass(), out AttributeData? attributeData)) {
-					yield return new CommandArgumentPropertySetup(compilation, propertySymbol, attributeData!) {
-						Index = index,
-					};
-				} else if (propertySymbol.TryGetAttribute(compilation.OptionAttributeClass(), out attributeData)) {
-					yield return new CommandOptionPropertySetup(compilation, propertySymbol, attributeData) {
-						Index = index,
-					};
+				foreach (var attributeData in propertySymbol.GetAttributes()) {
+					if (attributeData.AttributeClass.Is(compilation.ArgumentAttributeClass())) {
+						yield return new CommandArgumentParameterSetup(compilation, propertySymbol, attributeData) {
+							Index = index,
+						};
+					} else if (attributeData.AttributeClass.Is(compilation.OptionAttributeClass())) {
+						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData) {
+							Index = index,
+						};
+					} else if ((attributeData.AttributeClass.Is(compilation.UseOptionAttributeClassGeneric1())
+					            || attributeData.AttributeClass.Is(compilation.UseArgumentAttributeClassGeneric1()))
+					           && attributeData.AttributeClass?.TypeArguments.Length == 1) {
+						//TODO: provide a warning if the symbol has incorrect base class
+						var symbol = attributeData.AttributeClass!.TypeArguments[0] as INamedTypeSymbol;
+						symbol!.TryGetAttribute(compilation.DefaultActionHandlerAttributeClass(), out var handlerAttribute);
+						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData!) {
+							Index = index,
+							ExplicitParameterClass = symbol,
+							ExplicitParameterHandlerClass = handlerAttribute?.AttributeClass,
+						};
+					} else if ((attributeData.AttributeClass.Is(compilation.UseOptionAttributeClassGeneric2())
+					            || attributeData.AttributeClass.Is(compilation.UseArgumentAttributeClassGeneric2()))
+					           && attributeData.AttributeClass?.TypeArguments.Length == 2) {
+						//TODO: provide a warning if the symbol has incorrect base class
+						var symbol = attributeData.AttributeClass!.TypeArguments[0] as INamedTypeSymbol;
+						var handler = attributeData.AttributeClass!.TypeArguments[1] as INamedTypeSymbol;
+						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData!) {
+							Index = index,
+							ExplicitParameterClass = symbol,
+							ExplicitParameterHandlerClass = handler,
+						};
+					} else {
+						continue;
+					}
+					break;
 				}
 			}
 		}

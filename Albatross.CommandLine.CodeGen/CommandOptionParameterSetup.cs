@@ -5,12 +5,13 @@ using System;
 using System.Linq;
 
 namespace Albatross.CommandLine.CodeGen {
-	public record class CommandOptionPropertySetup : CommandPropertySetup {
+	public record class CommandOptionParameterSetup : CommandParameterSetup {
 		public string[] Aliases { get; }
 		public bool Required { get; }
 		public override string CommandPropertyName => $"Option_{this.PropertySymbol.Name}";
+		public override INamedTypeSymbol DefaultParameterClass { get; }
 
-		public CommandOptionPropertySetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute)
+		public CommandOptionParameterSetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute)
 			: base(propertySymbol, propertyAttribute) {
 			this.Key = $"--{this.Key}";
 			if (propertyAttribute.ConstructorArguments.Any()) {
@@ -28,6 +29,7 @@ namespace Albatross.CommandLine.CodeGen {
 				                && !propertySymbol.Type.IsCollection(compilation)
 				                && !ShouldDefaultToInitializer;
 			}
+			this.DefaultParameterClass = compilation.OptionGenericClass().Construct(propertySymbol.Type);
 		}
 
 		string CreateAlias(string text) {

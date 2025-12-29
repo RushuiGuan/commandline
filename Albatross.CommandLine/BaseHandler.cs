@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
-	public abstract class BaseHandler<T> : ICommandHandler where T : class {
+	public abstract class BaseHandler<T> : IAsyncCommandHandler where T : class {
 		protected ParseResult result;
 		protected readonly T options;
 		protected virtual TextWriter Writer => Console.Out;

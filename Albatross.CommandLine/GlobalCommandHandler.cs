@@ -19,20 +19,23 @@ namespace Albatross.CommandLine {
 		/// </summary>
 		const int ErrorExitCode = 255;
 		const int CancelledExitCode = 254;
+		const int InputActionErrorExitCode = 253;
 
 		private readonly Func<IServiceProvider> serviceFactory;
 
 		public async Task<int> InvokeAsync(ParseResult result, CancellationToken cancellationToken) {
 			var services = this.serviceFactory();
+			var context = services.GetRequiredService<ICommandContext>();
+			if (context.HasInputActionError) {
+				return InputActionErrorExitCode;
+			}
 			var logger = services.GetRequiredService<ILogger<GlobalCommandHandler>>();
-			var commandNames = result.CommandResult.Command.GetCommandNames();
-			var key = string.Join(' ', commandNames);
-			logger.LogInformation("Executing command '{command}'", key);
-			ICommandHandler? handler = null;
+			logger.LogInformation("Executing command '{command}'", context.Key);
+			IAsyncCommandHandler? handler = null;
 			try {
-				handler = services.GetKeyedService<ICommandHandler>(key);
+				handler = services.GetKeyedService<IAsyncCommandHandler>(context.Key);
 			} catch (Exception err) {
-				logger.LogError(err, "Error creating CommandHandler for command {command}", key);
+				logger.LogError(err, "Error creating CommandHandler for command {command}", context.Key);
 				return ErrorExitCode;
 			}
 			if (handler == null) {
@@ -40,22 +43,19 @@ namespace Albatross.CommandLine {
 				if (result.CommandResult.Command.Subcommands.Any()) {
 					return new HelpAction().Invoke(result);
 				} else {
-					logger.LogError("No CommandHandler is registered for command {command}", key);
+					logger.LogError("No CommandHandler is registered for command {command}", context.Key);
 					return ErrorExitCode;
 				}
 			} else {
-				// skip System.CommandLine.Invocation.DefaultExceptionHandler
-				// while using System.Console.Error is the standard way to report errors, it actually makes it harder
-				// to capture the error output since we have to capture 2 (stdout and stderr) instead of stdout only.
-				// Using logging for all output makes it easier to redirect output and standardizes the output format so that it
-				// is easier to read
+				// v2 inclueds a System.CommandLine.Invocation.DefaultExceptionHandler that could be used here.
+				// but we implement our own here to have more control on the exit code as well as output logging behavior.
 				try {
 					return await handler.InvokeAsync(cancellationToken);
 				} catch (OperationCanceledException) {
-					logger.LogWarning("Command {command} was cancelled", key);
+					logger.LogWarning("Command {command} was cancelled", context.Key);
 					return CancelledExitCode;
 				} catch (Exception err) {
-					logger.LogError(err, "Error invoking command {command}", key);
+					logger.LogError(err, "Error invoking command {command}", context.Key);
 					return ErrorExitCode;
 				}
 			}

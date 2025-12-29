@@ -44,14 +44,8 @@ namespace Albatross.CommandLine {
 		/// </summary>
 		/// <param name="args"></param>
 		/// <returns></returns>
-		public CommandHost Parse(string[] args, Action<Func<IServiceProvider>>? adjust = null) {
-			Console.WriteLine("Before parsing");
+		public CommandHost Parse(string[] args) {
 			this.CommandBuilder.BuildTree(GetServiceProvider);
-			Console.WriteLine("before adjusting");
-			if(adjust != null) {
-				adjust(GetServiceProvider);
-			}
-			Console.WriteLine("after parsing");
 			parseResult = this.CommandBuilder.RootCommand.Parse(args);
 			this.hostBuilder.ConfigureServices(services => services.AddSingleton(parseResult));
 			// configure default logging level based on parsed result
@@ -87,7 +81,6 @@ namespace Albatross.CommandLine {
 		}
 
 		public Task<int> InvokeAsync() {
-			Console.WriteLine("Before invoking");
 			return this.RequiredResult.InvokeAsync();
 		}
 

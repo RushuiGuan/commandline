@@ -34,6 +34,7 @@ namespace Albatross.CommandLine.CodeGen {
 					new ConstructorDeclaration {
 						Name = new IdentifierNameExpression(setup.CommandClassName),
 						BaseConstructorInvocation = new InvocationExpression {
+							//TODO: Use 'base' identifier from Defined when available
 							CallableExpression = new IdentifierNameExpression("base"),
 							Arguments = {
 								new StringLiteralExpression(setup.Name),
@@ -59,7 +60,7 @@ namespace Albatross.CommandLine.CodeGen {
 			foreach (var parameter in setup.Parameters) {
 				yield return new PropertyDeclaration {
 					Name = new IdentifierNameExpression(parameter.CommandPropertyName),
-					Type = new TypeExpression(parameter is CommandArgumentPropertySetup ? MyDefined.Identifiers.Argument : MyDefined.Identifiers.Option, this.typeConverter.Convert(parameter.PropertySymbol.Type)),
+					Type = this.typeConverter.Convert(parameter.ParameterClass),
 					AccessModifier = Defined.Keywords.Public,
 					GetterBody = new NoOpExpression(),
 					SetterBody = null,
@@ -78,10 +79,10 @@ namespace Albatross.CommandLine.CodeGen {
 				yield return new AssignmentExpression {
 					Left = new IdentifierNameExpression("this." + parameter.CommandPropertyName),
 					Expression = new NewObjectExpression {
-						Type = new TypeExpression(parameter is CommandArgumentPropertySetup ? MyDefined.Identifiers.Argument : MyDefined.Identifiers.Option, this.typeConverter.Convert(parameter.PropertySymbol.Type)),
+						Type = this.typeConverter.Convert(parameter.ParameterClass),
 						Arguments = new ListOfArguments {
 							new StringLiteralExpression(parameter.Key),
-							{ parameter is CommandOptionPropertySetup, ()=> ((CommandOptionPropertySetup)parameter).Aliases.Select(x=>new StringLiteralExpression(x)) }
+							{ parameter is CommandOptionParameterSetup, ()=> ((CommandOptionParameterSetup)parameter).Aliases.Select(x=>new StringLiteralExpression(x)) }
 						},
 						Initializers = new() {
 							{
@@ -96,18 +97,18 @@ namespace Albatross.CommandLine.CodeGen {
 								}
 							},
 							{
-								parameter is CommandOptionPropertySetup { Required: true }, () => new AssignmentExpression {
+								parameter is CommandOptionParameterSetup { Required: true }, () => new AssignmentExpression {
 									Left = new IdentifierNameExpression("Required"),
 									Expression = Defined.Literals.True,
 								}
 							}, {
-								parameter is CommandArgumentPropertySetup argumentProperty, () => new AssignmentExpression {
+								parameter is CommandArgumentParameterSetup argumentProperty, () => new AssignmentExpression {
 									Left = new IdentifierNameExpression("Arity"),
 									Expression = new NewObjectExpression {
 										Type = new TypeExpression("ArgumentArity"),
 										Arguments = new ListOfArguments {
-											new IntLiteralExpression(((CommandArgumentPropertySetup)parameter).ArityMin),
-											new IntLiteralExpression(((CommandArgumentPropertySetup)parameter).ArityMax),
+											new IntLiteralExpression(((CommandArgumentParameterSetup)parameter).ArityMin),
+											new IntLiteralExpression(((CommandArgumentParameterSetup)parameter).ArityMax),
 										}
 									}
 								}

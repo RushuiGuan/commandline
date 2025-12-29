@@ -2,7 +2,7 @@
 using System;
 
 namespace Sample.CommandLine {
-	[Verb<DefaultCommandHandler<TestHiddenPropertiesOptions>>("test hidden", Description = "Test hidden arguments and options: --hidden-string-value, --hidden-int-value")]
+	[Verb<DefaultAsyncCommandHandler<TestHiddenPropertiesOptions>>("test hidden", Description = "Test hidden arguments and options: --hidden-string-value, --hidden-int-value")]
 	public record class TestHiddenPropertiesOptions {
 		[Argument(Description = "A string value")]
 		public required string StringValue { get; init; }

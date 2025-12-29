@@ -5,11 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
-	public class DefaultCommandHandler<T> : ICommandHandler where T : class {
+	public class DefaultAsyncCommandHandler<T> : IAsyncCommandHandler where T : class {
 		private readonly T options;
 		private readonly ParseResult result;
 
-		public DefaultCommandHandler(T options, ParseResult result) {
+		public DefaultAsyncCommandHandler(T options, ParseResult result) {
 			this.options = options;
 			this.result = result;
 		}

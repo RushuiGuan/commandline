@@ -2,7 +2,7 @@
 using Sample.CommandLine.Core;
 
 namespace Sample.CommandLine {
-	[Verb<DefaultCommandHandler<TestEnumValueOptions>>("test enum", Description = "Test use of enum value as arguments and options")]
+	[Verb<DefaultAsyncCommandHandler<TestEnumValueOptions>>("test enum", Description = "Test use of enum value as arguments and options")]
 	public record class TestEnumValueOptions {
 		[Argument(Description = "First required shade of gray")]
 		public ShadesOfGray Gray1 { get; init; }

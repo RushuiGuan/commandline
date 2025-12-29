@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Hosting;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
@@ -29,6 +28,21 @@ namespace Albatross.CommandLine {
 			var fullKey = string.IsNullOrEmpty(parentKey) ? command.Name : $"{parentKey} {command.Name}";
 			commandHost.CommandBuilder.Add(fullKey, command);
 			return commandHost;
+		}
+		
+		public static T GetRequiredReferenceValue<T>(this ICommandContext context, string key) where T : class {
+			var value = context.GetReferenceValue<T>(key);
+			if (value == null) {
+				throw new InvalidOperationException($"Required reference type value for key {key} is not set.");
+			}
+			return value;
+		}
+		public static T GetRequiredStructValue<T>(this ICommandContext context, string key) where T : struct {
+			var value = context.GetStructValue<T>(key);
+			if (value == null) {
+				throw new InvalidOperationException($"Required struct type value for key {key} is not set.");
+			}
+			return value.Value;
 		}
 	}
 }
