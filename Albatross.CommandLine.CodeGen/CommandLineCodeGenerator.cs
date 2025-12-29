@@ -51,6 +51,7 @@ namespace Albatross.CommandLine.CodeGen {
 		}
 
 		public void Initialize(IncrementalGeneratorInitializationContext context) {
+			// System.Diagnostics.Debugger.Launch();
 			var compilationProvider = context.CompilationProvider.Select(static (x, _) => x);
 			var commandSetups = BuildVerbsCommandSetups(context, compilationProvider, MySymbolProvider.VerbAttributeClassName);
 			var commandSetups1 = BuildVerbsCommandSetups(context, compilationProvider, MySymbolProvider.VerbAttributeClassNameGeneric1);

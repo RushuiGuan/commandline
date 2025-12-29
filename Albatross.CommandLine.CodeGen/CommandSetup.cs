@@ -18,7 +18,7 @@ namespace Albatross.CommandLine.CodeGen {
 		public string[] Aliases { get; } = Array.Empty<string>();
 		public CommandParameterSetup[] Parameters { get; }
 
-		const string Postfix_Options = "Options";
+		const string Postfix_Options = "Params";
 
 		public CommandSetup(Compilation compilation, INamedTypeSymbol optionsClass, AttributeData verbAttribute)
 			: this(compilation, optionsClass, null, verbAttribute) {
@@ -84,8 +84,8 @@ namespace Albatross.CommandLine.CodeGen {
 						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData) {
 							Index = index,
 						};
-					} else if ((attributeData.AttributeClass.Is(compilation.UseOptionAttributeClassGeneric1())
-					            || attributeData.AttributeClass.Is(compilation.UseArgumentAttributeClassGeneric1()))
+					} else if ((Extensions.Is(attributeData.AttributeClass?.OriginalDefinition, compilation.UseOptionAttributeClassGeneric1())
+					            || Extensions.Is(attributeData.AttributeClass?.OriginalDefinition, compilation.UseArgumentAttributeClassGeneric1()))
 					           && attributeData.AttributeClass?.TypeArguments.Length == 1) {
 						//TODO: provide a warning if the symbol has incorrect base class
 						var symbol = attributeData.AttributeClass!.TypeArguments[0] as INamedTypeSymbol;
@@ -95,8 +95,8 @@ namespace Albatross.CommandLine.CodeGen {
 							ExplicitParameterClass = symbol,
 							ExplicitParameterHandlerClass = handlerAttribute?.AttributeClass,
 						};
-					} else if ((attributeData.AttributeClass.Is(compilation.UseOptionAttributeClassGeneric2())
-					            || attributeData.AttributeClass.Is(compilation.UseArgumentAttributeClassGeneric2()))
+					} else if ((Extensions.Is(attributeData.AttributeClass?.OriginalDefinition, compilation.UseOptionAttributeClassGeneric2())
+					            || Extensions.Is(attributeData.AttributeClass?.OriginalDefinition, compilation.UseArgumentAttributeClassGeneric2()))
 					           && attributeData.AttributeClass?.TypeArguments.Length == 2) {
 						//TODO: provide a warning if the symbol has incorrect base class
 						var symbol = attributeData.AttributeClass!.TypeArguments[0] as INamedTypeSymbol;

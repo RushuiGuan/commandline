@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using System;
+﻿using System;
 using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;

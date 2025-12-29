@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sample.CommandLine {
 	[Verb<HelloWorldBaseHandler>("hello", Description = "The HelloWorld command")]
-	public record class HelloWorldOptions {
+	public record class HelloWorldParams {
 		[Argument(Description = "The order of declaration determines the position of the argument")]
 		public required string Argument1 { get; init; }
 
@@ -40,8 +40,8 @@ namespace Sample.CommandLine {
 		}
 	}
 
-	public class HelloWorldBaseHandler : BaseHandler<HelloWorldOptions> {
-		public HelloWorldBaseHandler(ParseResult result, HelloWorldOptions options) : base(result, options) {
+	public class HelloWorldBaseHandler : BaseHandler<HelloWorldParams> {
+		public HelloWorldBaseHandler(ParseResult result, HelloWorldParams options) : base(result, options) {
 		}
 
 		public override async Task<int> InvokeAsync(CancellationToken cancellationToken) {
