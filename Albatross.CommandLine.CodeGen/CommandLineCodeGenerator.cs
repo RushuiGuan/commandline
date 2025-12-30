@@ -5,6 +5,7 @@ using Albatross.CodeGen.CSharp.Declarations;
 using Albatross.CodeGen.CSharp.Expressions;
 using Albatross.CodeGen.CSharp.TypeConversions;
 using Albatross.Collections;
+using Albatross.CommandLine.CodeGen.IR;
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -102,7 +103,7 @@ namespace Albatross.CommandLine.CodeGen {
 								IsStatic = true,
 								Methods = [
 									new RegisterCommandsMethodBuilder(compilation, typeConverter).Convert(commandSetups),
-									new AddCommandsMethodBuilder().Convert(commandSetups),
+									new AddCommandsMethodBuilder(typeConverter).Convert(commandSetups),
 								]
 							}
 						]
@@ -110,6 +111,5 @@ namespace Albatross.CommandLine.CodeGen {
 					context.AddSource(registrationFile.FileName, new StringWriter().Code(registrationFile).ToString());
 				});
 		}
-
 	}
 }

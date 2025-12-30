@@ -3,9 +3,8 @@ using Humanizer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
-using System.Linq;
 
-namespace Albatross.CommandLine.CodeGen {
+namespace Albatross.CommandLine.CodeGen.IR {
 	public abstract record class CommandParameterSetup {
 		public IPropertySymbol PropertySymbol { get; }
 

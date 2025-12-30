@@ -28,7 +28,7 @@ namespace Albatross.CommandLine {
 		protected ParseResult RequiredResult => this.parseResult ?? throw new InvalidOperationException("Parse(args) has not been called yet");
 		public CommandBuilder CommandBuilder { get; }
 
-		IServiceProvider GetServiceProvider() => host?.Services ?? throw new InvalidOperationException($"Host has not been built, Call the Build() method!");
+		public IServiceProvider GetServiceProvider() => host?.Services ?? throw new InvalidOperationException($"Host has not been built, Call the Build() method!");
 
 		public CommandHost(string description) {
 			this.hostBuilder = Host.CreateDefaultBuilder();

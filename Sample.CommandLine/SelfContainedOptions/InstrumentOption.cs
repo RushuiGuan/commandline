@@ -1,4 +1,5 @@
 ﻿using Albatross.CommandLine;
+using Albatross.CommandLine.Annotations;
 using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace Sample.CommandLine.SelfContainedParams {
 		}
 	}
 
-	public class InstrumentOptionHandler : IAsyncCommandParameterHandler<InstrumentOption> {
+	public class InstrumentOptionHandler : IAsyncOptionHandler<InstrumentOption> {
 		private readonly ICommandContext context;
 		private readonly InstrumentProxy instrumentProxy;
 

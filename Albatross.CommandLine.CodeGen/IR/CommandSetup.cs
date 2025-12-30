@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Albatross.CommandLine.CodeGen {
+namespace Albatross.CommandLine.CodeGen.IR {
 	public record class CommandSetup {
 		public const string CommandClassPostfix = "Command";
 		public string Key { get; }
@@ -89,7 +89,7 @@ namespace Albatross.CommandLine.CodeGen {
 					           && attributeData.AttributeClass?.TypeArguments.Length == 1) {
 						//TODO: provide a warning if the symbol has incorrect base class
 						var symbol = attributeData.AttributeClass!.TypeArguments[0] as INamedTypeSymbol;
-						symbol!.TryGetAttribute(compilation.DefaultActionHandlerAttributeClass(), out var handlerAttribute);
+						symbol!.TryGetAttribute(compilation.DefaultOptionHandlerAttributeClass(), out var handlerAttribute);
 						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData!) {
 							Index = index,
 							ExplicitParameterClass = symbol,

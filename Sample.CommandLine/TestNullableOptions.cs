@@ -1,4 +1,5 @@
 using Albatross.CommandLine;
+using Albatross.CommandLine.Annotations;
 
 namespace Sample.CommandLine {
 	[Verb<DefaultAsyncCommandHandler<TestNullableParams>>("test nullable", Description = "A command to test nullable parameters")]

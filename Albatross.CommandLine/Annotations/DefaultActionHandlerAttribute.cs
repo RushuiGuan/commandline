@@ -1,6 +1,6 @@
 using System;
 
-namespace Albatross.CommandLine {
+namespace Albatross.CommandLine.Annotations {
 	public class DefaultActionHandlerAttribute : Attribute {
 		public DefaultActionHandlerAttribute(Type handlerType) {
 			this.HandlerType = handlerType;

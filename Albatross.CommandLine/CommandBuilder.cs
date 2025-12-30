@@ -20,8 +20,11 @@ namespace Albatross.CommandLine {
 			commands.Add(string.Empty, RootCommand);
 		}
 
-		public void Add<T>(string key) where T : Command, new()
-			=> Add(key, new T());
+		public T Add<T>(string key) where T : Command, new() {
+			var t = new T();
+			Add(key, t);
+			return t;
+		}
 
 		public void Add<T>(string key, T command) where T : Command {
 			try {

@@ -1,8 +1,7 @@
 ﻿using Albatross.CodeAnalysis;
-using Humanizer;
 using Microsoft.CodeAnalysis;
 
-namespace Albatross.CommandLine.CodeGen {
+namespace Albatross.CommandLine.CodeGen.IR {
 	public record class CommandArgumentParameterSetup : CommandParameterSetup {
 		public override string CommandPropertyName => $"Argument_{this.PropertySymbol.Name}";
 		public override INamedTypeSymbol DefaultParameterClass { get; }

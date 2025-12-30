@@ -1,4 +1,5 @@
 using Albatross.CommandLine;
+using Albatross.CommandLine.Annotations;
 using Albatross.Config;
 using Microsoft.Extensions.Configuration;
 using System.CommandLine;

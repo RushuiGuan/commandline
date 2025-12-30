@@ -1,4 +1,5 @@
 ﻿using Albatross.CommandLine;
+using Albatross.CommandLine.Annotations;
 
 namespace Sample.CommandLine {
 	[Verb<DefaultAsyncCommandHandler<TestCustomizedCommandParams>>("test customized", Description = "Commands can be customized by extending its partial class")]

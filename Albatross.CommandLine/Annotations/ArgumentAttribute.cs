@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Albatross.CommandLine {
+namespace Albatross.CommandLine.Annotations {
 	public class ArgumentAttribute : Attribute {
 		public string? Description { get; set; }
 		public bool Hidden { get; set; }

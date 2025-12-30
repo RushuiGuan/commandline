@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Albatross.CommandLine {
+namespace Albatross.CommandLine.Annotations {
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	public class VerbAttribute<THandler> : VerbAttribute where THandler : IAsyncCommandHandler {
 		public VerbAttribute(string name) : base(name, typeof(THandler)) { }

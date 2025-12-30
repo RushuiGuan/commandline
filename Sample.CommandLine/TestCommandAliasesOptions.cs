@@ -1,4 +1,5 @@
 using Albatross.CommandLine;
+using Albatross.CommandLine.Annotations;
 
 namespace Sample.CommandLine {
 	[Verb<DefaultAsyncCommandHandler<TestCommandAliasesParams>>("test command-aliases", Alias = ["a", "cmd-alias"], Description = "Test the use of command aliases")]

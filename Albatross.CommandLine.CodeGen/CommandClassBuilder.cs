@@ -2,6 +2,7 @@ using Albatross.CodeGen;
 using Albatross.CodeGen.CSharp;
 using Albatross.CodeGen.CSharp.Declarations;
 using Albatross.CodeGen.CSharp.Expressions;
+using Albatross.CommandLine.CodeGen.IR;
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Linq;

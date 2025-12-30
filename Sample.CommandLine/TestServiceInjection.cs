@@ -1,4 +1,5 @@
 using Albatross.CommandLine;
+using Albatross.CommandLine.Annotations;
 using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;

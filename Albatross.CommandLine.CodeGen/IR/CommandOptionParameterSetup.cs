@@ -1,10 +1,9 @@
 ﻿using Albatross.CodeAnalysis;
-using Humanizer;
 using Microsoft.CodeAnalysis;
 using System;
 using System.Linq;
 
-namespace Albatross.CommandLine.CodeGen {
+namespace Albatross.CommandLine.CodeGen.IR {
 	public record class CommandOptionParameterSetup : CommandParameterSetup {
 		public string[] Aliases { get; }
 		public bool Required { get; }

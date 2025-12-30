@@ -29,5 +29,11 @@ namespace Albatross.CommandLine {
 			commandHost.CommandBuilder.Add(fullKey, command);
 			return commandHost;
 		}
+
+		public static T SetOptionAction<T, O>(this T command, Func<T, O> func, CommandHost host) where T : Command where O:Option {
+			var option = func(command);
+			option.Action = new AsyncOptionHandler<O>(option, host.GetServiceProvider);
+			return command;
+		}
 	}
 }

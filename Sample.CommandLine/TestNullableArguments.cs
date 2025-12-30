@@ -1,4 +1,5 @@
 using Albatross.CommandLine;
+using Albatross.CommandLine.Annotations;
 
 namespace Sample.CommandLine {
 	[Verb<DefaultAsyncCommandHandler<TestNullableArguments>>("test nullable-arguments", Description = "Optional arguments should be placed after the required arguments")]

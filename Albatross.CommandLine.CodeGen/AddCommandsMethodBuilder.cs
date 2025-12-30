@@ -2,20 +2,24 @@
 using Albatross.CodeGen.CSharp;
 using Albatross.CodeGen.CSharp.Declarations;
 using Albatross.CodeGen.CSharp.Expressions;
+using Albatross.CommandLine.CodeGen.IR;
+using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace Albatross.CommandLine.CodeGen {
 	public class AddCommandsMethodBuilder : IConvertObject<ImmutableArray<CommandSetup>, MethodDeclaration> {
-		public AddCommandsMethodBuilder() {
+		private readonly IConvertObject<ITypeSymbol, ITypeExpression> typeConverter;
+		public AddCommandsMethodBuilder(IConvertObject<ITypeSymbol, ITypeExpression> typeConverter) {
+			this.typeConverter = typeConverter;
 		}
-
 		object IConvertObject<ImmutableArray<CommandSetup>>.Convert(ImmutableArray<CommandSetup> commandSetups)
 			=> this.Convert(commandSetups);
 
-		private static IEnumerable<IExpression> CreateAddCommandsBody(ImmutableArray<CommandSetup> commandSetups) {
+		private IEnumerable<IExpression> CreateAddCommandsBody(ImmutableArray<CommandSetup> commandSetups) {
 			foreach (var setup in commandSetups) {
-				yield return new InvocationExpression {
+				var expression = new InvocationExpression {
 					CallableExpression = new IdentifierNameExpression("host.CommandBuilder.Add") {
 						GenericArguments = new ListOfGenericArguments {
 							new TypeExpression(new QualifiedIdentifierNameExpression(setup.CommandClassName, new NamespaceExpression(setup.CommandClassNamespace)))
@@ -25,6 +29,26 @@ namespace Albatross.CommandLine.CodeGen {
 						new StringLiteralExpression(setup.Key)
 					}
 				};
+				foreach (var param in setup.Parameters.Where(x => x.ExplicitParameterHandlerClass is not null)) {
+					expression.Chain(true,
+						new InvocationExpression {
+							CallableExpression = new IdentifierNameExpression("SetOptionAction"),
+							Arguments = {
+								new AnonymousMethodExpression {
+									Parameters = {
+										new ParameterDeclaration {
+											Name = new IdentifierNameExpression("cmd"),
+										}
+									},
+									Body = {
+										new IdentifierNameExpression(param.CommandPropertyName),
+									}
+								},
+								new IdentifierNameExpression("host"),
+							}
+						});
+				}
+				yield return expression;
 			}
 		}
 
@@ -42,7 +66,7 @@ namespace Albatross.CommandLine.CodeGen {
 					}
 				],
 				Body = {
-					{ true, () => CreateAddCommandsBody(commandSetups) },
+					CreateAddCommandsBody(commandSetups),
 					new ReturnExpression {
 						Expression = new IdentifierNameExpression("host")
 					}
