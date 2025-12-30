@@ -45,6 +45,7 @@ namespace Sample.CommandLine {
 			services.AddKeyedScoped<IAsyncCommandHandler, GetInstrumentDetails>("example instrument detail");
 			services.AddScoped<InstrumentOptionHandler>();
 			services.AddScoped<InstrumentProxy>();
+			services.AddScoped<IAsyncOptionHandler<InstrumentOption>, InstrumentOptionHandler>();
 		}
 	}
 }

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.CommandLine;
@@ -9,8 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
-	public class GlobalCommandHandler {
-		public GlobalCommandHandler(Func<IServiceProvider> serviceFactory) {
+	internal sealed class GlobalCommandAction {
+		public GlobalCommandAction(Func<IServiceProvider> serviceFactory) {
 			this.serviceFactory = serviceFactory;
 		}
 
@@ -29,7 +28,7 @@ namespace Albatross.CommandLine {
 			if (context.HasInputActionError) {
 				return InputActionErrorExitCode;
 			}
-			var logger = services.GetRequiredService<ILogger<GlobalCommandHandler>>();
+			var logger = services.GetRequiredService<ILogger<GlobalCommandAction>>();
 			logger.LogInformation("Executing command '{command}'", context.Key);
 			IAsyncCommandHandler? handler = null;
 			try {

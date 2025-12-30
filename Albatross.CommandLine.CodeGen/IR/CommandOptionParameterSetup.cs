@@ -9,6 +9,7 @@ namespace Albatross.CommandLine.CodeGen.IR {
 		public bool Required { get; }
 		public override string CommandPropertyName => $"Option_{this.PropertySymbol.Name}";
 		public override INamedTypeSymbol DefaultParameterClass { get; }
+		public INamedTypeSymbol? ExplicitParameterHandlerClass { get; init; }
 
 		public CommandOptionParameterSetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute)
 			: base(propertySymbol, propertyAttribute) {

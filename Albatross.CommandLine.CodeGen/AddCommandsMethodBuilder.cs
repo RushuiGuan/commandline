@@ -19,7 +19,7 @@ namespace Albatross.CommandLine.CodeGen {
 
 		private IEnumerable<IExpression> CreateAddCommandsBody(ImmutableArray<CommandSetup> commandSetups) {
 			foreach (var setup in commandSetups) {
-				var expression = new InvocationExpression {
+				IExpression expression = new InvocationExpression {
 					CallableExpression = new IdentifierNameExpression("host.CommandBuilder.Add") {
 						GenericArguments = new ListOfGenericArguments {
 							new TypeExpression(new QualifiedIdentifierNameExpression(setup.CommandClassName, new NamespaceExpression(setup.CommandClassNamespace)))
@@ -29,8 +29,8 @@ namespace Albatross.CommandLine.CodeGen {
 						new StringLiteralExpression(setup.Key)
 					}
 				};
-				foreach (var param in setup.Parameters.Where(x => x.ExplicitParameterHandlerClass is not null)) {
-					expression.Chain(true,
+				foreach (var param in setup.Parameters.OfType<CommandOptionParameterSetup>().Where(x => x.ExplicitParameterHandlerClass is not null)) {
+					expression = expression.Chain(false,
 						new InvocationExpression {
 							CallableExpression = new IdentifierNameExpression("SetOptionAction"),
 							Arguments = {
@@ -41,7 +41,7 @@ namespace Albatross.CommandLine.CodeGen {
 										}
 									},
 									Body = {
-										new IdentifierNameExpression(param.CommandPropertyName),
+										new IdentifierNameExpression($"cmd.{param.CommandPropertyName}"),
 									}
 								},
 								new IdentifierNameExpression("host"),

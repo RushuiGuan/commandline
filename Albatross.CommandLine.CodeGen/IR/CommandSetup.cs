@@ -76,35 +76,38 @@ namespace Albatross.CommandLine.CodeGen.IR {
 			foreach (var propertySymbol in propertySymbols) {
 				index++;
 				foreach (var attributeData in propertySymbol.GetAttributes()) {
-					if (attributeData.AttributeClass.Is(compilation.ArgumentAttributeClass())) {
+					var attributeClass = attributeData.AttributeClass;
+					if (attributeClass == null) {
+						continue;
+					}
+					if (attributeClass.Is(compilation.ArgumentAttributeClass())) {
 						yield return new CommandArgumentParameterSetup(compilation, propertySymbol, attributeData) {
 							Index = index,
 						};
-					} else if (attributeData.AttributeClass.Is(compilation.OptionAttributeClass())) {
+					} else if (attributeClass.Is(compilation.OptionAttributeClass())) {
 						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData) {
 							Index = index,
 						};
-					} else if ((Extensions.Is(attributeData.AttributeClass?.OriginalDefinition, compilation.UseOptionAttributeClassGeneric1())
-					            || Extensions.Is(attributeData.AttributeClass?.OriginalDefinition, compilation.UseArgumentAttributeClassGeneric1()))
-					           && attributeData.AttributeClass?.TypeArguments.Length == 1) {
-						//TODO: provide a warning if the symbol has incorrect base class
-						var symbol = attributeData.AttributeClass!.TypeArguments[0] as INamedTypeSymbol;
-						symbol!.TryGetAttribute(compilation.DefaultOptionHandlerAttributeClass(), out var handlerAttribute);
+					} else if (Extensions.Is(attributeClass?.OriginalDefinition, compilation.UseOptionAttributeClassGeneric1())
+								|| Extensions.Is(attributeClass?.OriginalDefinition, compilation.UseOptionAttributeClassGeneric2())) {
+						var symbol = attributeClass!.TypeArguments[0] as INamedTypeSymbol;
+						INamedTypeSymbol? handlerClass = null;
+						if (attributeClass.TypeArguments.Length == 2) {
+							handlerClass = attributeClass.TypeArguments[1] as INamedTypeSymbol;
+						} else if (symbol!.TryGetAttribute(compilation.DefaultOptionHandlerAttributeClass(), out var handlerAttribute)) {
+							handlerClass = handlerAttribute.ConstructorArguments[0].Value as INamedTypeSymbol;
+						}
 						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData!) {
 							Index = index,
 							ExplicitParameterClass = symbol,
-							ExplicitParameterHandlerClass = handlerAttribute?.AttributeClass,
+							ExplicitParameterHandlerClass = handlerClass,
 						};
-					} else if ((Extensions.Is(attributeData.AttributeClass?.OriginalDefinition, compilation.UseOptionAttributeClassGeneric2())
-					            || Extensions.Is(attributeData.AttributeClass?.OriginalDefinition, compilation.UseArgumentAttributeClassGeneric2()))
-					           && attributeData.AttributeClass?.TypeArguments.Length == 2) {
-						//TODO: provide a warning if the symbol has incorrect base class
+					} else if (Extensions.Is(attributeData.AttributeClass?.OriginalDefinition, compilation.UseArgumentAttributeClassGeneric1())) {
+						// argument symbol does not have Action
 						var symbol = attributeData.AttributeClass!.TypeArguments[0] as INamedTypeSymbol;
-						var handler = attributeData.AttributeClass!.TypeArguments[1] as INamedTypeSymbol;
-						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData!) {
+						yield return new CommandArgumentParameterSetup(compilation, propertySymbol, attributeData!) {
 							Index = index,
 							ExplicitParameterClass = symbol,
-							ExplicitParameterHandlerClass = handler,
 						};
 					} else {
 						continue;

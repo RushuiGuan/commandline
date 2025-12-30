@@ -80,15 +80,15 @@ namespace Albatross.CommandLine {
 		}
 
 		public void BuildTree(Func<IServiceProvider> serviceFactory) {
-			var globalCommandHandler = new GlobalCommandHandler(serviceFactory);
+			var action = new GlobalCommandAction(serviceFactory);
 			// ordering is required here to ensure parent commands are created before child commands
 			// ordering cannot be done in code generation because commands can be added manually
 			foreach (var item in this.commands.OrderBy(x => x.Key).ToArray()) {
 				if (!string.IsNullOrEmpty(item.Key)) {
-					AddToParentCommand(item.Key, item.Value, globalCommandHandler.InvokeAsync);
+					AddToParentCommand(item.Key, item.Value, action.InvokeAsync);
 				}
 				if (item.Value.Action == null) {
-					item.Value.SetAction(globalCommandHandler.InvokeAsync);
+					item.Value.SetAction(action.InvokeAsync);
 				}
 			}
 		}

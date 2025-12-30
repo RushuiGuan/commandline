@@ -47,7 +47,10 @@ namespace Albatross.CommandLine {
 		public CommandHost Parse(string[] args) {
 			this.CommandBuilder.BuildTree(GetServiceProvider);
 			parseResult = this.CommandBuilder.RootCommand.Parse(args);
-			this.hostBuilder.ConfigureServices(services => services.AddSingleton(parseResult));
+			this.hostBuilder.ConfigureServices(services => {
+				services.AddSingleton(parseResult);
+				services.AddSingleton<ICommandContext, CommandContext>();
+			});
 			// configure default logging level based on parsed result
 			var logLevel = parseResult.GetRequiredValue(CommandBuilder.VerbosityOption);
 			this.hostBuilder.ConfigureLogging((_, builder) => builder.SetMinimumLevel(logLevel));

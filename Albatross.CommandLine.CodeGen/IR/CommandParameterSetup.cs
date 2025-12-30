@@ -20,8 +20,6 @@ namespace Albatross.CommandLine.CodeGen.IR {
 		public INamedTypeSymbol ParameterClass => ExplicitParameterClass ?? DefaultParameterClass;
 		public INamedTypeSymbol? ExplicitParameterClass { get; init; }
 		public abstract INamedTypeSymbol DefaultParameterClass { get; }
-		public INamedTypeSymbol? ExplicitParameterHandlerClass { get; init; }
-		
 
 		protected CommandParameterSetup(IPropertySymbol propertySymbol, AttributeData propertyAttribute) {
 			this.PropertySymbol = propertySymbol;

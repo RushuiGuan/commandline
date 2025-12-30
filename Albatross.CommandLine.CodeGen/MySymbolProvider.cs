@@ -16,8 +16,6 @@ namespace Albatross.CommandLine.CodeGen {
 		
 		public static INamedTypeSymbol UseArgumentAttributeClassGeneric1(this Compilation compilation) 
 			=> compilation.GetRequiredSymbol("Albatross.CommandLine.Annotations.UseArgumentAttribute`1");
-		public static INamedTypeSymbol UseArgumentAttributeClassGeneric2(this Compilation compilation) 
-			=> compilation.GetRequiredSymbol("Albatross.CommandLine.Annotations.UseArgumentAttribute`2");
 		
 		public static INamedTypeSymbol OptionAttributeClass(this Compilation compilation) 
 			=> compilation.GetRequiredSymbol("Albatross.CommandLine.Annotations.OptionAttribute");
