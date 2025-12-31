@@ -91,9 +91,9 @@ namespace Albatross.CommandLine.CodeGen {
 						context.AddSource(file.FileName, new StringWriter().Code(file).ToString());
 					}
 					var entryPoint = compilation.GetEntryPoint(context.CancellationToken);
-					var entryPointNamespace = entryPoint?.ContainingNamespace.GetFullNamespace() ?? "EntryMethodNamespaceNotFound";
+					var entryPointNamespace = entryPoint?.ContainingNamespace.GetFullNamespace();
 					var registrationFile = new FileDeclaration($"CodeGenExtensions.g") {
-						Namespace = new NamespaceExpression(entryPointNamespace),
+						Namespace = string.IsNullOrEmpty(entryPointNamespace) ? null : new NamespaceExpression(entryPointNamespace!),
 						Classes = [
 							new ClassDeclaration {
 								Name = new IdentifierNameExpression("CodeGenExtensions"),
