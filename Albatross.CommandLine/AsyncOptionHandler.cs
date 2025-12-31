@@ -44,4 +44,24 @@ namespace Albatross.CommandLine {
 			return 0;
 		}
 	}
+	public sealed class AsyncOptionHandler : AsynchronousCommandLineAction {
+		private readonly Func<ParseResult, CancellationToken, Task<int>> handler;
+
+		public AsyncOptionHandler(Func<ParseResult, CancellationToken, Task<int>> handler) {
+			this.handler = handler;
+		}
+
+		public override Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken = default) {
+			return handler(parseResult, cancellationToken);
+		}
+	}
+	public sealed class OptionHandler: SynchronousCommandLineAction {
+		private readonly Func<ParseResult, int> handler;
+		public OptionHandler(Func<ParseResult, int> handler) {
+			this.handler = handler;
+		}
+		public override int Invoke(ParseResult parseResult) {
+			return handler(parseResult);
+		}
+	}
 }
