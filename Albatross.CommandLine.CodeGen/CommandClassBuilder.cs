@@ -77,13 +77,21 @@ namespace Albatross.CommandLine.CodeGen {
 				};
 			}
 			foreach (var parameter in setup.Parameters) {
+				// default to argument
+				var hasParameterKeyArgs = true;
+				var hasParameterAliasesArgs = false;
+				if (parameter is CommandOptionParameterSetup optionParameter) {
+					hasParameterKeyArgs = !optionParameter.UseDefaultNameAlias;
+					hasParameterAliasesArgs = !optionParameter.UseDefaultNameAlias;
+				}
+
 				yield return new AssignmentExpression {
 					Left = new IdentifierNameExpression("this." + parameter.CommandPropertyName),
 					Expression = new NewObjectExpression {
 						Type = this.typeConverter.Convert(parameter.ParameterClass),
-						Arguments =  {
-							new StringLiteralExpression(parameter.Key),
-							{ parameter is CommandOptionParameterSetup, () => ((CommandOptionParameterSetup)parameter).Aliases.Select(x => new StringLiteralExpression(x)) }
+						Arguments = {
+							{ hasParameterKeyArgs, () => new StringLiteralExpression(parameter.Key) },
+							{ hasParameterAliasesArgs, () => ((CommandOptionParameterSetup)parameter).Aliases.Select(x => new StringLiteralExpression(x)) }
 						},
 						Initializers = {
 							{

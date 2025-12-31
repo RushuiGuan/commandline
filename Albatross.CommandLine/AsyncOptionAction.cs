@@ -11,12 +11,12 @@ namespace Albatross.CommandLine {
 	/// This is used to set Option Action.  They are run after parsing as a PreAction
 	/// This is marked as internal since it is intended to be used by system only
 	/// </summary>
-	internal sealed class AsyncOptionHandler<T> : AsynchronousCommandLineAction where T : Symbol {
+	internal sealed class AsyncOptionAction<TOption, THandler> : AsynchronousCommandLineAction where TOption : Option where THandler: IAsyncOptionHandler<TOption> {
 		private readonly Func<IServiceProvider> serviceFactory;
 		public override bool Terminating => false;
-		public T Symbol { get; }
+		public TOption Symbol { get; }
 
-		public AsyncOptionHandler(T symbol, Func<IServiceProvider> serviceFactory) {
+		public AsyncOptionAction(TOption symbol, Func<IServiceProvider> serviceFactory) {
 			this.Symbol = symbol;
 			this.serviceFactory = serviceFactory;
 		}
@@ -25,10 +25,10 @@ namespace Albatross.CommandLine {
 			var serviceProvider = serviceFactory();
 			var context = serviceProvider.GetRequiredService<ICommandContext>();
 			if (!context.HasParsingError) {
-				var logger = serviceProvider.GetRequiredService<ILogger<AsyncOptionHandler<T>>>();
+				var logger = serviceProvider.GetRequiredService<ILogger<AsyncOptionAction<TOption, THandler>>>();
 				try {
 					logger.LogInformation("Invoking AsyncActionHandler for [ {CommandName} [ {SymbolName} ] ]", parseResult.CommandResult.Command.GetCommandKey(), Symbol.Name);
-					var handler = serviceProvider.GetRequiredService<IAsyncOptionHandler<T>>();
+					var handler = serviceProvider.GetRequiredService<THandler>();
 					await handler.InvokeAsync(this.Symbol, parseResult, cancellationToken);
 				} catch (OperationCanceledException err) {
 					var msg = $"Operation cancelled while processing argument or option [ {Symbol.Name} ]";

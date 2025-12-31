@@ -30,9 +30,12 @@ namespace Albatross.CommandLine {
 			return commandHost;
 		}
 
-		public static T SetOptionAction<T, O>(this T command, Func<T, O> func, CommandHost host) where T : Command where O:Option {
+		public static TCommand SetOptionAction<TCommand, TOption, THandler>(this TCommand command, Func<TCommand, TOption> func, CommandHost host)
+			where TCommand : Command
+			where TOption : Option
+			where THandler : IAsyncOptionHandler<TOption> {
 			var option = func(command);
-			option.Action = new AsyncOptionHandler<O>(option, host.GetServiceProvider);
+			option.Action = new AsyncOptionAction<TOption, THandler>(option, host.GetServiceProvider);
 			return command;
 		}
 	}

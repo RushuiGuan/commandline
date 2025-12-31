@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Help;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+[assembly: InternalsVisibleTo("Albatross.CommandLine.Test")]
 namespace Albatross.CommandLine {
 	public class CommandBuilder {
 		private readonly Dictionary<string, Command> commands = new();
@@ -77,6 +79,10 @@ namespace Albatross.CommandLine {
 			ParseCommandText(key, out var parent, out var self);
 			GetOrCreateCommand(parent, globalHandler, out var parentCommand);
 			parentCommand.Add(command);
+		}
+		
+		internal bool TryGetCommand(string key, out Command command) {
+			return commands.TryGetValue(key, out command);
 		}
 
 		public void BuildTree(Func<IServiceProvider> serviceFactory) {
