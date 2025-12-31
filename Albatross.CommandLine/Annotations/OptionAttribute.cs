@@ -14,5 +14,6 @@ namespace Albatross.CommandLine.Annotations {
 		/// This property has no effect when used with predefined option type
 		/// </summary>
 		public bool DefaultToInitializer { get; set; }
+		public bool AllowMultipleArgumentsPerToken { get; set; }
 	}
 }

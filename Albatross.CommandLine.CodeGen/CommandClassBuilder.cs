@@ -81,11 +81,11 @@ namespace Albatross.CommandLine.CodeGen {
 					Left = new IdentifierNameExpression("this." + parameter.CommandPropertyName),
 					Expression = new NewObjectExpression {
 						Type = this.typeConverter.Convert(parameter.ParameterClass),
-						Arguments = new ListOfArguments {
+						Arguments =  {
 							new StringLiteralExpression(parameter.Key),
-							{ parameter is CommandOptionParameterSetup, ()=> ((CommandOptionParameterSetup)parameter).Aliases.Select(x=>new StringLiteralExpression(x)) }
+							{ parameter is CommandOptionParameterSetup, () => ((CommandOptionParameterSetup)parameter).Aliases.Select(x => new StringLiteralExpression(x)) }
 						},
-						Initializers = new() {
+						Initializers = {
 							{
 								!string.IsNullOrEmpty(parameter.Description), () => new AssignmentExpression {
 									Left = new IdentifierNameExpression("Description"),
@@ -96,10 +96,14 @@ namespace Albatross.CommandLine.CodeGen {
 									Left = new IdentifierNameExpression("Hidden"),
 									Expression = Defined.Literals.True,
 								}
-							},
-							{
+							}, {
 								parameter is CommandOptionParameterSetup { Required: true }, () => new AssignmentExpression {
 									Left = new IdentifierNameExpression("Required"),
+									Expression = Defined.Literals.True,
+								}
+							}, {
+								parameter is CommandOptionParameterSetup { AllowMultipleArgumentsPerToken: true }, () => new AssignmentExpression {
+									Left = new IdentifierNameExpression("AllowMultipleArgumentsPerToken"),
 									Expression = Defined.Literals.True,
 								}
 							}, {
@@ -107,17 +111,16 @@ namespace Albatross.CommandLine.CodeGen {
 									Left = new IdentifierNameExpression("Arity"),
 									Expression = new NewObjectExpression {
 										Type = new TypeExpression("ArgumentArity"),
-										Arguments = new ListOfArguments {
+										Arguments = {
 											new IntLiteralExpression(((CommandArgumentParameterSetup)parameter).ArityMin),
 											new IntLiteralExpression(((CommandArgumentParameterSetup)parameter).ArityMax),
 										}
 									}
 								}
-							},
-							{
+							}, {
 								parameter.ShouldDefaultToInitializer, () => new AssignmentExpression {
 									Left = new IdentifierNameExpression("DefaultValueFactory"),
-									Expression = new AnonymousMethodExpression{
+									Expression = new AnonymousMethodExpression {
 										Parameters = {
 											new ParameterDeclaration {
 												Name = new IdentifierNameExpression("_"),

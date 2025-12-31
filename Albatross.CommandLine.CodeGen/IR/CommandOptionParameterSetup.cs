@@ -10,6 +10,7 @@ namespace Albatross.CommandLine.CodeGen.IR {
 		public override string CommandPropertyName => $"Option_{this.PropertySymbol.Name}";
 		public override INamedTypeSymbol DefaultParameterClass { get; }
 		public INamedTypeSymbol? ExplicitParameterHandlerClass { get; init; }
+		public bool AllowMultipleArgumentsPerToken { get; init; }
 
 		public CommandOptionParameterSetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute)
 			: base(propertySymbol, propertyAttribute) {
@@ -20,6 +21,9 @@ namespace Albatross.CommandLine.CodeGen.IR {
 					.ToArray();
 			} else {
 				this.Aliases = Array.Empty<string>();
+			}
+			if(propertyAttribute.TryGetNamedArgument("AllowMultipleArgumentsPerToken", out var allowMultiple)) {
+				this.AllowMultipleArgumentsPerToken = Convert.ToBoolean(allowMultiple.Value);
 			}
 			if (propertyAttribute.TryGetNamedArgument("Required", out var required)) {
 				this.Required = Convert.ToBoolean(required.Value);
