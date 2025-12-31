@@ -81,13 +81,9 @@ namespace Albatross.CommandLine.CodeGen.IR {
 						continue;
 					}
 					if (attributeClass.Is(compilation.ArgumentAttributeClass())) {
-						yield return new CommandArgumentParameterSetup(compilation, propertySymbol, attributeData) {
-							Index = index,
-						};
+						yield return new CommandArgumentParameterSetup(compilation, propertySymbol, attributeData);
 					} else if (attributeClass.Is(compilation.OptionAttributeClass())) {
-						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData) {
-							Index = index,
-						};
+						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData);
 					} else if (Extensions.Is(attributeClass?.OriginalDefinition, compilation.UseOptionAttributeClassGeneric1())
 								|| Extensions.Is(attributeClass?.OriginalDefinition, compilation.UseOptionAttributeClassGeneric2())) {
 						var symbol = attributeClass!.TypeArguments[0] as INamedTypeSymbol;
@@ -98,15 +94,15 @@ namespace Albatross.CommandLine.CodeGen.IR {
 							handlerClass = handlerAttribute.ConstructorArguments[0].Value as INamedTypeSymbol;
 						}
 						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData!) {
-							Index = index,
 							ExplicitParameterClass = symbol,
 							ExplicitParameterHandlerClass = handlerClass,
+							UseDefaultNameAlias = attributeData.TryGetNamedArgument("UseDefaultNameAlias", out var useDefaultNameAliasConstant)
+								&& Convert.ToBoolean(useDefaultNameAliasConstant.Value)
 						};
 					} else if (Extensions.Is(attributeData.AttributeClass?.OriginalDefinition, compilation.UseArgumentAttributeClassGeneric1())) {
 						// argument symbol does not have Action
 						var symbol = attributeData.AttributeClass!.TypeArguments[0] as INamedTypeSymbol;
 						yield return new CommandArgumentParameterSetup(compilation, propertySymbol, attributeData!) {
-							Index = index,
 							ExplicitParameterClass = symbol,
 						};
 					} else {

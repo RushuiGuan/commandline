@@ -4,6 +4,7 @@ using Albatross.CommandLine.Defaults;
 using Albatross.Config;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sample.CommandLine.SelfContainedParams;
 using System.CommandLine;
 
@@ -45,7 +46,7 @@ namespace Sample.CommandLine {
 			services.AddKeyedScoped<IAsyncCommandHandler, GetInstrumentDetails>("example instrument detail");
 			services.AddScoped<InstrumentOptionHandler>();
 			services.AddScoped<InstrumentProxy>();
-			services.AddScoped<IAsyncOptionHandler<InstrumentOption>, InstrumentOptionHandler>();
+			services.TryAddScoped<InstrumentOptionHandler>();
 		}
 	}
 }

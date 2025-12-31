@@ -7,14 +7,12 @@ using System;
 namespace Albatross.CommandLine.CodeGen.IR {
 	public abstract record class CommandParameterSetup {
 		public IPropertySymbol PropertySymbol { get; }
-
-		public int Index { get; init; }
 		public ExpressionSyntax? PropertyInitializer { get; }
 		public bool DefaultToInitializer { get; }
 		public string Key { get; protected set; }
 		public string? Description { get; }
 		public bool Hidden { get; }
-		public bool ShouldDefaultToInitializer => DefaultToInitializer && PropertyInitializer != null && ExplicitParameterClass == null;
+		public bool ShouldDefaultToInitializer => DefaultToInitializer && PropertyInitializer != null;
 		public abstract string CommandPropertyName { get; }
 
 		public INamedTypeSymbol ParameterClass => ExplicitParameterClass ?? DefaultParameterClass;
