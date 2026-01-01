@@ -4,7 +4,8 @@ using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Albatross.CommandLine.BuiltIn {
+namespace Albatross.CommandLine.Inputs {
+	/*
 	[DefaultOptionHandler(typeof(ParseFormatExpression))]
 	public class FormatExpressionOption : Option<string>, IUseContextValue{
 		public FormatExpressionOption(string name, params string[] aliases) : base(name, aliases) {
@@ -25,4 +26,5 @@ namespace Albatross.CommandLine.BuiltIn {
 			}
 		}
 	}
+	*/
 }

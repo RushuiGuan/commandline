@@ -1,7 +1,7 @@
 ﻿using System.CommandLine;
 using System.IO;
 
-namespace Albatross.CommandLine.BuiltIn {
+namespace Albatross.CommandLine.Inputs {
 	public class InputDirectoryOption : Option<DirectoryInfo> {
 		public InputDirectoryOption() : this("--input-directory", "-i") {
 		}

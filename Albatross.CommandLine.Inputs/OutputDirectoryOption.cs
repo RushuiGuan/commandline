@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Albatross.CommandLine.BuiltIn {
+namespace Albatross.CommandLine.Inputs {
 	public class OutputDirectoryOption : Option<DirectoryInfo> {
 		public OutputDirectoryOption(string name, params string[] aliases) : base(name, aliases) {
 			Description = "Specify an output directory that will be created if it doesn't exist";
