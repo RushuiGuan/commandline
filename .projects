@@ -2,6 +2,7 @@
 Albatross.CommandLine
 Albatross.CommandLine.CodeGen
 Albatross.CommandLine.Defaults
+Albatross.CommandLine.Inputs
 
 # tests
 Albatross.CommandLine.Test

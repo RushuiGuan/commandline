@@ -7,7 +7,7 @@
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 	</PropertyGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\Albatross.CommandLine.BuiltIn\Albatross.CommandLine.BuiltIn.csproj" />
+		<ProjectReference Include="..\Albatross.CommandLine.Inputs\Albatross.CommandLine.Inputs.csproj" />
 		<ProjectReference Include="..\Albatross.CommandLine.CodeGen\Albatross.CommandLine.CodeGen.csproj">
 			<PrivateAssets>all</PrivateAssets>
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>

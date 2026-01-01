@@ -26,7 +26,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Albatross.CommandLine.Test"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Albatross.CommandLine.Defaults", "Albatross.CommandLine.Defaults\Albatross.CommandLine.Defaults.csproj", "{7F044033-3A5F-4B13-B658-47340DF63F59}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Albatross.CommandLine.BuiltIn", "Albatross.CommandLine.BuiltIn\Albatross.CommandLine.BuiltIn.csproj", "{C2C670C5-3BC8-4C34-A8E7-4C12F79D3610}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Albatross.CommandLine.Inputs", "Albatross.CommandLine.Inputs\Albatross.CommandLine.Inputs.csproj", "{C2C670C5-3BC8-4C34-A8E7-4C12F79D3610}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
