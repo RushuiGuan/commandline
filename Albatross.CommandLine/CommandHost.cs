@@ -20,15 +20,16 @@ namespace Albatross.CommandLine {
 	///	</code>
 	/// </summary>
 	public class CommandHost : IAsyncDisposable {
-		protected IConfiguration configuration;
-		protected IHostBuilder hostBuilder;
+		readonly IConfiguration configuration;
+		readonly IHostBuilder hostBuilder;
 		ParseResult? parseResult;
 		IHost? host;
 		private Action<ParseResult, IServiceProvider> configApplication = (result, provider) => { };
-		protected ParseResult RequiredResult => this.parseResult ?? throw new InvalidOperationException("Parse(args) has not been called yet");
+		private IServiceScope? scope;
+		public ParseResult RequiredResult => this.parseResult ?? throw new InvalidOperationException("Parse(args) has not been called yet");
 		public CommandBuilder CommandBuilder { get; }
 
-		public IServiceProvider GetServiceProvider() => host?.Services ?? throw new InvalidOperationException($"Host has not been built, Call the Build() method!");
+		public IServiceProvider GetServiceProvider() => scope?.ServiceProvider ?? throw new InvalidOperationException($"Host has not been built, Call the Build() method!");
 
 		public CommandHost(string description) {
 			this.hostBuilder = Host.CreateDefaultBuilder();
@@ -79,13 +80,12 @@ namespace Albatross.CommandLine {
 
 		public CommandHost Build() {
 			this.host = this.hostBuilder.Build();
+			this.scope = this.host.Services.CreateScope();
 			this.configApplication(this.RequiredResult, host.Services);
 			return this;
 		}
 
-		public Task<int> InvokeAsync() {
-			return this.RequiredResult.InvokeAsync();
-		}
+		public Task<int> InvokeAsync() => this.RequiredResult.InvokeAsync();
 
 		public async ValueTask DisposeAsync() {
 			if (host is IAsyncDisposable hostAsyncDisposable) {

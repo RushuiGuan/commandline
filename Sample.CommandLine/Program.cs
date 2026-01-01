@@ -22,8 +22,7 @@ namespace Sample.CommandLine {
 				.Build();
 			return await host.InvokeAsync();
 		}
-
-
+		
 		static void RegisterServices(ParseResult result, IConfiguration configuration, IServiceCollection services) {
 			services.AddConfig<SampleConfig>();
 			// services.AddShortenLoggerName(false, "Albatross", "Sample");

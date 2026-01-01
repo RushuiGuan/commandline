@@ -5,7 +5,6 @@ using Xunit;
 namespace Albatross.CommandLine.Test.CodeGen {
 	public class OptionWithNoHandler : Option<string> {
 		public OptionWithNoHandler(string name, params string[] aliases) : base(name, aliases) { }
-
 		public OptionWithNoHandler() : this("--opt-without-handler", "--wo") {
 			Description = "original description";
 			Required = false;
@@ -14,9 +13,7 @@ namespace Albatross.CommandLine.Test.CodeGen {
 
 	[DefaultOptionHandler(typeof(MyDefaultOptionHandler))]
 	public class OptionWithHandler : Option<string>, IUseContextValue {
-		public OptionWithHandler(string name, params string[] aliases) : base(name, aliases) {
-		}
-
+		public OptionWithHandler(string name, params string[] aliases) : base(name, aliases) { }
 		public OptionWithHandler() : this("--opt-with-handler", "-w") {
 			Description = "original description";
 			Required = false;
@@ -24,13 +21,23 @@ namespace Albatross.CommandLine.Test.CodeGen {
 	}
 
 	public class MyDefaultOptionHandler : IAsyncOptionHandler<OptionWithHandler> {
+		private readonly ICommandContext context;
+		public MyDefaultOptionHandler(ICommandContext context) {
+			this.context = context;
+		}
 		public Task InvokeAsync(OptionWithHandler symbol, ParseResult result, CancellationToken cancellationToken) {
+			context.SetValue(symbol.Name, "MyDefaultOptionHandler");
 			return Task.CompletedTask;
 		}
 	}
 
 	public class MyAltOptionHandler : IAsyncOptionHandler<OptionWithHandler> {
+		private readonly ICommandContext context;
+		public MyAltOptionHandler(ICommandContext context) {
+			this.context = context;
+		}
 		public Task InvokeAsync(OptionWithHandler symbol, ParseResult result, CancellationToken cancellationToken) {
+			context.SetValue(symbol.Name, "MyAltOptionHandler");
 			return Task.CompletedTask;
 		}
 	}
