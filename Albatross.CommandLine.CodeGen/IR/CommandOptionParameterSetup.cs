@@ -20,7 +20,7 @@ namespace Albatross.CommandLine.CodeGen.IR {
 		public bool UseDefaultNameAlias { get; init; }
 
 		public CommandOptionParameterSetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute)
-			: base(propertySymbol, propertyAttribute) {
+			: base(compilation, propertySymbol, propertyAttribute) {
 			this.compilation = compilation;
 			this.Key = $"--{this.Key}";
 			if (propertyAttribute.ConstructorArguments.Any()) {

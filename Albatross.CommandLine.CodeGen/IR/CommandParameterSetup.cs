@@ -6,6 +6,7 @@ using System;
 
 namespace Albatross.CommandLine.CodeGen.IR {
 	public abstract record class CommandParameterSetup {
+		private readonly Compilation compilation;
 		public IPropertySymbol PropertySymbol { get; }
 		public ExpressionSyntax? PropertyInitializer { get; }
 		public bool DefaultToInitializer { get; }
@@ -18,8 +19,10 @@ namespace Albatross.CommandLine.CodeGen.IR {
 		public INamedTypeSymbol ParameterClass => ExplicitParameterClass ?? DefaultParameterClass;
 		public INamedTypeSymbol? ExplicitParameterClass { get; init; }
 		public abstract INamedTypeSymbol DefaultParameterClass { get; }
+		public bool UseContextValue => ExplicitParameterClass != null && ExplicitParameterClass.HasInterface(compilation.IUseContextValueInterface());
 
-		protected CommandParameterSetup(IPropertySymbol propertySymbol, AttributeData propertyAttribute) {
+		protected CommandParameterSetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute) {
+			this.compilation = compilation;
 			this.PropertySymbol = propertySymbol;
 			this.Key = propertySymbol.Name.Kebaberize();
 

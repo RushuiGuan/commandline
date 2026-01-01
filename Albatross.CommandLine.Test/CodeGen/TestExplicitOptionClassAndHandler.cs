@@ -13,7 +13,7 @@ namespace Albatross.CommandLine.Test.CodeGen {
 	}
 
 	[DefaultOptionHandler(typeof(MyDefaultOptionHandler))]
-	public class OptionWithHandler : Option<string> {
+	public class OptionWithHandler : Option<string>, IUseContextValue {
 		public OptionWithHandler(string name, params string[] aliases) : base(name, aliases) {
 		}
 

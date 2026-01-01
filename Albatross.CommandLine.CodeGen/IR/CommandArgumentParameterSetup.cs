@@ -10,7 +10,7 @@ namespace Albatross.CommandLine.CodeGen.IR {
 		public int ArityMax { get; }
 
 		public CommandArgumentParameterSetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData argumentPropertyAttribute)
-			: base(propertySymbol, argumentPropertyAttribute) {
+			: base(compilation, propertySymbol, argumentPropertyAttribute) {
 			if (propertySymbol.Type.IsCollection(compilation)) {
 				this.ArityMin = 0;
 				this.ArityMax = 100_000;
