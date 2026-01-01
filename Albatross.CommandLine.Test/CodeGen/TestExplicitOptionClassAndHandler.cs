@@ -5,7 +5,7 @@ using Xunit;
 namespace Albatross.CommandLine.Test.CodeGen {
 	public class OptionWithNoHandler : Option<string> {
 		public OptionWithNoHandler(string name, params string[] aliases) : base(name, aliases) { }
-		public OptionWithNoHandler() : this("--opt-without-handler", "--wo") {
+		public OptionWithNoHandler() : this("--option-without-handler", "--wo") {
 			Description = "original description";
 			Required = false;
 		}
@@ -13,11 +13,11 @@ namespace Albatross.CommandLine.Test.CodeGen {
 
 	[DefaultOptionHandler(typeof(MyDefaultOptionHandler))]
 	public class OptionWithHandler : Option<string>, IUseContextValue {
-		public OptionWithHandler(string name, params string[] aliases) : base(name, aliases) { }
-		public OptionWithHandler() : this("--opt-with-handler", "-w") {
+		public OptionWithHandler(string name, params string[] aliases) : base(name, aliases) {
 			Description = "original description";
 			Required = false;
 		}
+		public OptionWithHandler() : this("--option-with-handler", "-w") { }
 	}
 
 	public class MyDefaultOptionHandler : IAsyncOptionHandler<OptionWithHandler> {
@@ -50,7 +50,7 @@ namespace Albatross.CommandLine.Test.CodeGen {
 		[UseOption<OptionWithHandler>]
 		public required string ExplicitOptionWithHandler { get; init; }
 
-		[UseOption<OptionWithHandler, MyAltOptionHandler>(UseDefaultNameAlias = true)]
+		[UseOption<OptionWithHandler, MyAltOptionHandler>(UseCustomNameAlias = true)]
 		public required string ExplicitOptionWithExplicitHandler { get; init; }
 	}
 
@@ -68,8 +68,8 @@ namespace Albatross.CommandLine.Test.CodeGen {
 			var cmd = BuildCommand();
 			Assert.IsType<OptionWithNoHandler>(cmd.Option_ExplicitOptionWithoutHandler);
 			Assert.Null(cmd.Option_ExplicitOptionWithoutHandler.Action);
-			Assert.Equal("--explicit-option-without-handler", cmd.Option_ExplicitOptionWithoutHandler.Name);
-			Assert.Equal([], cmd.Option_ExplicitOptionWithoutHandler.Aliases);
+			Assert.Equal("--option-without-handler", cmd.Option_ExplicitOptionWithoutHandler.Name);
+			Assert.Equal(["--wo"], cmd.Option_ExplicitOptionWithoutHandler.Aliases);
 			Assert.Equal("my own desc", cmd.Option_ExplicitOptionWithoutHandler.Description);
 			Assert.True(cmd.Option_ExplicitOptionWithoutHandler.Required);
 
@@ -78,8 +78,8 @@ namespace Albatross.CommandLine.Test.CodeGen {
 
 			Assert.IsType<OptionWithHandler>(cmd.Option_ExplicitOptionWithExplicitHandler);
 			Assert.IsType<AsyncOptionAction<OptionWithHandler, MyAltOptionHandler>>(cmd.Option_ExplicitOptionWithExplicitHandler.Action);
-			Assert.Equal("--opt-with-handler", cmd.Option_ExplicitOptionWithExplicitHandler.Name);
-			Assert.Equal(["-w"], cmd.Option_ExplicitOptionWithExplicitHandler.Aliases);
+			Assert.Equal("--explicit-option-with-explicit-handler", cmd.Option_ExplicitOptionWithExplicitHandler.Name);
+			Assert.Equal([], cmd.Option_ExplicitOptionWithExplicitHandler.Aliases);
 			Assert.Equal("original description", cmd.Option_ExplicitOptionWithExplicitHandler.Description);
 		}
 	}

@@ -81,8 +81,8 @@ namespace Albatross.CommandLine.CodeGen {
 				var hasParameterKeyArgs = true;
 				var hasParameterAliasesArgs = false;
 				if (parameter is CommandOptionParameterSetup optionParameter) {
-					hasParameterKeyArgs = !optionParameter.UseDefaultNameAlias;
-					hasParameterAliasesArgs = !optionParameter.UseDefaultNameAlias;
+					hasParameterKeyArgs = optionParameter.UseCustomNameAlias;
+					hasParameterAliasesArgs = optionParameter.UseCustomNameAlias;
 				}
 
 				yield return new AssignmentExpression {

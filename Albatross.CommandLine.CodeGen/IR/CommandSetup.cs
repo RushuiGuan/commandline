@@ -96,8 +96,8 @@ namespace Albatross.CommandLine.CodeGen.IR {
 						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData!) {
 							ExplicitParameterClass = symbol,
 							ExplicitParameterHandlerClass = handlerClass,
-							UseDefaultNameAlias = attributeData.TryGetNamedArgument("UseDefaultNameAlias", out var useDefaultNameAliasConstant)
-								&& Convert.ToBoolean(useDefaultNameAliasConstant.Value)
+							UseCustomNameAlias = attributeData.TryGetNamedArgument(nameof(CommandOptionParameterSetup.UseCustomNameAlias), out var constant)
+								&& Convert.ToBoolean(constant.Value)
 						};
 					} else if (Extensions.Is(attributeData.AttributeClass?.OriginalDefinition, compilation.UseArgumentAttributeClassGeneric1())) {
 						// argument symbol does not have Action

@@ -17,7 +17,7 @@ namespace Albatross.CommandLine.CodeGen.IR {
 		public override INamedTypeSymbol DefaultParameterClass { get; }
 		public INamedTypeSymbol? ExplicitParameterHandlerClass { get; init; }
 		public bool AllowMultipleArgumentsPerToken { get; init; }
-		public bool UseDefaultNameAlias { get; init; }
+		public bool UseCustomNameAlias { get; init; } = true;
 
 		public CommandOptionParameterSetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute)
 			: base(compilation, propertySymbol, propertyAttribute) {
