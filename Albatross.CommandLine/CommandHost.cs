@@ -24,8 +24,8 @@ namespace Albatross.CommandLine {
 		readonly IHostBuilder hostBuilder;
 		ParseResult? parseResult;
 		IHost? host;
-		private Action<ParseResult, IServiceProvider> configApplication = (result, provider) => { };
 		private IServiceScope? scope;
+		private Action<ParseResult, IServiceProvider> configApplication = (result, provider) => { };
 		public ParseResult RequiredResult => this.parseResult ?? throw new InvalidOperationException("Parse(args) has not been called yet");
 		public CommandBuilder CommandBuilder { get; }
 

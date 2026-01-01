@@ -19,6 +19,7 @@ namespace Albatross.CommandLine.CodeGen {
 		
 		public static INamedTypeSymbol OptionAttributeClass(this Compilation compilation) 
 			=> compilation.GetRequiredSymbol("Albatross.CommandLine.Annotations.OptionAttribute");
+		
 		public static INamedTypeSymbol ArgumentAttributeClass(this Compilation compilation) 
 			=> compilation.GetRequiredSymbol("Albatross.CommandLine.Annotations.ArgumentAttribute");
 		
