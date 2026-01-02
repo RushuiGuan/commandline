@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Sample.CommandLine.SelfContainedParams {
 	[DefaultNameAliases("--instrument", "-i")]
 	[OptionHandler(typeof(InstrumentOptionHandler))]
-	public class InstrumentOption : Option<string>, IUseContextValue {
+	public class InstrumentOption : Option<string>, IUseContextValue<InstrumentSummary> {
 		public InstrumentOption(string name, params string[] alias) : base(name, alias) {
 			this.Description = "The security instrument identifier (e.g., ticker symbol, CUSIP, ISIN)";
 			this.Required = true;

@@ -19,7 +19,16 @@ namespace Albatross.CommandLine.CodeGen.IR {
 		public INamedTypeSymbol ParameterClass => ExplicitParameterClass ?? DefaultParameterClass;
 		public INamedTypeSymbol? ExplicitParameterClass { get; init; }
 		public abstract INamedTypeSymbol DefaultParameterClass { get; }
-		public bool UseContextValue => ExplicitParameterClass != null && ExplicitParameterClass.HasInterface(compilation.IUseContextValueInterface());
+		public bool UseContextValue => ExplicitParameterClass != null && HasGenericInterface(ExplicitParameterClass, compilation.IUseContextValueInterfaceGeneric());
+
+		bool HasGenericInterface(INamedTypeSymbol namedTypeSymbol, INamedTypeSymbol genericInterface) {
+			foreach (var @interface in namedTypeSymbol.AllInterfaces) {
+				if (@interface.OriginalDefinition.Equals(genericInterface, SymbolEqualityComparer.Default)) {
+					return true;
+				}
+			}
+			return false;
+		}
 
 		protected CommandParameterSetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute) {
 			this.compilation = compilation;

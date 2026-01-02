@@ -18,7 +18,7 @@ namespace Albatross.CommandLine.Test.CodeGen {
 
 	[OptionHandler(typeof(MyDefaultOptionHandler))]
 	[DefaultNameAliases("--option-with-handler", "-w")]
-	public class OptionWithHandler : Option<string>, IUseContextValue {
+	public class OptionWithHandler : Option<string>, IUseContextValue<string> {
 		public OptionWithHandler(string name, params string[] aliases) : base(name, aliases) {
 			Description = "original description";
 			Required = false;

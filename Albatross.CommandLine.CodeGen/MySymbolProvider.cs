@@ -26,7 +26,7 @@ namespace Albatross.CommandLine.CodeGen {
 		
 		public static INamedTypeSymbol OptionGenericClass(this Compilation compilation) => compilation.GetRequiredSymbol("System.CommandLine.Option`1");
 		public static INamedTypeSymbol ArgumentGenericClass(this Compilation compilation) => compilation.GetRequiredSymbol("System.CommandLine.Argument`1");
-		public static INamedTypeSymbol IUseContextValueInterface(this Compilation compilation) => compilation.GetRequiredSymbol("Albatross.CommandLine.IUseContextValue");
+		public static INamedTypeSymbol IUseContextValueInterfaceGeneric(this Compilation compilation) => compilation.GetRequiredSymbol("Albatross.CommandLine.IUseContextValue`1");
 
 		public static INamedTypeSymbol DefaultNameAliasesAttribute(this Compilation compilation) 
 			=> compilation.GetRequiredSymbol("Albatross.CommandLine.Annotations.DefaultNameAliasesAttribute");
