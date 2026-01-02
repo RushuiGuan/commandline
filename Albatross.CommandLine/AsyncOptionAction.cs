@@ -45,6 +45,7 @@ namespace Albatross.CommandLine {
 		}
 	}
 	public sealed class AsyncOptionHandler : AsynchronousCommandLineAction {
+		public override bool Terminating => false;
 		private readonly Func<ParseResult, CancellationToken, Task<int>> handler;
 
 		public AsyncOptionHandler(Func<ParseResult, CancellationToken, Task<int>> handler) {
@@ -56,6 +57,7 @@ namespace Albatross.CommandLine {
 		}
 	}
 	public sealed class OptionHandler: SynchronousCommandLineAction {
+		public override bool Terminating => false;
 		private readonly Func<ParseResult, int> handler;
 		public OptionHandler(Func<ParseResult, int> handler) {
 			this.handler = handler;

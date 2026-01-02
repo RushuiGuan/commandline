@@ -6,7 +6,7 @@
     },
     "test self-contained-options": {
       "commandName": "Project",
-      "commandLineArgs": "example instrument detail --instrument 1 -v information"
+      "commandLineArgs": "example instrument detail --instrument 1 -m 1 -v information"
     }
   }
 }

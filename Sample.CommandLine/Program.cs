@@ -43,7 +43,6 @@ namespace Sample.CommandLine {
 
 			// self-contained option handler registration
 			services.AddKeyedScoped<IAsyncCommandHandler, GetInstrumentDetails>("example instrument detail");
-			services.AddScoped<InstrumentOptionHandler>();
 			services.AddScoped<InstrumentProxy>();
 			services.TryAddScoped<InstrumentOptionHandler>();
 		}
