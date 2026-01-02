@@ -10,4 +10,8 @@ namespace Albatross.CommandLine {
 	public interface IAsyncOptionHandler<in T> where T:Option {
 		Task InvokeAsync(T symbol, ParseResult result, CancellationToken cancellationToken);
 	}
+
+	public interface IAsyncOptionHandler<in TOption, TContextValue> where TOption : Option {
+		Task<TContextValue> InvokeAsync(TOption symbol, ParseResult result, CancellationToken cancellationToken);
+	}
 }

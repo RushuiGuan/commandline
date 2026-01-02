@@ -11,7 +11,9 @@ namespace Albatross.CommandLine {
 	/// This is used to set Option Action.  They are run after parsing as a PreAction
 	/// This is marked as internal since it is intended to be used by system only
 	/// </summary>
-	internal sealed class AsyncOptionAction<TOption, THandler> : AsynchronousCommandLineAction where TOption : Option where THandler: IAsyncOptionHandler<TOption> {
+	internal sealed class AsyncOptionAction<TOption, THandler> : AsynchronousCommandLineAction 
+		where TOption : Option 
+		where THandler: IAsyncOptionHandler<TOption> {
 		private readonly Func<IServiceProvider> serviceFactory;
 		public override bool Terminating => false;
 		public TOption Symbol { get; }
@@ -30,6 +32,43 @@ namespace Albatross.CommandLine {
 					logger.LogInformation("Invoking AsyncActionHandler for [ {CommandName} [ {SymbolName} ] ]", context.Key, Symbol.Name);
 					var handler = serviceProvider.GetRequiredService<THandler>();
 					await handler.InvokeAsync(this.Symbol, parseResult, cancellationToken);
+				} catch (OperationCanceledException err) {
+					var msg = $"Operation cancelled while processing argument or option [ {Symbol.Name} ]";
+					logger.LogWarning(msg);
+					context.SetInputActionStatus(new InputActionStatus(Symbol.Name, false, msg, err));
+				} catch (Exception err) {
+					var msg = $"Error occurred while processing argument or option [ {Symbol.Name} ]";
+					logger.LogError(err, msg);
+					context.SetInputActionStatus(new InputActionStatus(Symbol.Name, false, msg, err));
+				}
+			}
+			// this return code has no impact
+			return 0;
+		}
+	}
+
+	internal sealed class AsyncOptionAction<TOption, THandler, TContextValue> : AsynchronousCommandLineAction
+		where TOption : Option
+		where THandler : IAsyncOptionHandler<TOption, TContextValue> {
+		private readonly Func<IServiceProvider> serviceFactory;
+		public override bool Terminating => false;
+		public TOption Symbol { get; }
+
+		public AsyncOptionAction(TOption symbol, Func<IServiceProvider> serviceFactory) {
+			this.Symbol = symbol;
+			this.serviceFactory = serviceFactory;
+		}
+
+		public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken) {
+			var serviceProvider = serviceFactory();
+			var context = serviceProvider.GetRequiredService<ICommandContext>();
+			if (!context.HasParsingError) {
+				var logger = serviceProvider.GetRequiredService<ILogger<AsyncOptionAction<TOption, THandler, TContextValue>>>();
+				try {
+					logger.LogInformation("Invoking AsyncActionHandler for [ {CommandName} [ {SymbolName} ] ]", context.Key, Symbol.Name);
+					var handler = serviceProvider.GetRequiredService<THandler>();
+					var result = await handler.InvokeAsync(this.Symbol, parseResult, cancellationToken);
+					context.SetValue<TContextValue>(this.Symbol.Name, result);
 				} catch (OperationCanceledException err) {
 					var msg = $"Operation cancelled while processing argument or option [ {Symbol.Name} ]";
 					logger.LogWarning(msg);
