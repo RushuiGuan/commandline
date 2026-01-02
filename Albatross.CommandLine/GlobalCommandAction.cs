@@ -25,11 +25,11 @@ namespace Albatross.CommandLine {
 		public async Task<int> InvokeAsync(ParseResult result, CancellationToken cancellationToken) {
 			var services = this.serviceFactory();
 			var context = services.GetRequiredService<ICommandContext>();
+			var logger = services.GetRequiredService<ILogger<GlobalCommandAction>>();
+			logger.LogInformation("Executing command '{command}'", context.Key);
 			if (context.HasInputActionError) {
 				return InputActionErrorExitCode;
 			}
-			var logger = services.GetRequiredService<ILogger<GlobalCommandAction>>();
-			logger.LogInformation("Executing command '{command}'", context.Key);
 			IAsyncCommandHandler? handler = null;
 			try {
 				handler = services.GetKeyedService<IAsyncCommandHandler>(context.Key);

@@ -27,7 +27,7 @@ namespace Albatross.CommandLine {
 			if (!context.HasParsingError) {
 				var logger = serviceProvider.GetRequiredService<ILogger<AsyncOptionAction<TOption, THandler>>>();
 				try {
-					logger.LogInformation("Invoking AsyncActionHandler for [ {CommandName} [ {SymbolName} ] ]", parseResult.CommandResult.Command.GetCommandKey(), Symbol.Name);
+					logger.LogInformation("Invoking AsyncActionHandler for [ {CommandName} [ {SymbolName} ] ]", context.Key, Symbol.Name);
 					var handler = serviceProvider.GetRequiredService<THandler>();
 					await handler.InvokeAsync(this.Symbol, parseResult, cancellationToken);
 				} catch (OperationCanceledException err) {
