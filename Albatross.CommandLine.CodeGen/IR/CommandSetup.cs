@@ -83,23 +83,16 @@ namespace Albatross.CommandLine.CodeGen.IR {
 					if (attributeClass.Is(compilation.ArgumentAttributeClass())) {
 						yield return new CommandArgumentParameterSetup(compilation, propertySymbol, attributeData);
 					} else if (attributeClass.Is(compilation.OptionAttributeClass())) {
-						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData);
-					} else if (Extensions.Is(attributeClass?.OriginalDefinition, compilation.UseOptionAttributeClassGeneric1())
-								|| Extensions.Is(attributeClass?.OriginalDefinition, compilation.UseOptionAttributeClassGeneric2())) {
+						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData, null, null, false);
+					} else if (Extensions.Is(attributeClass?.OriginalDefinition, compilation.UseOptionAttributeClassGeneric())) {
 						var symbol = attributeClass!.TypeArguments[0] as INamedTypeSymbol;
 						INamedTypeSymbol? handlerClass = null;
-						if (attributeClass.TypeArguments.Length == 2) {
-							handlerClass = attributeClass.TypeArguments[1] as INamedTypeSymbol;
-						} else if (symbol!.TryGetAttribute(compilation.DefaultOptionHandlerAttributeClass(), out var handlerAttribute)) {
+						if (symbol!.TryGetAttribute(compilation.OptionHandlerAttributeClass(), out var handlerAttribute)) {
 							handlerClass = handlerAttribute.ConstructorArguments[0].Value as INamedTypeSymbol;
 						}
-						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData!) {
-							ExplicitParameterClass = symbol,
-							ExplicitParameterHandlerClass = handlerClass,
-							UseCustomNameAlias = attributeData.TryGetNamedArgument(nameof(CommandOptionParameterSetup.UseCustomNameAlias), out var constant)
-								&& Convert.ToBoolean(constant.Value)
-						};
-					} else if (Extensions.Is(attributeData.AttributeClass?.OriginalDefinition, compilation.UseArgumentAttributeClassGeneric1())) {
+						var useCustomName = attributeData.TryGetNamedArgument("UseCustomName", out var constant) && Convert.ToBoolean(constant.Value);
+						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData!, symbol, handlerClass, useCustomName);
+					} else if (Extensions.Is(attributeData.AttributeClass?.OriginalDefinition, compilation.UseArgumentAttributeClassGeneric())) {
 						// argument symbol does not have Action
 						var symbol = attributeData.AttributeClass!.TypeArguments[0] as INamedTypeSymbol;
 						yield return new CommandArgumentParameterSetup(compilation, propertySymbol, attributeData!) {

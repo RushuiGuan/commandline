@@ -76,13 +76,17 @@ namespace Albatross.CommandLine.CodeGen {
 					Arguments = { new StringLiteralExpression(alias) }
 				};
 			}
+			var commandAlias = new HashSet<string>();
 			foreach (var parameter in setup.Parameters) {
-				// default to argument
-				var hasParameterKeyArgs = true;
-				var hasParameterAliasesArgs = false;
+				// the code below remove any conflict aliases.
+				//TODO: Report warning for removed aliases?
+				var optionAliases = new List<string>();
 				if (parameter is CommandOptionParameterSetup optionParameter) {
-					hasParameterKeyArgs = optionParameter.UseCustomNameAlias;
-					hasParameterAliasesArgs = optionParameter.UseCustomNameAlias;
+					foreach(var alias in optionParameter.Aliases) {
+						if (commandAlias.Add(alias)) {
+							optionAliases.Add(alias);
+						}
+					}
 				}
 
 				yield return new AssignmentExpression {
@@ -90,8 +94,8 @@ namespace Albatross.CommandLine.CodeGen {
 					Expression = new NewObjectExpression {
 						Type = this.typeConverter.Convert(parameter.ParameterClass),
 						Arguments = {
-							{ hasParameterKeyArgs, () => new StringLiteralExpression(parameter.Key) },
-							{ hasParameterAliasesArgs, () => ((CommandOptionParameterSetup)parameter).Aliases.Select(x => new StringLiteralExpression(x)) }
+							new StringLiteralExpression(parameter.Key),
+							optionAliases.Select(x => new StringLiteralExpression(x)),
 						},
 						Initializers = {
 							{

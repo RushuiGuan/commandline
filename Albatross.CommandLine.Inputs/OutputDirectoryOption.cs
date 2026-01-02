@@ -1,9 +1,11 @@
-﻿using System.CommandLine;
+﻿using Albatross.CommandLine.Annotations;
+using System.CommandLine;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine.Inputs {
+	[DefaultNameAliases("--output-directory", "--out", "-o")]
 	public class OutputDirectoryOption : Option<DirectoryInfo> {
 		public OutputDirectoryOption(string name, params string[] aliases) : base(name, aliases) {
 			Description = "Specify an output directory that will be created if it doesn't exist";
@@ -15,9 +17,7 @@ namespace Albatross.CommandLine.Inputs {
 				}
 			});
 		}
-		public OutputDirectoryOption(): this("--output-directory", "-o") {
-		}
-
+		
 		Task<int> CreateIfNotExist(ParseResult result, CancellationToken cancellationToken) {
 			var directory = result.GetValue(this);
 			if(directory != null && !directory.Exists) {

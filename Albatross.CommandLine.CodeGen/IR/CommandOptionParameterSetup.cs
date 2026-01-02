@@ -6,7 +6,7 @@ using System.Linq;
 namespace Albatross.CommandLine.CodeGen.IR {
 	public record class CommandOptionParameterSetup : CommandParameterSetup {
 		private readonly Compilation compilation;
-		public string[] Aliases { get; }
+		public string[] Aliases { get; } = Array.Empty<string>();
 		private bool? required;
 		public bool Required => required ?? PropertySymbol.Type.SpecialType != SpecialType.System_Boolean
 			&& !PropertySymbol.Type.IsNullable(compilation)
@@ -17,18 +17,29 @@ namespace Albatross.CommandLine.CodeGen.IR {
 		public override INamedTypeSymbol DefaultParameterClass { get; }
 		public INamedTypeSymbol? ExplicitParameterHandlerClass { get; init; }
 		public bool AllowMultipleArgumentsPerToken { get; init; }
-		public bool UseCustomNameAlias { get; init; } = true;
 
-		public CommandOptionParameterSetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute)
+		public CommandOptionParameterSetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute, INamedTypeSymbol? explicitParamClass, INamedTypeSymbol? explicitParamHandlerClass, bool useCustomName)
 			: base(compilation, propertySymbol, propertyAttribute) {
 			this.compilation = compilation;
-			this.Key = $"--{this.Key}";
+			this.ExplicitParameterClass = explicitParamClass;
+			this.ExplicitParameterHandlerClass = explicitParamHandlerClass;
+
+			if (explicitParamClass != null && !useCustomName && explicitParamClass.TryGetAttribute(compilation.DefaultNameAliasesAttribute(), out var attributeData) && attributeData.ConstructorArguments.Length > 0) {
+				this.Key = Convert.ToString(attributeData.ConstructorArguments[0].Value);
+				if (attributeData.ConstructorArguments.Length > 1) {
+					this.Aliases = attributeData.ConstructorArguments[1].Values.Select(x => x.Value?.ToString() ?? string.Empty)
+						.Where(x => !string.IsNullOrEmpty(x)).Select(CreateAlias).ToArray();
+				}
+			} else {
+				this.Key = $"--{this.Key}";
+			}
 			if (propertyAttribute.ConstructorArguments.Any()) {
-				this.Aliases = propertyAttribute.ConstructorArguments[0].Values.Select(x => x.Value?.ToString() ?? string.Empty)
+				var aliases = propertyAttribute.ConstructorArguments[0].Values.Select(x => x.Value?.ToString() ?? string.Empty)
 					.Where(x => !string.IsNullOrEmpty(x)).Select(CreateAlias)
 					.ToArray();
-			} else {
-				this.Aliases = Array.Empty<string>();
+				if (aliases.Length > 0) {
+					this.Aliases = aliases;
+				}
 			}
 			if (propertyAttribute.TryGetNamedArgument("AllowMultipleArgumentsPerToken", out var allowMultiple)) {
 				this.AllowMultipleArgumentsPerToken = Convert.ToBoolean(allowMultiple.Value);

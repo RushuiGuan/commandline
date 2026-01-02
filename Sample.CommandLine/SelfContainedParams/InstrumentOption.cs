@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sample.CommandLine.SelfContainedParams {
-	[DefaultOptionHandler(typeof(InstrumentOptionHandler))]
+	[OptionHandler(typeof(InstrumentOptionHandler))]
 	public class InstrumentOption : Option<string>, IUseContextValue {
 		public InstrumentOption(string name, params string[] alias) : base(name, alias) {
 			this.Description = "The security instrument identifier (e.g., ticker symbol, CUSIP, ISIN)";
