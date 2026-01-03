@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.Linq;
 
 namespace Albatross.CommandLine {
@@ -27,7 +28,7 @@ namespace Albatross.CommandLine {
 
 		public bool HasParsingError => Result.Errors.Count > 0;
 		public bool HasInputActionError => inputStatus.Any(x => !x.Value.Success);
-		public bool HasShortCircuitOptions => Result.CommandResult.Command.Children.OfType<Option>().Any(x => x.Action?.Terminating == true);
+		public bool HasShortCircuitOptions => Result.CommandResult.Children.OfType<OptionResult>().Any(x => x.Option.Action?.Terminating == true);
 
 		public CommandContext(ParseResult result) {
 			this.Result = result;

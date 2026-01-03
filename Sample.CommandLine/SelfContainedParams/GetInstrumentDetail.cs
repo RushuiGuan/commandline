@@ -1,8 +1,6 @@
 ﻿using Albatross.CommandLine;
 using Albatross.CommandLine.Annotations;
-using Albatross.CommandLine.Inputs;
 using System.CommandLine;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,9 +9,6 @@ namespace Sample.CommandLine.SelfContainedParams {
 	public record class GetInstrumentDetailsParams {
 		[UseOption<InstrumentOption>]
 		public required InstrumentSummary Summary { get; init; }
-
-		[UseOption<OutputDirectoryOption>]
-		public required DirectoryInfo OutputDirectory { get; init; }
 	}
 
 
