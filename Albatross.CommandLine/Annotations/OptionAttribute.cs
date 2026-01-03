@@ -1,6 +1,7 @@
 ﻿using System;
 
 namespace Albatross.CommandLine.Annotations {
+	[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 	public class OptionAttribute : Attribute {
 		public OptionAttribute(params string[] alias) {
 			this.Alias = alias;

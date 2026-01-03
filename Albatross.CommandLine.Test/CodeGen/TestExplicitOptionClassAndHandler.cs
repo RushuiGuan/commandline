@@ -33,8 +33,6 @@ namespace Albatross.CommandLine.Test.CodeGen {
 	public class OptionWithTransformationHandler : Option<string> {
 		public OptionWithTransformationHandler(string name, params string[] aliases) : base(name, aliases) {
 		}
-
-		public required Data Data { get; init; }
 	}
 
 	public class MyTransformationOptionHandler : IAsyncOptionHandler<OptionWithTransformationHandler, Data> {
@@ -153,6 +151,13 @@ namespace Albatross.CommandLine.Test.CodeGen {
 		public void VerifyExplicitOptionWithCustomName() {
 			var cmd = BuildCommand();
 			Assert.Equal("--explicit-option-with-custom-name", cmd.Option_ExplicitOptionWithCustomName.Name);
+		}
+
+		[Fact]
+		public void VerifyExplicitOptionWithDataTransformation() {
+			var cmd = BuildCommand();
+			Assert.IsType<OptionWithTransformationHandler>(cmd.Option_ExplicitOptionWithDataTransformation);
+			Assert.IsType<AsyncOptionAction<OptionWithTransformationHandler, MyTransformationOptionHandler, Data>>(cmd.Option_ExplicitOptionWithDataTransformation.Action);
 		}
 	}
 }

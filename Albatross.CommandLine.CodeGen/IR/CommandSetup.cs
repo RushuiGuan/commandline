@@ -81,19 +81,20 @@ namespace Albatross.CommandLine.CodeGen.IR {
 					if (attributeClass == null) {
 						continue;
 					}
+					//TODO: warning when a class has both UseOptionAttribute and OptionAttribute or both UseArgumentAttribute and ArgumentAttribute
 					if (attributeClass.Is(compilation.ArgumentAttributeClass())) {
 						yield return new CommandArgumentParameterSetup(compilation, propertySymbol, attributeData);
 					} else if (attributeClass.Is(compilation.OptionAttributeClass())) {
-						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData, null, null, false);
-					} else if (Extensions.Is(attributeClass?.OriginalDefinition, compilation.UseOptionAttributeClassGeneric())) {
-						var symbol = attributeClass!.TypeArguments[0] as INamedTypeSymbol;
+						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData, null, false);
+					} else if (compilation.UseOptionAttributeClassGeneric().Is(attributeClass?.OriginalDefinition)) {
+						var explicitOptionType = attributeClass!.TypeArguments[0] as INamedTypeSymbol;
 						var useCustomName = attributeData.TryGetNamedArgument("UseCustomName", out var constant) && Convert.ToBoolean(constant.Value);
-						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData!, symbol, useCustomName);
+						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData!, explicitOptionType, useCustomName);
 					} else if (Extensions.Is(attributeData.AttributeClass?.OriginalDefinition, compilation.UseArgumentAttributeClassGeneric())) {
 						// argument symbol does not have Action
-						var symbol = attributeData.AttributeClass!.TypeArguments[0] as INamedTypeSymbol;
+						var explicitArgumentType = attributeData.AttributeClass!.TypeArguments[0] as INamedTypeSymbol;
 						yield return new CommandArgumentParameterSetup(compilation, propertySymbol, attributeData!) {
-							ExplicitParameterClass = symbol,
+							ExplicitParameterClass = explicitArgumentType,
 						};
 					} else {
 						continue;

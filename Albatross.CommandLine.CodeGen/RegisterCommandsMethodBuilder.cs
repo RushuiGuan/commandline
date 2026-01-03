@@ -233,7 +233,7 @@ namespace Albatross.CommandLine.CodeGen {
 		
 		static string GetCommandParameterRetrievalMethodName(Compilation compilation, CommandParameterSetup parameter) {
 			var sb = new StringBuilder("context");
-			if (!parameter.UseContextValue) {
+			if (parameter is not CommandOptionParameterSetup optionParam || optionParam.ContextValueType == null) {
 				sb.Append(".Result");
 			}
 			if(ShouldUseRequiredValue(compilation, parameter)) {

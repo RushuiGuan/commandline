@@ -1,6 +1,7 @@
 ﻿using System;
 
 namespace Albatross.CommandLine.Annotations {
+	[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 	public class ArgumentAttribute : Attribute {
 		public string? Description { get; set; }
 		public bool Hidden { get; set; }

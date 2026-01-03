@@ -36,6 +36,7 @@ namespace Albatross.CommandLine.Annotations {
 		/// It allows a command to be created without creating a new Params Class.
 		/// </summary>
 		public Type? ParamsClass { get; }
+		// TODO: need a ERROR if the target class does not derive from this class
 		public Type? BaseParamsClass { get; set; }
 		public string Name { get; }
 		public string? Description { get; set; }

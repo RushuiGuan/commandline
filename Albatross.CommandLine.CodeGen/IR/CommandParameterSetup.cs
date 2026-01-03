@@ -18,9 +18,13 @@ namespace Albatross.CommandLine.CodeGen.IR {
 		public abstract string CommandPropertyName { get; }
 
 		public INamedTypeSymbol ParameterClass => ExplicitParameterClass ?? DefaultParameterClass;
+		/// <summary>
+		/// this type is sourced by the TArgument or TOption of<![CDATA[
+		/// UseArgumentAttribute<TArgument> or UseOptionAttribute<TOption>
+		/// ]]> attributes.
+		/// </summary>
 		public INamedTypeSymbol? ExplicitParameterClass { get; init; }
 		public abstract INamedTypeSymbol DefaultParameterClass { get; }
-		public bool UseContextValue { get; protected set; }
 
 		protected CommandParameterSetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute) {
 			this.compilation = compilation;

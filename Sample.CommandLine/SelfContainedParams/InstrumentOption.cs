@@ -24,9 +24,13 @@ namespace Sample.CommandLine.SelfContainedParams {
 		}
 
 		public async Task<OptionHandlerResult<InstrumentSummary>> InvokeAsync(InstrumentOption option, ParseResult result, CancellationToken cancellationToken) {
-			var text = result.GetRequiredValue(option);
-			var data = await instrumentProxy.GetInstrumentSummary(text, cancellationToken);
-			return new OptionHandlerResult<InstrumentSummary>(data);
+			var text = result.GetValue(option);
+			if (string.IsNullOrEmpty(text)) {
+				return new OptionHandlerResult<InstrumentSummary>();
+			} else {
+				var data = await instrumentProxy.GetInstrumentSummary(text, cancellationToken);
+				return new OptionHandlerResult<InstrumentSummary>(data);
+			}
 		}
 	}
 }
