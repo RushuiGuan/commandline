@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 namespace Sample.CommandLine.SelfContainedParams {
 	[DefaultNameAliases("--instrument", "-i")]
-	[OptionHandler(typeof(InstrumentOptionHandler))]
-	public class InstrumentOption : Option<string>, IUseContextValue<InstrumentSummary> {
+	[OptionHandler<InstrumentOption, InstrumentOptionHandler, InstrumentSummary>]
+	public class InstrumentOption : Option<string> {
 		public InstrumentOption(string name, params string[] alias) : base(name, alias) {
 			this.Description = "The security instrument identifier (e.g., ticker symbol, CUSIP, ISIN)";
 			this.Required = true;
 		}
 	}
 
-	public class InstrumentOptionHandler : IAsyncOptionHandler<InstrumentOption> {
+	public class InstrumentOptionHandler : IAsyncOptionHandler<InstrumentOption, InstrumentSummary> {
 		private readonly ICommandContext context;
 		private readonly InstrumentProxy instrumentProxy;
 
@@ -23,10 +23,10 @@ namespace Sample.CommandLine.SelfContainedParams {
 			this.instrumentProxy = instrumentProxy;
 		}
 
-		public async Task InvokeAsync(InstrumentOption option, ParseResult result, CancellationToken cancellationToken) {
+		public async Task<OptionHandlerResult<InstrumentSummary>> InvokeAsync(InstrumentOption option, ParseResult result, CancellationToken cancellationToken) {
 			var text = result.GetRequiredValue(option);
-			var summary = await instrumentProxy.GetInstrumentSummary(text, cancellationToken);
-			context.SetValue(option.Name, summary);
+			var data = await instrumentProxy.GetInstrumentSummary(text, cancellationToken);
+			return new OptionHandlerResult<InstrumentSummary>(data);
 		}
 	}
 }

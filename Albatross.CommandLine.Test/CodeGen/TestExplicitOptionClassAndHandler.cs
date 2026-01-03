@@ -3,6 +3,9 @@ using System.CommandLine;
 using Xunit;
 
 namespace Albatross.CommandLine.Test.CodeGen {
+	public record class Data {
+		public required string Text { get; init; }
+	}
 	[DefaultNameAliases("--option-without-handler", "--wo")]
 	public class OptionWithoutHandler : Option<string> {
 		public OptionWithoutHandler(string name, params string[] aliases) : base(name, aliases) {
@@ -16,12 +19,36 @@ namespace Albatross.CommandLine.Test.CodeGen {
 		}
 	}
 
-	[OptionHandler(typeof(MyDefaultOptionHandler))]
+	[OptionHandler<OptionWithHandler, MyDefaultOptionHandler>]
 	[DefaultNameAliases("--option-with-handler", "-w")]
-	public class OptionWithHandler : Option<string>, IUseContextValue<string> {
+	public class OptionWithHandler : Option<string> {
 		public OptionWithHandler(string name, params string[] aliases) : base(name, aliases) {
 			Description = "original description";
 			Required = false;
+		}
+	}
+
+	[DefaultNameAliases("--option-with-transformation-handler", "--tw")]
+	[OptionHandler<OptionWithTransformationHandler, MyTransformationOptionHandler, Data>]
+	public class OptionWithTransformationHandler : Option<string> {
+		public OptionWithTransformationHandler(string name, params string[] aliases) : base(name, aliases) {
+		}
+
+		public required Data Data { get; init; }
+	}
+
+	public class MyTransformationOptionHandler : IAsyncOptionHandler<OptionWithTransformationHandler, Data> {
+		private readonly ICommandContext context;
+		public MyTransformationOptionHandler(ICommandContext context) {
+			this.context = context;
+		}
+		public Task<OptionHandlerResult<Data>> InvokeAsync(OptionWithTransformationHandler symbol, ParseResult result, CancellationToken cancellationToken) {
+			var text = result.GetValue(symbol);
+			if (string.IsNullOrEmpty(text)) {
+				return Task.FromResult(new OptionHandlerResult<Data>());
+			} else {
+				return Task.FromResult(new OptionHandlerResult<Data>(new Data { Text = text }));
+			}
 		}
 	}
 
@@ -55,6 +82,9 @@ namespace Albatross.CommandLine.Test.CodeGen {
 
 		[UseOption<OptionWithoutHandler>(UseCustomName = true)]
 		public required string ExplicitOptionWithCustomName { get; init; }
+
+		[UseOption<OptionWithTransformationHandler>]
+		public required Data ExplicitOptionWithDataTransformation { get; init; }
 	}
 
 	public class TestExplicitOptionClassAndHandler {

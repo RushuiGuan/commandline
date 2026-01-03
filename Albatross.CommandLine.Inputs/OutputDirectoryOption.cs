@@ -9,7 +9,7 @@ namespace Albatross.CommandLine.Inputs {
 	public class OutputDirectoryOption : Option<DirectoryInfo> {
 		public OutputDirectoryOption(string name, params string[] aliases) : base(name, aliases) {
 			Description = "Specify an output directory that will be created if it doesn't exist";
-			Action = new AsyncOptionHandler(CreateIfNotExist);
+			Action = new AsyncOptionAction(CreateIfNotExist);
 			this.Validators.Add(result => {
 				var directory = result.GetValue(this);
 				if(directory != null && File.Exists(directory.FullName)) {

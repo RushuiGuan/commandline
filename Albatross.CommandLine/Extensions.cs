@@ -38,5 +38,14 @@ namespace Albatross.CommandLine {
 			option.Action = new AsyncOptionAction<TOption, THandler>(option, host.GetServiceProvider);
 			return command;
 		}
+		public static TCommand SetOptionAction<TCommand, TOption, THandler, TValue>(this TCommand command, Func<TCommand, TOption> func, CommandHost host)
+			where TCommand : Command
+			where TOption : Option
+			where THandler : IAsyncOptionHandler<TOption, TValue>
+			where TValue : notnull {
+			var option = func(command);
+			option.Action = new AsyncOptionAction<TOption, THandler, TValue>(option, host.GetServiceProvider);
+			return command;
+		}
 	}
 }

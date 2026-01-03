@@ -6,6 +6,7 @@ using System;
 
 namespace Albatross.CommandLine.CodeGen.IR {
 	public abstract record class CommandParameterSetup {
+		//TODO: clean this up
 		private readonly Compilation compilation;
 		public IPropertySymbol PropertySymbol { get; }
 		public ExpressionSyntax? PropertyInitializer { get; }
@@ -19,16 +20,7 @@ namespace Albatross.CommandLine.CodeGen.IR {
 		public INamedTypeSymbol ParameterClass => ExplicitParameterClass ?? DefaultParameterClass;
 		public INamedTypeSymbol? ExplicitParameterClass { get; init; }
 		public abstract INamedTypeSymbol DefaultParameterClass { get; }
-		public bool UseContextValue => ExplicitParameterClass != null && HasGenericInterface(ExplicitParameterClass, compilation.IUseContextValueInterfaceGeneric());
-
-		bool HasGenericInterface(INamedTypeSymbol namedTypeSymbol, INamedTypeSymbol genericInterface) {
-			foreach (var @interface in namedTypeSymbol.AllInterfaces) {
-				if (@interface.OriginalDefinition.Equals(genericInterface, SymbolEqualityComparer.Default)) {
-					return true;
-				}
-			}
-			return false;
-		}
+		public bool UseContextValue { get; protected set; }
 
 		protected CommandParameterSetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute) {
 			this.compilation = compilation;

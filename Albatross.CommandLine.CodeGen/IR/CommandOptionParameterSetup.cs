@@ -1,6 +1,7 @@
 ﻿using Albatross.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Albatross.CommandLine.CodeGen.IR {
@@ -17,6 +18,50 @@ namespace Albatross.CommandLine.CodeGen.IR {
 		public override INamedTypeSymbol DefaultParameterClass { get; }
 		public INamedTypeSymbol? ExplicitParameterHandlerClass { get; init; }
 		public bool AllowMultipleArgumentsPerToken { get; init; }
+
+		public CommandOptionParameterSetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute, INamedTypeSymbol? explicitParamClass, bool useCustomName)
+			: base(compilation, propertySymbol, propertyAttribute) {
+			this.compilation = compilation;
+			this.ExplicitParameterClass = explicitParamClass;
+			if (this.ExplicitParameterClass != null){
+				foreach (var attribute in this.ExplicitParameterClass.GetAttributes()) {
+					var attributeClass = attribute.AttributeClass;
+					if (attributeClass != null) {
+						if (attributeClass.OriginalDefinition.Is(compilation.OptionHandlerAttributeClassGeneric2())) {
+							this.ExplicitParameterHandlerClass = (INamedTypeSymbol)attributeClass.TypeArguments[1];
+							UseContextValue = false;
+						} else if (attributeClass.OriginalDefinition.Is(compilation.OptionHandlerAttributeClassGeneric3())) {
+							this.ExplicitParameterHandlerClass = (INamedTypeSymbol)attributeClass.TypeArguments[1];
+							UseContextValue = true;
+						} else if (!useCustomName && attributeClass.Is(compilation.DefaultNameAliasesAttribute()) && attribute.ConstructorArguments.Length > 0) {
+							this.Key = Convert.ToString(attribute.ConstructorArguments[0].Value);
+							if (attribute.ConstructorArguments.Length > 1) {
+								this.Aliases = attribute.ConstructorArguments[1].Values.Select(x => x.Value?.ToString() ?? string.Empty)
+									.Where(x => !string.IsNullOrEmpty(x)).Select(CreateAlias).ToArray();
+							}
+						}
+					}
+				}
+			}
+			if(!this.Key.StartsWith("--")) {
+				this.Key = $"--{this.Key}";
+			}
+			if (propertyAttribute.ConstructorArguments.Any()) {
+				var aliases = propertyAttribute.ConstructorArguments[0].Values.Select(x => x.Value?.ToString() ?? string.Empty)
+					.Where(x => !string.IsNullOrEmpty(x)).Select(CreateAlias)
+					.ToArray();
+				if (aliases.Length > 0) {
+					this.Aliases = aliases;
+				}
+			}
+			if (propertyAttribute.TryGetNamedArgument("AllowMultipleArgumentsPerToken", out var allowMultiple)) {
+				this.AllowMultipleArgumentsPerToken = Convert.ToBoolean(allowMultiple.Value);
+			}
+			if (propertyAttribute.TryGetNamedArgument("Required", out var required)) {
+				this.required = Convert.ToBoolean(required.Value);
+			}
+			this.DefaultParameterClass = compilation.OptionGenericClass().Construct(propertySymbol.Type);
+		}
 
 		public CommandOptionParameterSetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute, INamedTypeSymbol? explicitParamClass, INamedTypeSymbol? explicitParamHandlerClass, bool useCustomName)
 			: base(compilation, propertySymbol, propertyAttribute) {

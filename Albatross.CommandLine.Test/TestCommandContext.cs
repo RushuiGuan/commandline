@@ -20,7 +20,7 @@ namespace Albatross.CommandLine.Test {
 			var result = command.Parse("test");
 			var context = new CommandContext(result);
 			var key = "--key";
-			int? value = 1;
+			int value = 1;
 			context.SetValue(key, value);
 			Assert.Equal(value, context.GetValue<int>(key));
 		}

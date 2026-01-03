@@ -1,7 +1,5 @@
 ﻿using Albatross.CodeAnalysis;
 using Microsoft.CodeAnalysis;
-using System;
-using System.Collections.Generic;
 
 namespace Albatross.CommandLine.CodeGen {
 	public static class MySymbolProvider {
@@ -21,12 +19,14 @@ namespace Albatross.CommandLine.CodeGen {
 		public static INamedTypeSymbol ArgumentAttributeClass(this Compilation compilation) 
 			=> compilation.GetRequiredSymbol("Albatross.CommandLine.Annotations.ArgumentAttribute");
 		
-		public static INamedTypeSymbol OptionHandlerAttributeClass(this Compilation compilation) 
-			=> compilation.GetRequiredSymbol("Albatross.CommandLine.Annotations.OptionHandlerAttribute");
-		
+		public static INamedTypeSymbol OptionHandlerAttributeClassGeneric2(this Compilation compilation)
+			=> compilation.GetRequiredSymbol("Albatross.CommandLine.Annotations.OptionHandlerAttribute`2");
+
+		public static INamedTypeSymbol OptionHandlerAttributeClassGeneric3(this Compilation compilation)
+			=> compilation.GetRequiredSymbol("Albatross.CommandLine.Annotations.OptionHandlerAttribute`3");
+
 		public static INamedTypeSymbol OptionGenericClass(this Compilation compilation) => compilation.GetRequiredSymbol("System.CommandLine.Option`1");
 		public static INamedTypeSymbol ArgumentGenericClass(this Compilation compilation) => compilation.GetRequiredSymbol("System.CommandLine.Argument`1");
-		public static INamedTypeSymbol IUseContextValueInterfaceGeneric(this Compilation compilation) => compilation.GetRequiredSymbol("Albatross.CommandLine.IUseContextValue`1");
 
 		public static INamedTypeSymbol DefaultNameAliasesAttribute(this Compilation compilation) 
 			=> compilation.GetRequiredSymbol("Albatross.CommandLine.Annotations.DefaultNameAliasesAttribute");

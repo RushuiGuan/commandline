@@ -12,8 +12,8 @@ namespace Albatross.CommandLine {
 		string Key { get; }
 		T GetRequiredValue<T>(string key);
 		T? GetValue<T>(string key);
-		void SetValue<T>(string key, T value);
-		void SetInputActionStatus(InputActionStatus status);
+		void SetValue<T>(string key, T value) where T : notnull;
+		void SetInputActionStatus(OptionHandlerStatus status);
 		bool HasParsingError { get; }
 		bool HasInputActionError { get; }
 	}
@@ -22,7 +22,7 @@ namespace Albatross.CommandLine {
 		public string Key { get; }
 		public ParseResult Result { get; }
 		private readonly Dictionary<string, object> values = new();
-		private readonly Dictionary<string, InputActionStatus> inputStatus = new();
+		private readonly Dictionary<string, OptionHandlerStatus> inputStatus = new();
 
 		public bool HasParsingError => Result.Errors.Count > 0;
 		public bool HasInputActionError => inputStatus.Any(x => !x.Value.Success);
@@ -56,14 +56,14 @@ namespace Albatross.CommandLine {
 			}
 		}
 
-		public void SetValue<T>(string key, T value) {
+		public void SetValue<T>(string key, T value) where T : notnull {
 			if (value == null) {
 				throw new ArgumentException("Value cannot be null");
 			}
 			values[key] = value;
 		}
 
-		public void SetInputActionStatus(InputActionStatus status) {
+		public void SetInputActionStatus(OptionHandlerStatus status) {
 			this.inputStatus[status.Name] = status;
 		}
 	}

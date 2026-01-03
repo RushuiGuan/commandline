@@ -30,7 +30,7 @@ namespace Albatross.CommandLine.CodeGen {
 					}
 				};
 				foreach (var param in setup.Parameters.OfType<CommandOptionParameterSetup>().Where(x => x.ExplicitParameterHandlerClass is not null)) {
-					expression = expression.Chain(false,
+					expression = expression.Chain(true,
 						new InvocationExpression {
 							CallableExpression = new IdentifierNameExpression("SetOptionAction"){
 								GenericArguments = {

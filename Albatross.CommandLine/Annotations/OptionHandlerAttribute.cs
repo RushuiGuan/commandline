@@ -2,18 +2,18 @@ using System;
 using System.CommandLine;
 
 namespace Albatross.CommandLine.Annotations {
-	public class OptionHandlerAttribute : Attribute {
-		public OptionHandlerAttribute(Type handlerType) {
-			this.HandlerType = handlerType;
-		}
-		public Type HandlerType { get; }
+	//TODO: TOption has to be the same class as the attribute target.  need a warning if not
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple =false)]
+	public class OptionHandlerAttribute<TOption, THandler> : Attribute
+		where TOption : Option
+		where THandler : IAsyncOptionHandler<TOption> {
 	}
 
-	public class OptionHandlerAttribute<THandler, TOption> : Attribute where THandler : IAsyncOptionHandler<TOption> where TOption : Option {
-	}
-
-	public class OptionHandlerAttribute<THandler, TOption, TContextValue> : Attribute 
-		where THandler : IAsyncOptionHandler<TOption, TContextValue> 
-		where TOption : Option, IUseContextValue<TContextValue> {
+	//TODO: TOption has to be the same class as the attribute target.  need a warning if not
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple =false)]
+	public class OptionHandlerAttribute<TOption, THandler, TContextValue> : Attribute
+		where TOption : Option
+		where THandler : IAsyncOptionHandler<TOption, TContextValue>
+		where TContextValue : notnull {
 	}
 }

@@ -70,6 +70,7 @@ namespace Albatross.CommandLine.CodeGen.IR {
 			}
 		}
 
+
 		public IEnumerable<CommandParameterSetup> GetCommandParameters(Compilation compilation) {
 			var propertySymbols = ParamsClass.GetDistinctProperties(true).ToArray();
 			int index = 0;
@@ -86,12 +87,8 @@ namespace Albatross.CommandLine.CodeGen.IR {
 						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData, null, null, false);
 					} else if (Extensions.Is(attributeClass?.OriginalDefinition, compilation.UseOptionAttributeClassGeneric())) {
 						var symbol = attributeClass!.TypeArguments[0] as INamedTypeSymbol;
-						INamedTypeSymbol? handlerClass = null;
-						if (symbol!.TryGetAttribute(compilation.OptionHandlerAttributeClass(), out var handlerAttribute)) {
-							handlerClass = handlerAttribute.ConstructorArguments[0].Value as INamedTypeSymbol;
-						}
 						var useCustomName = attributeData.TryGetNamedArgument("UseCustomName", out var constant) && Convert.ToBoolean(constant.Value);
-						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData!, symbol, handlerClass, useCustomName);
+						yield return new CommandOptionParameterSetup(compilation, propertySymbol, attributeData!, symbol, useCustomName);
 					} else if (Extensions.Is(attributeData.AttributeClass?.OriginalDefinition, compilation.UseArgumentAttributeClassGeneric())) {
 						// argument symbol does not have Action
 						var symbol = attributeData.AttributeClass!.TypeArguments[0] as INamedTypeSymbol;
