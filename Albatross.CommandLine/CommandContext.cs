@@ -15,6 +15,7 @@ namespace Albatross.CommandLine {
 		void SetValue<T>(string key, T value) where T : notnull;
 		void SetInputActionStatus(OptionHandlerStatus status);
 		bool HasParsingError { get; }
+		bool HasShortCircuitOptions { get; }
 		bool HasInputActionError { get; }
 	}
 
@@ -26,6 +27,7 @@ namespace Albatross.CommandLine {
 
 		public bool HasParsingError => Result.Errors.Count > 0;
 		public bool HasInputActionError => inputStatus.Any(x => !x.Value.Success);
+		public bool HasShortCircuitOptions => Result.CommandResult.Command.Children.OfType<Option>().Any(x => x.Action?.Terminating == true);
 
 		public CommandContext(ParseResult result) {
 			this.Result = result;

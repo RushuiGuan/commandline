@@ -26,7 +26,7 @@ namespace Albatross.CommandLine {
 		public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken) {
 			var serviceProvider = serviceFactory();
 			var context = serviceProvider.GetRequiredService<ICommandContext>();
-			if (!context.HasParsingError) {
+			if (!context.HasParsingError && !context.HasShortCircuitOptions) {
 				var logger = serviceProvider.GetRequiredService<ILogger<AsyncOptionAction<TOption, THandler>>>();
 				try {
 					logger.LogInformation("Invoking AsyncActionHandler for [ {CommandName} [ {SymbolName} ] ]", context.Key, Symbol.Name);
@@ -63,7 +63,7 @@ namespace Albatross.CommandLine {
 		public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken) {
 			var serviceProvider = serviceFactory();
 			var context = serviceProvider.GetRequiredService<ICommandContext>();
-			if (!context.HasParsingError) {
+			if (!context.HasParsingError && !context.HasShortCircuitOptions) {
 				var logger = serviceProvider.GetRequiredService<ILogger<AsyncOptionAction<TOption, THandler, TContextValue>>>();
 				try {
 					logger.LogInformation("Invoking AsyncActionHandler for [ {CommandName} [ {SymbolName} ] ]", context.Key, Symbol.Name);
