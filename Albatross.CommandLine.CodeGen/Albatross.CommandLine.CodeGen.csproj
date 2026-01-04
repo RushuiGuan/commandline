@@ -20,7 +20,7 @@
 		<PackageReference Include="Albatross.CodeGen.CSharp" Version="9.0.1-185.main" GeneratePathProperty="true" PrivateAssets="all" />
 		<PackageReference Include="Albatross.Collections" Version="8.0.1" GeneratePathProperty="true" PrivateAssets="all" />
 		<PackageReference Include="Albatross.Reflection" Version="8.0.7" GeneratePathProperty="true" PrivateAssets="all" />
-		<PackageReference Include="Albatross.Text" Version="9.0.1" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="Albatross.Text" Version="9.0.3" GeneratePathProperty="true" PrivateAssets="all" />
 	</ItemGroup>
 	<!-- begin: this setup is for package reference.  It used when packing -->
 	<ItemGroup>

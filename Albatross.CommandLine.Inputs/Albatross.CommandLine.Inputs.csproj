@@ -8,7 +8,7 @@
 		<ProjectReference Include="..\Albatross.CommandLine\Albatross.CommandLine.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Albatross.Text.CliFormat" Version="9.0.1" />
+		<PackageReference Include="Albatross.Text.CliFormat" Version="9.0.3" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="..\icon.png">

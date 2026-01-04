@@ -1,30 +1,41 @@
 using Albatross.CommandLine.Annotations;
-using Albatross.Expression.Parsing;
+using Albatross.Expression.Nodes;
+using Microsoft.Extensions.Logging;
+using System;
 using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine.Inputs {
-	/*
-	[DefaultOptionHandler(typeof(ParseFormatExpression))]
-	public class FormatExpressionOption : Option<string>, IUseContextValue{
+	[DefaultNameAliases("--format", "-f")]
+	[OptionHandler<FormatExpressionOption, ParseFormatExpression, IExpression>]
+	public class FormatExpressionOption : Option<string> {
 		public FormatExpressionOption(string name, params string[] aliases) : base(name, aliases) {
-		}
-		public FormatExpressionOption() : this("--format", "-f") {
+			Description = "Specify a format expression to shape the output format.  Help@https://github.com/RushuiGuan/text/blob/main/Albatross.Text.CliFormat/CheatSheet.md";
 		}
 	}
-	public class ParseFormatExpression: IAsyncOptionHandler<FormatExpressionOption> {
+	public class ParseFormatExpression : IAsyncOptionHandler<FormatExpressionOption, IExpression> {
 		private readonly ICommandContext context;
-		public ParseFormatExpression(ICommandContext context) {
+		private readonly ILogger<ParseFormatExpression> logger;
+
+		public ParseFormatExpression(ICommandContext context, ILogger<ParseFormatExpression> logger) {
 			this.context = context;
+			this.logger = logger;
 		}
-		public Task InvokeAsync(FormatExpressionOption symbol, ParseResult result, CancellationToken cancellationToken) {
-			var text = result.GetValue(symbol);
+		public Task<OptionHandlerResult<IExpression>> InvokeAsync(FormatExpressionOption symbol, ParseResult parseResult, CancellationToken cancellationToken) {
+			var text = parseResult.GetValue(symbol);
+			OptionHandlerResult<IExpression> result;
 			if (!string.IsNullOrEmpty(text)) {
-				var parser = Albatross.Text.CliFormat.Extensions.BuildCustomParser();
-				var tree = parser.Build(text);
+				try {
+					var expression = Albatross.Text.CliFormat.Extensions.CreateExpression(text);
+					return Task.FromResult(new OptionHandlerResult<IExpression>(expression));
+				} catch (Exception err) {
+					var msg = $"Invalid Format Expression: {text}; {err.Message}";
+					logger.LogError(msg);
+					context.SetInputActionStatus(new OptionHandlerStatus(symbol.Name, false, msg, err));
+				}
 			}
+			return Task.FromResult(new OptionHandlerResult<IExpression>());
 		}
 	}
-	*/
 }
