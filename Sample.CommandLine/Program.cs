@@ -4,10 +4,8 @@ using Albatross.CommandLine.Defaults;
 using Albatross.Config;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sample.CommandLine.SelfContainedParams;
 using System.CommandLine;
-using Albatross.CommandLine.Inputs;
 
 namespace Sample.CommandLine {
 	internal class Program {
@@ -41,12 +39,7 @@ namespace Sample.CommandLine {
 				// register typescript command specific services
 				services.AddSingleton<ICodeGenerator, TypeScriptCodeGenerator>();
 			}
-
-			// self-contained option handler registration
-			services.AddKeyedScoped<IAsyncCommandHandler, GetInstrumentDetails>("example instrument detail");
 			services.AddScoped<InstrumentProxy>();
-			services.TryAddScoped<InstrumentOptionHandler>();
-			services.TryAddScoped<ParseFormatExpression>();
 		}
 	}
 }

@@ -6,6 +6,7 @@ namespace Albatross.CommandLine.CodeGen {
 		public static class Namespaces {
 			public static readonly NamespaceExpression AlbatrossCommandLine = new("Albatross.CommandLine");
 			public static readonly NamespaceExpression SystemCommandLine = new("System.CommandLine");
+			public static readonly NamespaceExpression MicrosoftExtensionsDepedencyInjectionExtensions = new("Microsoft.Extensions.DependencyInjection.Extensions");
 		}
 		public static class Identifiers {
 			public static readonly QualifiedIdentifierNameExpression Command = new("Command", Namespaces.SystemCommandLine);

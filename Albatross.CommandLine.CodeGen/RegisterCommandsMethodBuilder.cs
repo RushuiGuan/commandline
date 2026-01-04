@@ -107,6 +107,17 @@ namespace Albatross.CommandLine.CodeGen {
 				} else {
 					sharedBasedParams.GetOrAdd(setup.BaseParamsClass, () => new List<CommandSetup>()).Add(setup);
 				}
+				foreach (var option in setup.Parameters.OfType<CommandOptionParameterSetup>()) {
+					if(option.ExplicitParameterHandlerClass != null) {
+						yield return new InvocationExpression {
+							CallableExpression = new QualifiedIdentifierNameExpression("services.TryAddScoped", MyDefined.Namespaces.MicrosoftExtensionsDepedencyInjectionExtensions) {
+								GenericArguments = new ListOfGenericArguments {
+									typeConverter.Convert(option.ExplicitParameterHandlerClass)
+								}
+							}
+						};
+					}
+				}
 			}
 			foreach (var keyValuePair in sharedBasedParams) {
 				yield return CreateParamsRegistrationByBaseClass(compilation, keyValuePair.Key, keyValuePair.Value, typeConverter);
