@@ -42,7 +42,7 @@ This comprehensive example demonstrates how to define commands with various type
 
 ```csharp
 [Verb<HelloWorldCommandAction>("hello", Description = "The HelloWorld command")]
-public record class HelloWorldOptions {
+public record class HelloWorldParams {
     [Argument(Description = "The order of declaration determines the position of the argument")]
     public required string Argument1 { get; init; }
 
@@ -76,8 +76,8 @@ public partial class HelloWorldCommand {
     }
 }
 
-public class HelloWorldCommandAction : CommandAction<HelloWorldOptions> {
-    public HelloWorldCommandAction(HelloWorldOptions options) : base(options) {
+public class HelloWorldCommandAction : CommandAction<HelloWorldParams> {
+    public HelloWorldCommandAction(HelloWorldParams options) : base(options) {
     }
 
     public override async Task<int> Invoke(CancellationToken cancellationToken) {
@@ -93,15 +93,15 @@ This example illustrates dependency injection in command actions. It shows how t
 
 ```csharp
 [Verb<TestServiceInjectionCommandAction>("test service-injection", Description = "This verb demonstrats the use of service injection in command actions")]
-public record class TestServiceInjectionOptions {
+public record class TestServiceInjectionParams {
     [Option]
     public required string TextValue { get; init; }
 }
 
-public class TestServiceInjectionCommandAction : CommandAction<TestServiceInjectionOptions> {
+public class TestServiceInjectionCommandAction : CommandAction<TestServiceInjectionParams> {
     private readonly IMyService myService;
     
-    public TestServiceInjectionCommandAction(IMyService myService, TestServiceInjectionOptions options) : base(options) {
+    public TestServiceInjectionCommandAction(IMyService myService, TestServiceInjectionParams options) : base(options) {
         this.myService = myService;
     }
     
@@ -130,8 +130,8 @@ These examples demonstrate different types of command arguments: required argume
 
 ```csharp
 // Basic arguments
-[Verb<DefaultCommandAction<TestArgumentsOptions>>("test arguments", Description = "A command to test arguments parsing")]
-public record class TestArgumentsOptions {
+[Verb<DefaultCommandAction<TestArgumentsParams>>("test arguments", Description = "A command to test arguments parsing")]
+public record class TestArgumentsParams {
     [Argument(Description = "A required string argument")]
     public required string StringArg { get; init; }
 
@@ -153,8 +153,8 @@ public record class TestNullableArguments {
 }
 
 // Array arguments with arity
-[Verb<DefaultCommandAction<TestArgumentRequiredArrayInputOptions>>("test argument-required-array", Description = "Test argument required arity for multiple values")]
-public record class TestArgumentRequiredArrayInputOptions {
+[Verb<DefaultCommandAction<TestArgumentRequiredArrayInputParams>>("test argument-required-array", Description = "Test argument required arity for multiple values")]
+public record class TestArgumentRequiredArrayInputParams {
     [Argument(ArityMin = 1, ArityMax = 10, Description = "Int collections with a count between 1 and 10")]
     public int[] IntValues { get; init; } = Array.Empty<int>();
 }
@@ -166,8 +166,8 @@ These examples show various option configurations including required flags, coll
 
 ```csharp
 // Required flag options
-[Verb<DefaultCommandAction<TestOptionRequiredFlagOptions>>("test option-required-flag", Description = "By default, nullable value, collection and booleans are not required.  But Required flag can be used to overwritten")]
-public record class TestOptionRequiredFlagOptions {
+[Verb<DefaultCommandAction<TestOptionRequiredFlagParams>>("test option-required-flag", Description = "By default, nullable value, collection and booleans are not required.  But Required flag can be used to overwritten")]
+public record class TestOptionRequiredFlagParams {
     [Option(Required = true, Description = "Collection with required flag")]
     public required int[] IntValues { get; init; }
 
@@ -191,8 +191,8 @@ public record class TestOptionRequiredFlagOptions {
 }
 
 // Nullable options
-[Verb<DefaultCommandAction<TestNullableOptions>>("test nullable", Description = "A command to test nullable options")]
-public record class TestNullableOptions {
+[Verb<DefaultCommandAction<TestNullableParams>>("test nullable", Description = "A command to test nullable options")]
+public record class TestNullableParams {
     [Option(Description = "A nullable string")]
     public string? NullableString { get; init; }
 
@@ -209,8 +209,8 @@ public record class TestNullableOptions {
 This example shows how to use property initializers as default values for options by setting `DefaultToInitializer = true`. This makes the options optional with predefined default values.
 
 ```csharp
-[Verb<DefaultCommandAction<TestDefaultValuesOptions>>("test defaults", Description = "Test setting of default values")]
-public record class TestDefaultValuesOptions {
+[Verb<DefaultCommandAction<TestDefaultValuesParams>>("test defaults", Description = "Test setting of default values")]
+public record class TestDefaultValuesParams {
     [Option(DefaultToInitializer = true)]
     public int IntValue { get; init; } = 42;
 
@@ -233,8 +233,8 @@ public record class TestDefaultValuesOptions {
 This example demonstrates how to use enum types as both arguments and options. The command line parser automatically handles enum value parsing and provides helpful error messages for invalid values.
 
 ```csharp
-[Verb<DefaultCommandAction<TestEnumValueOptions>>("test enum", Description = "Test use of enum value as arguments and options")]
-public record class TestEnumValueOptions {
+[Verb<DefaultCommandAction<TestEnumValueParams>>("test enum", Description = "Test use of enum value as arguments and options")]
+public record class TestEnumValueParams {
     [Argument(Description = "First required shade of gray")]
     public ShadesOfGray Gray1 { get; init; }
 
@@ -251,8 +251,8 @@ public record class TestEnumValueOptions {
 This example shows how to define command aliases using the `Alias` property. Users can invoke the command using any of the defined aliases for convenience.
 
 ```csharp
-[Verb<DefaultCommandAction<TestCommandAliasesOptions>>("test command-aliases", Alias = ["a", "cmd-alias"], Description = "Test the use of command aliases")]
-public record class TestCommandAliasesOptions {
+[Verb<DefaultCommandAction<TestCommandAliasesParams>>("test command-aliases", Alias = ["a", "cmd-alias"], Description = "Test the use of command aliases")]
+public record class TestCommandAliasesParams {
 }
 ```
 
@@ -261,8 +261,8 @@ public record class TestCommandAliasesOptions {
 This example demonstrates how to create hidden parameters that are available for use but don't appear in help text. This is useful for advanced or internal options that shouldn't clutter the help output.
 
 ```csharp
-[Verb<DefaultCommandAction<TestHiddenPropertiesOptions>>("test hidden", Description = "Test hidden arguments and options: --hidden-string-value, --hidden-int-value")]
-public record class TestHiddenPropertiesOptions {
+[Verb<DefaultCommandAction<TestHiddenPropertiesParams>>("test hidden", Description = "Test hidden arguments and options: --hidden-string-value, --hidden-int-value")]
+public record class TestHiddenPropertiesParams {
     [Argument(Description = "A string value")]
     public required string StringValue { get; init; }
 
@@ -289,7 +289,7 @@ This example demonstrates advanced service registration patterns where different
 ```csharp
 [Verb<CodeGenHandler>("example csharp web-client")]
 [Verb<CodeGenHandler>("example typescript web-client")]
-public record class CodeGenOptions {
+public record class CodeGenParams {
     [Option(Description = "Output directory for generated C# files")]
     public required DirectoryInfo OutputDirectory { get; init; }
 
@@ -309,10 +309,10 @@ static void RegisterServices(ParseResult result, IConfiguration configuration, I
 	}
 }
 // the action that invoke the service doesn't need to worry about implementation since it has been bootstrapped ahead of time
-public class CodeGenHandler : CommandAction<CodeGenOptions> {
+public class CodeGenHandler : CommandAction<CodeGenParams> {
     private readonly ICodeGenerator codeGenerator;
     
-    public CodeGenHandler(ICodeGenerator codeGenerator, CodeGenOptions options) : base(options) {
+    public CodeGenHandler(ICodeGenerator codeGenerator, CodeGenParams options) : base(options) {
         this.codeGenerator = codeGenerator;
     }
     
@@ -370,8 +370,8 @@ static async Task<int> Main(string[] args) {
 This example demonstrates how to customize generated commands by extending their partial classes. You can add custom validation logic, modify option behavior, or extend functionality while still benefiting from code generation.
 
 ```csharp
-[Verb<DefaultCommandAction<TestCustomizedCommandOptions>>("test customized", Description = "Commands can be customized by extending its partial class")]
-public record class TestCustomizedCommandOptions {
+[Verb<DefaultCommandAction<TestCustomizedCommandParams>>("test customized", Description = "Commands can be customized by extending its partial class")]
+public record class TestCustomizedCommandParams {
     [Option("d")]
     public required string Description { get; init; }
 }
@@ -393,18 +393,18 @@ public partial class TestCustomizedCommand {
 This example shows how option classes can inherit from base classes to share common properties. The code generator prioritizes properties declared on the current class over inherited ones when determining option order.
 
 ```csharp
-public record class BaseOptions1 : BaseOptions2 {
+public record class BaseParams1 : BaseParams2 {
     [Option(Description = "Output directory for generated C# files")]
     public required DirectoryInfo OutputDirectory { get; init; }
 }
 
-public record class BaseOptions2 {
+public record class BaseParams2 {
     [Option(Description = "Project file path")]
     public required FileInfo Project { get; init; }
 }
 
-[Verb<DefaultCommandAction<TestBaseClassPropertiesOptions>>("test base-class-properties", Description = "When determining option property order, the code generator prioritizes properties declared on the current class over those inherited from base classes.")]
-public record class TestBaseClassPropertiesOptions : BaseOptions1 {
+[Verb<DefaultCommandAction<TestBaseClassPropertiesParams>>("test base-class-properties", Description = "When determining option property order, the code generator prioritizes properties declared on the current class over those inherited from base classes.")]
+public record class TestBaseClassPropertiesParams : BaseParams1 {
     [Option(Description = "C# language version")]
     public required string LanguageVersion { get; init; }
 }
@@ -417,10 +417,10 @@ This example demonstrates how to create parent commands that group related subco
 ```csharp
 [Verb("test", Description = "A series of test commands to verify the functionalities")]
 [Verb("example", Description = "A series of examples of varies use cases")]
-public record class ParentOptions {
+public record class ParentParams {
 }
 
-[Verb<DefaultCommandAction<TestUndefinedParentCommandOptions>>("p1 p2 new", Description = "The parent command project is not defined explicitly.  It will be created automatically.")]
-public record class TestUndefinedParentCommandOptions {
+[Verb<DefaultCommandAction<TestUndefinedParentCommandParams>>("p1 p2 new", Description = "The parent command project is not defined explicitly.  It will be created automatically.")]
+public record class TestUndefinedParentCommandParams {
 }
 ```
