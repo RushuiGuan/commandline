@@ -64,6 +64,5 @@ Usage: `dotnet run -- hello --name test`
 - **[Customization](command-customization.md)** - Command Customization
 - **[Code Generator](code-generator.md)** - Understanding automatic code generation
 - **[Mutually Exclusive Params Set](mutually-exclusive-options-set.md)** - Support for Mutually Exclusive Params Set using Base Classes
-- **[Manual Commands](manual-command.md)** - Creating commands without attributes
 
 With these three core attributes, you can create powerful, type-safe command-line applications with minimal boilerplate code!
