@@ -51,23 +51,15 @@ namespace Albatross.CommandLine.CodeGen.IR {
 		/// <summary>
 		/// Command class name is derived from the parameters class name by:
 		/// 1. Remove the postfix "Params" if exists
-		/// 2. Append "Command" if the remaining string does not end with "Command"
+		/// 2. Append "Command"
 		/// </summary>
 		public static string GetCommandClassName(INamedTypeSymbol optionClass) {
 			string parametersClassName = optionClass.Name;
+			// remove "Params" postfix if exists
 			if (parametersClassName.EndsWith(Postfix_Params, StringComparison.InvariantCultureIgnoreCase)) {
 				parametersClassName = parametersClassName.Substring(0, parametersClassName.Length - Postfix_Params.Length);
 			}
-			if (!parametersClassName.EndsWith(CommandClassPostfix, StringComparison.InvariantCultureIgnoreCase)) {
-				parametersClassName = parametersClassName + CommandClassPostfix;
-			}
-			return parametersClassName;
-		}
-
-		public void RenameCommandClass(int index) {
-			if (index != 0) {
-				CommandClassName = $"{GetCommandClassName(this.ParamsClass)}{index}";
-			}
+			return parametersClassName + CommandClassPostfix;
 		}
 
 

@@ -1,14 +1,23 @@
 - name: Quick Start
   href: quick-start.md
+
+- name: Core Concepts
+  href: core-concepts.md
+
 - name: Conventions
   href: conventions.md
+
 - name: Examples
   href: examples.md  
+
 - name: Command Customization
   href: command-customization.md
+
 - name: Code Generator
   href: code-generator.md
+
 - name: Mutually Exclusive Options Set
   href: mutually-exclusive-options-set.md
-- name: Manual Command
-  href: manual-command.md  
+
+- name: Reusable Parameter
+  href: reusable-parameter.md

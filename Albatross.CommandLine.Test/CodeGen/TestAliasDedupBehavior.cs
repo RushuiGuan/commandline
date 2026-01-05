@@ -6,6 +6,15 @@ using System.Text;
 using Xunit;
 
 namespace Albatross.CommandLine.Test.CodeGen {
+	[Verb("backup")]
+	public class BackupParams {
+		[Option]
+		public required string FileName { get; init; }
+
+		[Argument]
+		public required string Source { get; init; }
+	}
+
 	[Verb("test alias-dedup")]
 	public class AliasDedupBehaviorParams {
 		[Option("n", "a")]

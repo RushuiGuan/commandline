@@ -13,7 +13,7 @@ namespace Albatross.CommandLine.CodeGen.IR {
 			: base(compilation, propertySymbol, argumentPropertyAttribute) {
 			if (propertySymbol.Type.IsCollection(compilation)) {
 				this.ArityMin = 0;
-				this.ArityMax = 100_000;
+				this.ArityMax = int.MaxValue;
 			} else {
 				if (propertySymbol.Type.IsNullable(compilation) || this.DefaultToInitializer) {
 					this.ArityMin = 0;

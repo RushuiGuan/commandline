@@ -1,52 +1,91 @@
-# Conventions
+# Terminologies and Conventions
 
-This document outlines the naming and coding conventions used in Albatross.CommandLine to ensure consistency and predictability.
+## Terminology
+- **Command** - A unit of execution.  A CLI can contain may commands
+- **Option** - Named parameter
+- **Argument** - Positioned parameter
+- **Parameters Class** - A class that contains all the parameters of a command.  It is also used as a centralized location to configure the command and its handler using annotation.
 
-## Options Class Naming Convention
 
-Options classes should be created with a postfix of `Options`. For example, either `BackupCommandOptions` or `BackupOptions` is acceptable. When annotated with the `[VerbAttribute]`, the code generator will create the command with the name of `BackupCommand`. Notice that it removes the `Options` postfix and appends `Command` if it is not already there.
+## Parameters Class Naming Convention
+
+Parameter classes should be created with the postfix `Params`, e.g., `BackupParams`.  The generated command class would have the name of `BackupCommand`.  The convention of the command class name is to remove postfix `Params` if exists and append `Command` to the parameters class name.
 
 ```csharp
-[Verb<BackupCommandAction>("backup")]
-public class BackupCommandOptions {
-    // ...
+[Verb<BackupCommandHandler>("backup", Description = "Back up data")]
+public class BackupParams {
 }
-// Generated command class
-public sealed partial class BackupCommand : Command {
+
+// generated command class
+public sealed partial class BackupCommand {
+	...
+}
+```
+## Command Handler Naming Convention
+There is no strict requirement on the naming of command handlers. Common patterns include:
+- Postfixing with `CommandHandler` or `Handler` (e.g., `BackupCommandHandler` or `BackupHandler`)
+- Simple names matching the command (e.g., `Backup`)
+
+`System.CommandLine` use the word `Action` to name the delegates associated with the Command or Options.  `Albatross.CommandLine` follow the convention and name all delegates directly attached with postfix of `Action` as well.  Those delegates are the internals of `Albatross.CommandLine` and should not be set by the user directly.  To have a distinction, user defined delegates are called `Handlers` or `Command Handlers` in the documentation.
+
+## Argument and Option Naming Convention
+The arguments and options names are created from property name by converting to lower cases and kebaberized.  Additionally option names are prefixed with `--`.  There are situation where this setup could lead to duplicate names.  But that scenario is very bad practice and will not be addressed by codegen.  Instead a code analysis warning would be created for this in the future.
+
+```csharp
+[Verb<BackupCommandHandler>("backup", Description = "Back up data")]
+public class BackupParams {
+	// actual argument name: input-folder
+	[Argument]
+	public required DirectoryInfo InputFolder { get; init; }
+
+	// actual option name: --output-folder
+	[Option]
+	public required DirectoryInfo OutputFolder { get; init; }
+
+	// this is legal in C# but poorly named.  It will also break the generated code.  A code analysis warning will be created for this scenario in the next release.
+	[Option]
+	public required DirectoryInfo outputFolder { get; init; }
 }
 ```
 
-## Command Class Naming Convention
+## Default Requirement of Option
+The nullability of a property is used to determine if the property option is required.  The `Required` property can be set to directly on the `Option` attribute to change the behavior.  The C# `required` keyword is not used since it is not available on all dotnet versions.
 
-Generated command classes follow this pattern:
-- Remove the `Options` suffix from the options class name
-- Append `Command` suffix if not already present
-- Handle naming conflicts by appending incremental numbers (should be avoided)
-
-## Command Handler Naming Convention
-
-There is no strict requirement on the naming of command handlers. Common patterns include:
-- Postfixing with `CommandAction` (e.g., `BackupCommandAction`)
-- Postfixing with `CommandHandler` (e.g., `BackupCommandHandler`)
-- Simple names matching the command (e.g., `Backup`)
-
-## Property Nullability Convention
-
-The nullability of properties determines whether options and arguments are required by default:
+*Exceptions to the Rule*
+* Boolean flag
+* Collection as Input
+* Property with an initializer and the `Option` attribute with `DefaultToInitializer` = true
 
 ```csharp
-public record class ExampleOptions {
+[Verb("example")]
+public record class ExampleParams {
     // Required - non-nullable reference type
+	[Option]
     public required string Name { get; init; }
     
     // Required - non-nullable value type
+	[Option]
     public required int Value { get; init; }
     
     // Optional - nullable reference type
+	[Option]
     public string? Description { get; init; }
     
     // Optional - nullable value type
+	[Option]
     public int? OptionalValue { get; init; }
+
+	// Optional - boolean flag
+	[Option]
+	public bool Flag { get; init; }
+
+	// optional - collection
+	[Option]
+	public int[] Array { get; init; }
+
+	// optional - has an initializer and DefaultToInitializer is set to true
+	[Option(DefaultToInitializer = true)]
+	public string Value { get; init; } = "Value";
     
     // Override default behavior with Required attribute
     [Option(Required = false)]
@@ -57,128 +96,78 @@ public record class ExampleOptions {
 }
 ```
 
-## Generated Option Names Convention
+## Default Arity of Arguments
+Similar to Options, default arity of arguments are determined by its property nullability and type.  `ArityMin` and `ArityMax` property from the `Argument` attribute can be used to override the behavior.
 
-By default, option names are the lowercase kebab-cased property name. Property `FileName` becomes `--file-name`. 
+* Property is a collection → `ArityMin = 0, ArityMax = int.MaxValue`
+* Property is nullable → `ArityMin = 0, ArityMax = 1`
+* Property is not nullable → `ArityMin = 1, ArityMax = 1`
+	- Property has an initializer and `DefaultToInitializer` as true → `ArityMin = 1, ArityMax = 1`
+
 ```csharp
-public record class BackupOptions {
-    // This option has multiple names: --file-name, -f, --file
-    [Option("f", "file", Description = "The name of the file to backup")]
-    public string FileName { get; set; } = string.Empty;
+[Verb<BackupCommandHandler>("backup", Description = "Back up data")]
+public class BackupParams {
+	// ArityMin = 1, ArityMax = 1
+	[Argument]
+	public required DirectoryInfo InputFolder { get; init; }
+
+	// ArityMin = 0, ArityMax = 1
+	[Argument]
+	public DirectoryInfo? OutputFolder { get; init; }
+
+	// ArityMin = 0, ArityMax = 1
+	[Argument(DefaultToInitializer = true)]
+	public int IntValue { get; init; } = 10
+
+	// ArityMin = 0, ArityMax = 100_000
+	[Argument]
+	public int[] Array { get; init; } 
+
+	// this one is override manually
+	[Argument(ArityMin = 10, ArityMax = 12)]
+	public int[] Array2 { get; init; } 
 }
 ```
 
-## Alias Prefix Convention
-
+## Option Alias Prefix Convention
 Aliases are automatically prefixed according to these rules:
 - Single character aliases get single dash prefix: `"f"` → `"-f"`
 - Multi-character aliases get double dash prefix: `"file"` → `"--file"`
-- No prefix is added if dashes are already present: `"--file-name"` remains `"--file-name"`
+- No prefix is added if dashes are already present: `"-file-name"` remains `"-file-name"`
 
 ## Generated Property Names Convention
-
 Within the command class, option and argument properties are generated with specific prefixes:
 - Option properties: `Option_PropertyName` (e.g., `Option_FileName`)
 - Argument properties: `Argument_PropertyName` (e.g., `Argument_Name`)
 
 ```csharp
+[Verb("backup")]
+public class BackupParams {
+	[Option]
+	public required string FileName { get; init ; }
+
+	[Argument]
+	public required string Source { get; init ; }
+}
+// generated command
 public sealed partial class BackupCommand : Command {
-    public Option<string> Option_FileName { get; }
-    public Argument<string> Argument_Source { get; }
+	public BackupCommand() : base("backup")  {
+		this.Option_FileName = new System.CommandLine.Option<string>("--file-name") {
+			Required = true,
+		};
+		this.Add(this.Option_FileName);
+		this.Argument_Source = new System.CommandLine.Argument<string>("source") {
+			Arity = new ArgumentArity(1, 1),
+		};
+		this.Add(this.Argument_Source);
+		this.Initialize();
+	}
+	public System.CommandLine.Option<string> Option_FileName {
+		get;
+	}
+	public System.CommandLine.Argument<string> Argument_Source {
+		get;
+	}
+	partial void Initialize();
 }
 ```
-
-## Verb Attribute Usage Patterns
-
-The `[VerbAttribute]` supports multiple usage patterns:
-
-```csharp
-// Basic usage - no handler specified (uses HelpCommandAction)
-[Verb("command-name")]
-public record class CommandOptions { }
-
-// With generic handler type
-[Verb<CommandHandler>("command-name")]
-public record class CommandOptions { }
-
-// Assembly-level usage for external options/handlers
-[assembly: Verb<OptionsClass, HandlerClass>("command-name")]
-
-// Multiple verbs on same class for sub-commands
-[Verb<Handler>("parent child1")]
-[Verb<Handler>("parent child2")]
-public record class ParentChildOptions { }
-```
-
-## Command Key Convention
-
-Command keys (the string parameter in `[Verb]`) define the command hierarchy:
-- Single word: `"backup"` creates a root command
-- Space-separated: `"project create"` creates a sub-command structure
-- Parent commands are automatically created if not explicitly defined
-
-## Default Values Convention
-
-Use the `DefaultToInitializer = true` attribute property to use property initializers as default values:
-
-```csharp
-public record class CommandOptions {
-    [Option(DefaultToInitializer = true)]
-    public int Count { get; init; } = 10;
-    
-    [Option(DefaultToInitializer = true)]
-    public DateOnly Date { get; init; } = DateOnly.FromDateTime(DateTime.Today);
-}
-```
-
-## Argument Order Convention
-
-Arguments must be declared in the order they will be consumed:
-- Required arguments first
-- Optional (nullable) arguments last
-- Use the `Order` property to explicitly control ordering if needed
-
-```csharp
-public record class CommandOptions {
-    [Argument(Description = "First required argument")]
-    public required string First { get; init; }
-    
-    [Argument(Description = "Second required argument")]
-    public required int Second { get; init; }
-    
-    [Argument(Description = "Optional argument goes last")]
-    public string? Third { get; init; }
-}
-```
-
-## Command Customization Convention
-
-Customize generated commands by implementing partial methods or extending the generated partial class:
-
-```csharp
-public partial class MyCommand {
-    partial void Initialize() {
-        this.Option_Description.Validators.Add(r => {
-            var text = r.GetRequiredValue(this.Option_Description);
-            if (text.Length < 3) {
-                r.AddError("Description must be at least 3 characters long.");
-            }
-        });
-    }
-}
-```
-
-## Hidden Parameters Convention
-
-Use the `Hidden = true` property to create parameters that don't appear in help text but are still available for use:
-
-```csharp
-public record class CommandOptions {
-    [Option(Hidden = true)]
-    public string? InternalOption { get; init; }
-    
-    [Argument(Hidden = true)]
-    public string? DebugArgument { get; init; }
-}
-```
-

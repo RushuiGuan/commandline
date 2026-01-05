@@ -1,6 +1,6 @@
 # Albatross.CommandLine
 
-A powerful .NET library that simplifies the creation of command-line applications using [System.CommandLine](https://learn.microsoft.com/en-us/dotnet/standard/commandline/). It provides automatic code generation, dependency injection, configuration, and logging support.
+A .NET library that simplifies the creation of command-line applications using [System.CommandLine](https://learn.microsoft.com/en-us/dotnet/standard/commandline/). It provides automatic code generation, dependency injection, configuration, and logging support.
 
 ## ✨ Key Features
 
