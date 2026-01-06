@@ -7,7 +7,7 @@ namespace Sample.CommandLine {
 		[Option("d")]
 		public required string Description { get; init; }
 	}
-	public partial class TestCustomizedCommand {
+	public partial class TestCustomizedCommandCommand {
 		partial void Initialize() {
 			this.Option_Description.Validators.Add(r =>{
 				var text = r.GetRequiredValue(this.Option_Description);

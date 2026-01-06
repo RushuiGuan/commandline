@@ -95,5 +95,11 @@ namespace Albatross.CommandLine.CodeGen.IR {
 				}
 			}
 		}
+
+		public void RenameCommandClass(int index) {
+			if (index != 0) {
+				CommandClassName = $"{GetCommandClassName(this.ParamsClass)}{index}";
+			}
+		}
 	}
 }

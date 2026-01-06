@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 /// <summary>
 /// assembly verb is used when both Params class and the CommandHandler class are defined in a different assembly.
 /// </summary>
-[assembly: Verb<TestAssemblyVerbParams, TestAssemblyVerbHandler>("test assembly-verb", Description = "This verb demonstrates how to define verb for parameters and its handler in an assembly level")]
+[assembly: Verb<TestAssemblyVerbParams, TestAssemblyVerbHandler>("test assembly-verb one", Description = "This verb demonstrates how to define verb for parameters and its handler in an assembly level")]
+[assembly: Verb<TestAssemblyVerbParams, TestAssemblyVerbHandler>("test assembly-verb two", Description = "This verb demonstrates how to define verb for parameters and its handler in an assembly level")]
 
 namespace Sample.CommandLine {
 	public record class TestAssemblyVerbParams{
