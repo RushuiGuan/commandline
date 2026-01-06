@@ -11,7 +11,7 @@ namespace Albatross.CommandLine.Inputs {
 	[OptionHandler<FormatExpressionOption, ParseFormatExpression, IExpression>]
 	public class FormatExpressionOption : Option<string> {
 		public FormatExpressionOption(string name, params string[] aliases) : base(name, aliases) {
-			Description = "Specify a format expression to shape the output format.  Help@https://github.com/RushuiGuan/text/blob/main/Albatross.Text.CliFormat/CheatSheet.md";
+			Description = "Specify a format expression to shape the output.  Help@https://github.com/RushuiGuan/text/blob/main/Albatross.Text.CliFormat/CheatSheet.md";
 		}
 	}
 	public class ParseFormatExpression : IAsyncOptionHandler<FormatExpressionOption, IExpression> {

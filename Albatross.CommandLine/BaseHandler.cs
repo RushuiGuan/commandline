@@ -8,7 +8,7 @@ namespace Albatross.CommandLine {
 	public abstract class BaseHandler<T> : IAsyncCommandHandler where T : class {
 		protected ParseResult result;
 		protected readonly T parameters;
-		protected virtual TextWriter Writer => Console.Out;
+		protected virtual TextWriter Writer => result.InvocationConfiguration.Output;
 
 		protected BaseHandler(ParseResult result, T parameters){
 			this.result = result;
