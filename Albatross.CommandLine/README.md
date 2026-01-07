@@ -2,6 +2,7 @@
 
 A .NET library that simplifies creating command-line applications with [System.CommandLine](https://learn.microsoft.com/en-us/dotnet/standard/commandline/). It provides automatic code generation and dependency injection support while maintaining full access to System.CommandLine's capabilities. The framework is opinionated toward async actions with out-of-the-box support for cancellation and graceful shutdown.
 
+Designed for enterprise CLI applications, Albatross.CommandLine enforces consistent async patterns, built-in dependency injection, and graceful shutdown handling. These opinionated choices reduce complexity and ensure scalability from simple utilities to complex enterprise workflows.
 
 ## Key Features
 - **Minimal Boilerplate** - Attribute-based command definition with automatic code generation
