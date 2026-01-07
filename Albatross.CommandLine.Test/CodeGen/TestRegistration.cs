@@ -23,7 +23,7 @@ namespace Albatross.CommandLine.Test.CodeGen {
 	}
 	
 	public class TestRegistration {
-		static void RegisterServices(ParseResult result, IConfiguration config, IServiceCollection services) {
+		static void RegisterServices(ParseResult result, IServiceCollection services) {
 			services.RegisterCommands();
 		}
 	

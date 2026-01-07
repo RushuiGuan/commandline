@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
@@ -20,7 +19,6 @@ namespace Albatross.CommandLine {
 	///	</code>
 	/// </summary>
 	public class CommandHost : IAsyncDisposable {
-		readonly IConfiguration configuration;
 		readonly IHostBuilder hostBuilder;
 		ParseResult? parseResult;
 		IHost? host;
@@ -33,10 +31,6 @@ namespace Albatross.CommandLine {
 
 		public CommandHost(string description) {
 			this.hostBuilder = Host.CreateDefaultBuilder();
-			this.configuration = new ConfigurationBuilder().Build();
-			hostBuilder.ConfigureAppConfiguration(builder => {
-				builder.AddConfiguration(configuration);
-			});
 			CommandBuilder = new CommandBuilder(description);
 		}
 
@@ -52,8 +46,9 @@ namespace Albatross.CommandLine {
 				services.AddSingleton(parseResult);
 				services.AddSingleton<ICommandContext, CommandContext>();
 			});
+
 			// configure default logging level based on parsed result
-			var logLevel = parseResult.GetRequiredValue(CommandBuilder.VerbosityOption);
+			var logLevel = CommandBuilder.VerbosityOption.GetLogLevel(parseResult);
 			this.hostBuilder.ConfigureLogging((_, builder) => builder.SetMinimumLevel(logLevel));
 			return this;
 		}
@@ -68,8 +63,8 @@ namespace Albatross.CommandLine {
 			return this;
 		}
 
-		public CommandHost RegisterServices(Action<ParseResult, IConfiguration, IServiceCollection> action) {
-			this.hostBuilder.ConfigureServices(services => action(this.RequiredResult, configuration, services));
+		public CommandHost RegisterServices(Action<ParseResult, IServiceCollection> action) {
+			this.hostBuilder.ConfigureServices(services => action(this.RequiredResult, services));
 			return this;
 		}
 

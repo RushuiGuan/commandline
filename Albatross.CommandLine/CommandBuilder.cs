@@ -36,11 +36,9 @@ namespace Albatross.CommandLine {
 			}
 		}
 
-		public static Option<LogLevel> VerbosityOption { get; } = new("--verbosity", "-v") {
-			Description = "Set the logging verbosity level",
-			Recursive = true,
+		public static VerbosityOption VerbosityOption { get; } = new() {
 			Required = false,
-			DefaultValueFactory = _ => LogLevel.Error,
+			Recursive = true,
 		};
 
 		/// <summary>
@@ -80,7 +78,7 @@ namespace Albatross.CommandLine {
 			GetOrCreateCommand(parent, globalHandler, out var parentCommand);
 			parentCommand.Add(command);
 		}
-		
+
 		internal bool TryGetCommand(string key, out Command command) {
 			return commands.TryGetValue(key, out command);
 		}
