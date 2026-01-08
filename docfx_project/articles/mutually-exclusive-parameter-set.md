@@ -1,7 +1,8 @@
 # Mutually Exclusive Parameter Set
 
-The Mutually Exclusive Parameter Set pattern allows a single command handler to accept multiple, distinct sets of parameters that may share common properties.  This approach involves creating multiple parameter classes that derive from a common base class. The command handler is then injected with an instance of this base type, allowing it to use pattern matching on the runtime type to select the correct code path.
+The Mutually Exclusive Parameter Set pattern enables a single command handler to work with multiple, distinct sets of parameters. This is achieved by creating several parameters classes that inherit from a common base class containing shared properties. The command handler receives the base class via dependency injection and uses pattern matching to determine the specific derived type at runtime, allowing it to execute the appropriate logic.
 
+This pattern is useful when you have several similar commands (e.g., `codegen csharp`, `codegen typescript`) that share common options but also have their own specific parameters.
 
 
 ## Example
@@ -54,7 +55,9 @@ namespace Sample.CommandLine {
 
 ## Under the Hood
 
-The code generator registers the base options type and constructs the appropriate derived instance from the `ParseResult` at runtime:
+The `Albatross.CommandLine` source generator automates the dependency injection wiring for this pattern. It generates code that registers the base parameter type (`CodeGenParams`) with the DI container. This registration includes a factory function that inspects the `ParseResult` to determine which command was invoked. Based on the command, it instantiates and populates the correct derived parameter class (`CSharpCodeGenParams` or `TypeScriptCodeGenParams`) and returns it as the base type.
+
+This allows the `CodeGenHandler` to be constructed with the correct, fully populated parameter object without needing to know the details of command parsing.
 
 ```csharp
 // generated code (simplified)
