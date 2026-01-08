@@ -47,7 +47,8 @@ public record class CopyParams {
 ```
 
 ## the `Parameters` Class (plural)
-`Parameters` class is a user defined class that contains properties that map to  the arguments and options of a command.  The class has to be annotated with the [[Verb]](https://github.com/RushuiGuan/commandline/blob/main/Albatross.CommandLine/Annotations/VerbAttribute.cs) attribute and its properties should be annotated with the [[Option]](https://github.com/RushuiGuan/commandline/blob/main/Albatross.CommandLine/Annotations/OptionAttribute.cs) or [[Argument]](https://github.com/RushuiGuan/commandline/blob/main/Albatross.CommandLine/Annotations/ArgumentAttribute.cs) attribute if desired.  It is the central place that `Albatross.CommandLine` use to wire up the commands with its handler, argument and options.
+A `Parameters` class is a user-defined class whose properties map to a command's arguments and options. The class must be decorated with the [[Verb]](https://github.com/RushuiGuan/commandline/blob/main/Albatross.CommandLine/Annotations/VerbAttribute.cs) attribute. To define the command's inputs, its properties should be decorated with either the [[Option]](https://github.com/RushuiGuan/commandline/blob/main/Albatross.CommandLine/Annotations/OptionAttribute.cs) or [[Argument]](https://github.com/RushuiGuan/commandline/blob/main/Albatross.CommandLine/Annotations/ArgumentAttribute.cs) attribute. This class serves as the central mechanism that `Albatross.CommandLine` uses to wire up a command with its handler, arguments, and options.
+
 ```csharp
 // when a class in annotated with the `VerbAttribute`, a command class will be generated
 // `VerbAttribute` associates the command handler `HelloWorldHandler` and the command name "hello" with the created command
