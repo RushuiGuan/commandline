@@ -9,7 +9,7 @@
 
 ## Parameters Class Naming Convention
 
-Parameter classes should be created with the postfix `Params`, e.g., `BackupParams`.  The generated command class would have the name of `BackupCommand`.  The convention of the command class name is to remove postfix `Params` if exists and append `Command` to the parameters class name.
+Parameter classes should be created with the postfix `Params`, e.g., `BackupParams`.  The generated command class would have the name of `BackupCommand`.  The convention of the command class name is to remove postfix `Params` if exists and append `Command` to the class name.
 
 ```csharp
 [Verb<BackupCommandHandler>("backup", Description = "Back up data")]
@@ -49,7 +49,7 @@ public class BackupParams {
 ```
 
 ## Default Requirement of Option
-The nullability of a property is used to determine if the property option is required.  The `Required` property can be set to directly on the `Option` attribute to change the behavior.  The C# `required` keyword is not used since it is not available on all dotnet versions.
+The nullability of a property is used to determine if the property option is required.  The `Required` property can also be set directly on the `Option` attribute to change the behavior.  The C# `required` keyword is not used since it is not available on all dotnet versions.
 
 *Exceptions to the Rule*
 * Boolean flag
