@@ -4,10 +4,6 @@ Options can be always be created directly with an Action.  But it has a couple l
 2. The Terminating property (short circuit flag) of the action cannot be changed during execution.
 `Albatross.CommandLine` supports async action handle that can handle both.  
 
-## How it Works
-```mermaid
-
-```
 ## PreProcessing Use Case
 ```csharp
 [DefaultNameAliases("--instrument", "-i")]
@@ -38,24 +34,45 @@ public class VerifyInstrumentId : IAsyncOptionHandler<InstrumentOption> {
 		}
 	}
 }
-public class InstrumentOptionHandler : IAsyncOptionHandler<InstrumentOption, InstrumentSummary> {
-		private readonly ICommandContext context;
-		private readonly InstrumentProxy instrumentProxy;
+[Verb<GetPriceHandler>]("price")
+public class GetPriceParams {
+    [UseOption<InstrumentOption>]
+    public required int InstrumentId { get; init; }
+}
+```
 
-		public InstrumentOptionHandler(ICommandContext context, InstrumentProxy instrumentProxy) {
-			this.context = context;
-			this.instrumentProxy = instrumentProxy;
-		}
 
-		public async Task<OptionHandlerResult<InstrumentSummary>> InvokeAsync(InstrumentOption option, ParseResult result, CancellationToken cancellationToken) {
-			var text = result.GetValue(option);
-			if (string.IsNullOrEmpty(text)) {
-				return new OptionHandlerResult<InstrumentSummary>();
-			} else {
-				var data = await instrumentProxy.GetInstrumentSummary(text, cancellationToken);
-				return new OptionHandlerResult<InstrumentSummary>(data);
-			}
+## Transformation Use Case
+
+```csharp
+[DefaultNameAliases("--instrument", "-i")]
+[OptionHandler<InstrumentOption, GetInstrumentSummary, InstrumentSummary>]
+public class IntrumentOption : Option<int> {
+	public InstrumentOption(string name, params string[] aliases): base(name, aliases) {
+		Description = "Specify an valid instrument id";
+	}
+}
+public class GetInstrumentSummary : IAsyncOptionHandler<InstrumentOption, InstrumentSummary> {
+	readonly IInstrumentService service;
+	readonly ICommandContext context;
+	readonly ILogger logger;
+	public GetInstrumentSummary(IInstrumentService service, ICommandContext context, ILogger<VerifyInstrumentId> logger) {
+		this.service = service;
+		this.context = context;
+		this.logger = logger;
+	}
+	public async Task<InstrumentSummary> InvokeAsync(InstrumentOption option, ParseResult result, CancellationToken cancellationToken) {
+		var id = result.GetValue(option);
+		if(id != 0) {
+			var summary = await service.GetInstrument(id, cancellationToken);
+            return summary;
 		}
 	}
+}
+
+[Verb<GetPriceHandler>]("price")
+public class GetPriceParams {
+    [UseOption<InstrumentOption>]
+    public required InstrumentSummary Instrument { get; init; }
+}
 ```
-## Transformation Use Case
