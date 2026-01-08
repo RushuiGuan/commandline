@@ -14,10 +14,10 @@ Designed for enterprise CLI applications, Albatross.CommandLine enforces consist
 - **Easy Extensions** - Use `CommandHost.ConfigureHost()` to bootstrap additional services, or use [Albatross.CommandLine.Default](https://www.nuget.org/packages/Albatross.CommandLine.Default) for pre-configured Serilog logging and JSON/environment configuration support
 
 
-## 🔧 Dependencies
+## Dependencies
 - **System.CommandLine 2.0.1+**
 - **Microsoft.Extensions.Hosting 8.0.1+**
 
-## 🔧 Prerequisites
+## Prerequisites
 - **C# Compiler 4.10.0+** (included with .NET 8 SDK)
 
