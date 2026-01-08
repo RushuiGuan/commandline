@@ -4,8 +4,8 @@ using Albatross.CommandLine.Inputs;
 using System.IO;
 
 namespace Sample.CommandLine {
-	[Verb<DefaultAsyncCommandHandler<TestBuildInOptionsParams>>("test built-in")]
-	public class TestBuildInOptionsParams {
+	[Verb<DefaultAsyncCommandHandler<TestReusableParams>>("test reusable")]
+	public class TestReusableParams {
 		[UseOption<OutputDirectoryOption>(UseCustomName = true)]
 		public required DirectoryInfo OutputDirectory { get; init; }
 	}

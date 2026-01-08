@@ -3,8 +3,8 @@ using Albatross.CommandLine;
 using Albatross.CommandLine.Defaults;
 using Albatross.Config;
 using Microsoft.Extensions.DependencyInjection;
-using Sample.CommandLine.SelfContainedParams;
 using System.CommandLine;
+using Sample.CommandLine.Services;
 
 namespace Sample.CommandLine {
 	internal class Program {
@@ -38,7 +38,7 @@ namespace Sample.CommandLine {
 				// register typescript command specific services
 				services.AddSingleton<ICodeGenerator, TypeScriptCodeGenerator>();
 			}
-			services.AddScoped<InstrumentProxy>();
+			services.AddScoped<InstrumentService>();
 		}
 	}
 }

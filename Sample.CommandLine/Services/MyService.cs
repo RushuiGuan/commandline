@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Sample.CommandLine {
+namespace Sample.CommandLine.Services {
 	public interface IMyService {
 		Task<string> DoSomething();
 	}

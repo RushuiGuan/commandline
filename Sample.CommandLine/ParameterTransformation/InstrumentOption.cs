@@ -1,26 +1,23 @@
 ﻿using Albatross.CommandLine;
 using Albatross.CommandLine.Annotations;
-using Microsoft.Extensions.Logging;
+using Sample.CommandLine.Services;
 using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sample.CommandLine.SelfContainedParams {
+namespace Sample.CommandLine.ParameterTransformation {
 	[DefaultNameAliases("--instrument", "-i")]
 	[OptionHandler<InstrumentOption, InstrumentOptionHandler, InstrumentSummary>]
 	public class InstrumentOption : Option<string> {
 		public InstrumentOption(string name, params string[] alias) : base(name, alias) {
-			this.Description = "The security instrument identifier (e.g., ticker symbol, CUSIP, ISIN)";
-			this.Required = true;
+			this.Description = "The security instrument identifier";
 		}
 	}
 
 	public class InstrumentOptionHandler : IAsyncOptionHandler<InstrumentOption, InstrumentSummary> {
-		private readonly ICommandContext context;
-		private readonly InstrumentProxy instrumentProxy;
+		private readonly InstrumentService instrumentProxy;
 
-		public InstrumentOptionHandler(ICommandContext context, InstrumentProxy instrumentProxy) {
-			this.context = context;
+		public InstrumentOptionHandler(InstrumentService instrumentProxy) {
 			this.instrumentProxy = instrumentProxy;
 		}
 
@@ -29,7 +26,7 @@ namespace Sample.CommandLine.SelfContainedParams {
 			if (string.IsNullOrEmpty(text)) {
 				return new OptionHandlerResult<InstrumentSummary>();
 			} else {
-				var data = await instrumentProxy.GetInstrumentSummary(text, cancellationToken);
+				var data = await instrumentProxy.GetSummary(text, cancellationToken);
 				return new OptionHandlerResult<InstrumentSummary>(data);
 			}
 		}
