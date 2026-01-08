@@ -76,16 +76,13 @@ namespace Albatross.CommandLine.CodeGen {
 					Arguments = { new StringLiteralExpression(alias) }
 				};
 			}
-			var commandAlias = new HashSet<string>();
 			foreach (var parameter in setup.Parameters) {
-				// the code below remove any conflict aliases.
-				//TODO: Report warning for removed aliases?
+				// duplicate aliases are left alone since System.CommandLine will ignore
+				// not removing it makes it easier for the developers to fix their mistakes
 				var optionAliases = new List<string>();
 				if (parameter is CommandOptionParameterSetup optionParameter) {
-					foreach(var alias in optionParameter.Aliases) {
-						if (commandAlias.Add(alias)) {
-							optionAliases.Add(alias);
-						}
+					foreach (var alias in optionParameter.Aliases) {
+						optionAliases.Add(alias);
 					}
 				}
 
