@@ -76,13 +76,3 @@ Parsing --> PreActions (Option Actions) --> Action (Command Action)
 By default, if there are parsing errors, all PreActions will still execute but main Action will not.  Note that PreActions can short circut after a successful parsing and terminate the execution early.  It could also clear the error state of parsing and allow the main Action to execute.
 
 *Actions cannot be defined for **System.CommandLine** Arguments.*
-
-
-## Next Steps
-
-Now that you understand the core concepts, explore:
-- [Quick Start](quick-start.md) for a hands-on tutorial
-- [Examples](examples.md) for practical implementations  
-- [Command Customization](command-customization.md) for advanced scenarios
-- [Code Generator](code-generator.md) for automatic command generation
-

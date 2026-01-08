@@ -8,8 +8,8 @@
 The code generator uses Roslyn's incremental source generation capabilities to scan your code at compile time, find classes annotated with `[VerbAttribute]`, and generate the necessary code structure.
 
 It generates:
-1. One command class for each annotated `Verb`.  The namespace of the generated command is always the same as the [Verb]'s target `Parameters` class.
-1. Services Registration method - A static service registration method that can be used to register the parameters class directly and the command handler by key scope.  Notice that the instance of the `parameters` class is created by the service registration code.
+1. One command class for each annotated `VerbAttribute`.  The namespace of the generated command is always the same as the `VerbAttribute`'s target `Parameters` class.
+1. Services Registration method - A static service registration method that can be used to register the parameters class using scoped lifetime and the command handler by keyed scoped lifetime.  Notice that the instance of the `parameters` class is created by the service registration code using initializers.
 ```csharp
 public static class CodeGenExtensions {
 	public static IServiceCollection RegisterCommands(this IServiceCollection services) {

@@ -54,15 +54,3 @@ public class HelloWorldCommandHandler : IAsyncCommandHandler {
 
 ## Run the app
 Usage: `dotnet run -- hello --name test`
-
-
-
-
-## Next Steps
-- **[Examples](examples.md)** - More Examples
-- **[Conventions](conventions.md)** - Naming and Coding Conventions
-- **[Customization](command-customization.md)** - Command Customization
-- **[Code Generator](code-generator.md)** - Understanding automatic code generation
-- **[Mutually Exclusive Params Set](mutually-exclusive-options-set.md)** - Support for Mutually Exclusive Params Set using Base Classes
-
-With these three core attributes, you can create powerful, type-safe command-line applications with minimal boilerplate code!
