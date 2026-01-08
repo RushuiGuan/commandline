@@ -53,11 +53,11 @@ public record class CopyParams {
 // `VerbAttribute` associates the command handler `HelloWorldHandler` and the command name "hello" with the created command
 [Verb<HelloWorldHandler>("hello")]
 public record class HelloWorldParams {
-	// when annotated with the `ArgumentAttribute`, an argument property will be generated for the command
+	// when annotated with the `ArgumentAttribute`, an argument will be generated for the command
 	[Argument]
 	public required string Name { get; init; }
 
-	// when annotated with the `OptionAttribute`, an option property will be generated for the command
+	// when annotated with the `OptionAttribute`, an option will be generated for the command
 	[Option]
 	public required string Value { get; init; }
 

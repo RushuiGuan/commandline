@@ -6,7 +6,8 @@ using System.Linq;
 
 namespace Albatross.CommandLine {
 	/// <summary>
-	/// This interface is used to create a context bewteen the Option\Argument actions to Command action
+	/// This interface is a command context with scoped lifetime.  The same instance of the context can be injected to PreAction handlers
+	/// as well as the Command handler.  It can be used to share state between those handlers.  
 	/// </summary>
 	public interface ICommandContext {
 		ParseResult Result { get; }

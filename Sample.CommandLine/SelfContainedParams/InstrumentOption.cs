@@ -1,5 +1,6 @@
 ﻿using Albatross.CommandLine;
 using Albatross.CommandLine.Annotations;
+using Microsoft.Extensions.Logging;
 using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;

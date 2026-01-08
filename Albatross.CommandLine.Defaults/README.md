@@ -40,9 +40,6 @@ static async Task<int> Main(string[] args) {
 
 ### Serilog Integration
 - **Console Logging**: Pre-configured console output with appropriate formatting
-- **Verbosity Control**: Respects the built-in `--verbosity` option from CommandBuilder
-- **Level Mapping**: Maps Microsoft.Extensions.Logging levels to Serilog levels
-- **Zero Configuration**: Works out-of-the-box with sensible defaults
 - **Additional Documentation**: [Albatross.Logging](https://github.com/RushuiGuan/config/tree/main/Albatross.Logging)
 
 
@@ -66,9 +63,9 @@ Level mapping:
 - `Critical` → Serilog Fatal
 - `Error` → Serilog Error  
 - `Warning` → Serilog Warning
-- `Information` → Serilog Information
+- `Info` → Serilog Information
 - `Debug` → Serilog Debug
-- `Trace` → Serilog Verbose
+- `Verbose` → Serilog Verbose
 
 ## Individual Extensions
 
@@ -101,20 +98,5 @@ This package includes these integrations:
 - **Microsoft.Extensions.Hosting** (10.0.1): Host builder and environment abstractions
 - **Microsoft.Extensions.DependencyInjection** (10.0.1): Service container integration
 
-## When to Use
-
-**Use Albatross.CommandLine.Defaults when:**
-- You want JSON configuration file support
-- You need structured logging with Serilog  
-- You want verbosity control to work automatically
-- You prefer convention over configuration
-
-**Skip this package when:**
-- You need custom logging providers (not Serilog)
-- You have complex configuration requirements
-- You want full control over service registration
-- Your CLI doesn't need configuration files
-
 ## Target Framework
-
-- **.NET Standard 2.1**: Compatible with .NET 5+ and .NET Framework 4.8+
+- **.NET Standard 2.1**

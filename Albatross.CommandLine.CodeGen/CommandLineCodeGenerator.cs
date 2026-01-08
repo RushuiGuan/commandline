@@ -76,12 +76,12 @@ namespace Albatross.CommandLine.CodeGen {
 					foreach (var group in commandSetups.GroupBy(x => x.CommandClassName)) {
 						if (group.Count() > 1) {
 							int index = 0;
-							foreach (var item in group) {
+							foreach (var item in group.OrderBy(x => x.Name)) {
 								item.RenameCommandClass(index++);
 							}
 						}
 					}
-					foreach (var setup in commandSetups.OrderBy(x=>x.Name)) {
+					foreach (var setup in commandSetups.OrderBy(x => x.Name)) {
 						var file = new FileDeclaration($"{setup.CommandClassName}.g") {
 							Namespace = new NamespaceExpression(setup.CommandClassNamespace),
 							Classes = [

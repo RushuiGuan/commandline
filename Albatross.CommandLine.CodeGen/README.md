@@ -7,9 +7,9 @@ of arguments, commands, subcommands and options with dependency injection.
 
 As a development dependency of [Albatross.CommandLine](../Albatross.CommandLine) library, codegen will be referenced
 automatically as a PrivateAssets when the reference for [Albatross.CommandLine](../Albatross.CommandLine) is added to a
-project. The code generator looks for options classes those are annotated with
+project. The code generator looks for parameters classes those are annotated with
 the [Albatross.CommandLine.VerbAttribute](../Albatross.CommandLine/VerbAttribute.cs) and generate the appropriate
-command classes. In the example below, the class `TestOptions`, `TestCommandHandler` and the first `TestCommand` class
+command classes. In the example below, the class `TestParams`, `TestCommandHandler` and the first `TestCommand` class
 are created manually and the second `TestCommand` class is generated.
 
 * The command is created as a partial class which allows user to add additional functionalities. To customize a command,
