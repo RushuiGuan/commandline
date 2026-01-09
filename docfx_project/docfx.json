@@ -36,7 +36,8 @@
 			{
 				"files": [
 					"images/**",
-					"*.html"
+					"*.html",
+					"robots.txt"
 				]
 			}
 		],
