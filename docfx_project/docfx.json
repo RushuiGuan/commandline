@@ -1,52 +1,57 @@
 {
-  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
-  "metadata": [
-    {
-      "src": [
-        {
-          "src": "..",
-          "files": [
-            "Albatross.CommandLine/Albatross.CommandLine.csproj",
-            "Albatross.CommandLine.CodeGen/Albatross.CommandLine.CodeGen.csproj",
-            "Albatross.CommandLine.Defaults/Albatross.CommandLine.Defaults.csproj",
-            "Albatross.CommandLine.Inputs/Albatross.CommandLine.Inputs.csproj"
-          ]
-        }
-      ],
-      "output": "api"
-    }
-  ],
-  "build": {
-    "content": [
-      {
-        "files": [
-          "**/*.{md,yml}"
-        ],
-        "exclude": [
-          "_site/**"
-        ]
-      }
-    ],
-    "resource": [
-      {
-        "files": [
-          "images/**",
-		  "*.html"
-        ]
-      }
-    ],
-    "output": "_site",
-    "template": [
-      "default",
-      "modern"
-    ],
-    "globalMetadata": {
-      "_appName": "Albatross.CommandLine",
-      "_appTitle": "Albatross.CommandLine",
-      "_appLogoPath": "./images/logo.svg",
-      "_appFaviconPath": "./images/favicon.svg",
-      "_enableSearch": true,
-      "pdf": false
-    }
-  }
+	"$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+	"metadata": [
+		{
+			"src": [
+				{
+					"src": "..",
+					"files": [
+						"Albatross.CommandLine/Albatross.CommandLine.csproj",
+						"Albatross.CommandLine.CodeGen/Albatross.CommandLine.CodeGen.csproj",
+						"Albatross.CommandLine.Defaults/Albatross.CommandLine.Defaults.csproj",
+						"Albatross.CommandLine.Inputs/Albatross.CommandLine.Inputs.csproj"
+					]
+				}
+			],
+			"output": "api"
+		}
+	],
+	"build": {
+		"sitemap": {
+			"baseUrl": "https://rushuiguan.github.io/commandline",
+			"priority": 0.5,
+			"changefreq": "weekly"
+		},
+		"content": [
+			{
+				"files": [
+					"**/*.{md,yml}"
+				],
+				"exclude": [
+					"_site/**"
+				]
+			}
+		],
+		"resource": [
+			{
+				"files": [
+					"images/**",
+					"*.html"
+				]
+			}
+		],
+		"output": "_site",
+		"template": [
+			"default",
+			"modern"
+		],
+		"globalMetadata": {
+			"_appName": "Albatross.CommandLine",
+			"_appTitle": "Albatross.CommandLine",
+			"_appLogoPath": "./images/logo.svg",
+			"_appFaviconPath": "./images/favicon.svg",
+			"_enableSearch": true,
+			"pdf": false
+		}
+	}
 }
