@@ -30,7 +30,8 @@
     "resource": [
       {
         "files": [
-          "images/**"
+          "images/**",
+		  "*.html"
         ]
       }
     ],
