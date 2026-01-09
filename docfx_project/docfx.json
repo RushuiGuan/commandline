@@ -8,8 +8,8 @@
           "files": [
             "Albatross.CommandLine/Albatross.CommandLine.csproj",
             "Albatross.CommandLine.CodeGen/Albatross.CommandLine.CodeGen.csproj",
-            "Albatross.CommandLine.Default/Albatross.CommandLine.Defaults.csproj",
-			"Albatross.CommandLine.Default/Albatross.CommandLine.Inputs.csproj"
+            "Albatross.CommandLine.Defaults/Albatross.CommandLine.Defaults.csproj",
+            "Albatross.CommandLine.Inputs/Albatross.CommandLine.Inputs.csproj"
           ]
         }
       ],
