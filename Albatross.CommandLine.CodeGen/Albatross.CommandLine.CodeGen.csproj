@@ -16,8 +16,8 @@
 		<PackageReference Include="Humanizer.Core" Version="[2.14.1]" GeneratePathProperty="true" PrivateAssets="all" />
 		<PackageReference Include="Albatross.CodeAnalysis" Version="8.0.3" GeneratePathProperty="true" PrivateAssets="all" />
 		<PackageReference Include="Albatross.CodeAnalysis.Polyfill" Version="8.0.3" GeneratePathProperty="true" PrivateAssets="all" />
-		<PackageReference Include="Albatross.CodeGen" Version="9.0.1-189.main" GeneratePathProperty="true" PrivateAssets="all" />
-		<PackageReference Include="Albatross.CodeGen.CSharp" Version="9.0.1-189.main" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="Albatross.CodeGen" Version="9.0.1" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="Albatross.CodeGen.CSharp" Version="9.0.1" GeneratePathProperty="true" PrivateAssets="all" />
 		<PackageReference Include="Albatross.Collections" Version="8.0.1" GeneratePathProperty="true" PrivateAssets="all" />
 		<PackageReference Include="Albatross.Text" Version="9.0.3" GeneratePathProperty="true" PrivateAssets="all" />
 	</ItemGroup>
