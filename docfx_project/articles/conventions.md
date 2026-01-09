@@ -29,7 +29,7 @@ There is no strict requirement on the naming of command handlers. Common pattern
 `System.CommandLine` use the word `Action` to name the delegates associated with the Command or Options.  `Albatross.CommandLine` follow the convention and name all delegates directly attached with postfix of `Action` as well.  Those delegates are the internals of `Albatross.CommandLine` and should not be set by the user directly.  To have a distinction, user defined delegates are called `Handlers` or `Command Handlers` in the documentation.
 
 ## Argument and Option Naming Convention
-The arguments and options names are created from property name by converting to lower cases and kebaberized.  Additionally option names are prefixed with `--`.  There are situation where this setup could lead to duplicate names.  But that scenario is very bad practice and will not be addressed by codegen.  Instead a code analysis warning would be created for this in the future.
+Argument and option names are derived from property names by converting them to kebab-case (lowercase with hyphens). Option names are additionally prefixed with --. In situation when a class have public properties of same letter with different casing, this will produce duplicate names; this is considered poor practice and won’t be handled by code generation. A code analysis warning will be added to flag such cases in the future.
 
 ```csharp
 [Verb<BackupCommandHandler>("backup", Description = "Back up data")]
@@ -102,7 +102,7 @@ Similar to Options, default arity of arguments are determined by its property nu
 * Property is a collection → `ArityMin = 0, ArityMax = int.MaxValue`
 * Property is nullable → `ArityMin = 0, ArityMax = 1`
 * Property is not nullable → `ArityMin = 1, ArityMax = 1`
-	- Property has an initializer and `DefaultToInitializer` as true → `ArityMin = 1, ArityMax = 1`
+	- Property has an initializer and `DefaultToInitializer` as true → `ArityMin = 0, ArityMax = 1`
 
 ```csharp
 [Verb<BackupCommandHandler>("backup", Description = "Back up data")]

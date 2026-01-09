@@ -12,7 +12,7 @@ Designed for enterprise CLI applications, Albatross.CommandLine enforces consist
 - **Cancellation & Graceful Shutdown** - Built-in support for Ctrl+C interruption via cancellation tokens and graceful shutdown handling
 - **Reusable Parameter** - Create customized `Option` and `Argument` classes and use `[UseOption<T>]` and `[UseArgument<T>]` attributes to compose them into commands with automatic code generation
 - **Advanced Option Handlers** - Injectable async option handlers with `[OptionHandler]` attribute for pre-processing and input transformation patterns. Execute database validation, API calls, or transform simple inputs into complex objects before command execution
-- **Easy Extensions** - Use `CommandHost.ConfigureHost()` to bootstrap additional services, or use [Albatross.CommandLine.Default](https://www.nuget.org/packages/Albatross.CommandLine.Default) for pre-configured Serilog logging and JSON/environment configuration support
+- **Easy Extensions** - Use `CommandHost.ConfigureHost()` to bootstrap additional services, or use [Albatross.CommandLine.Default](https://www.nuget.org/packages/Albatross.CommandLine.Defaults) for pre-configured Serilog logging and JSON/environment configuration support
 
 ## Language Support
 C# Only
