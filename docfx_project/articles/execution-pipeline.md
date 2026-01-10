@@ -26,10 +26,10 @@ The standard `System.CommandLine` pipeline has some limitations that `Albatross.
 - **For Commands**: [`GlobalCommandAction`](https://github.com/RushuiGuan/commandline/blob/main/Albatross.CommandLine/GlobalCommandAction.cs) - Provides unified command execution with DI and context management
 
 This mechanism enables:
-- ✅ **Dependency Injection** throughout the pipeline
-- ✅ **Global Exception Handling** with proper logging
-- ✅ **Command Context** for state sharing and early termination
-- ✅ **Async Support** for both options and commands
+- **Dependency Injection** throughout the pipeline
+- **Global Exception Handling** with proper logging
+- **Command Context** for state sharing and early termination
+- **Async Support** for both options and commands
 
 ## High-Level Execution Flow
 
