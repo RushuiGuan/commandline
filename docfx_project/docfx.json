@@ -52,7 +52,13 @@
 			"_appLogoPath": "./images/logo.svg",
 			"_appFaviconPath": "./images/favicon.svg",
 			"_enableSearch": true,
-			"pdf": false
+			"pdf": false,
+			"_gitContribute": {
+				"repo": "https://github.com/rushuiguan/commandline",
+				"branch": "main",
+				"path": "docfx_project"
+			},
+			"_gitUrlPattern": "github"
 		}
 	}
 }

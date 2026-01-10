@@ -21,3 +21,9 @@
 
 - name: Option PreProcessing and Transformation
   href: option-preprocessing-transformation.md
+
+- name: Command Context
+  href: command-context.md
+
+- name: Execution Pipeline
+  href: execution-pipeline.md
