@@ -11,8 +11,7 @@ using System;
 namespace Albatross.CommandLine.Defaults {
 	public static class Extensions {
 		public static LogEventLevel ToSerilogLevel(this LogLevel level) =>
-			level switch
-			{
+			level switch {
 				LogLevel.Trace => LogEventLevel.Verbose,
 				LogLevel.Debug => LogEventLevel.Debug,
 				LogLevel.Information => LogEventLevel.Information,
@@ -21,10 +20,20 @@ namespace Albatross.CommandLine.Defaults {
 				LogLevel.Critical => LogEventLevel.Fatal,
 				_ => LogEventLevel.Information
 			};
-		
+
+		/// <summary>
+		/// Configure the CommandHost with default configuration and Serilog logging.  This method should be invoked after Parsing since logging level is determined by --verbosity option.
+		/// </summary>
+		/// <param name="commandHost"></param>
+		/// <returns></returns>
 		public static CommandHost WithDefaults(this CommandHost commandHost)
 			=> commandHost.WithConfig().WithSerilog();
 
+		/// <summary>
+		/// Configure the CommandHost with Serilog logging.  This method should be invoked after Parsing since logging level is determined by --verbosity option.
+		/// </summary>
+		/// <param name="commandHost"></param>
+		/// <returns></returns>
 		public static CommandHost WithSerilog(this CommandHost commandHost) {
 			commandHost.ConfigureHost((result, builder) => {
 				var logLevel = CommandBuilder.VerbosityOption.GetLogLevel(result);
@@ -42,6 +51,12 @@ namespace Albatross.CommandLine.Defaults {
 			return commandHost;
 		}
 
+		/// <summary>
+		/// Configure the CommandHost with default configuration from appsettings.json and environment variables.
+		/// This method will leverage the DOTNET_ENVIRONMENT environment variable to load environment specific configuration file.
+		/// </summary>
+		/// <param name="commandHost"></param>
+		/// <returns></returns>
 		public static CommandHost WithConfig(this CommandHost commandHost) {
 			commandHost.ConfigureHost(builder => {
 				var environment = EnvironmentSetting.DOTNET_ENVIRONMENT;
