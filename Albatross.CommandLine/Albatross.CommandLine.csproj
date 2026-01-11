@@ -3,9 +3,8 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<Nullable>enable</Nullable>
-		<PackageProjectUrl>$(RepositoryProjectRoot)/Albatross.CommandLine</PackageProjectUrl>
-		<Description>An integration library that simplifies the creation of console program using the System.CommandLine library</Description>
-		<PackageReleaseNotes>$(RepositoryProjectRoot)/Albatross.CommandLine/release-notes.md</PackageReleaseNotes>
+		<Description>An integration library that simplifies the creation of console program using
+			the System.CommandLine library</Description>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="System.CommandLine" Version="2.0.1" />
@@ -29,6 +28,7 @@
 		</None>
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\Albatross.CommandLine.CodeGen\Albatross.CommandLine.CodeGen.csproj" />
+		<ProjectReference
+			Include="..\Albatross.CommandLine.CodeGen\Albatross.CommandLine.CodeGen.csproj" />
 	</ItemGroup>
 </Project>

@@ -9,11 +9,14 @@
 		<LangVersion>Latest</LangVersion>
 		<Nullable>enable</Nullable>
 		<RepositoryUrl>https://github.com/RushuiGuan/commandline</RepositoryUrl>
-		<RepositoryProjectRoot>$(RepositoryUrl)/tree/main</RepositoryProjectRoot>
+		<PackageProjectUrl>https://rushuiguan.github.io/commandline</PackageProjectUrl>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageIcon>icon.png</PackageIcon>
 		<Authors>Rushui Guan</Authors>
+		<PackageTags>
+			system-commandline;cli;command-line;dotnet-tool;dependency-injection;hosting;source-generator;roslyn;console
+		</PackageTags>
 
 		<!-- SourceLink Configuration -->
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
