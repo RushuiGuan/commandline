@@ -4,6 +4,7 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>Latest</LangVersion>
 		<Nullable>Enable</Nullable>
+		<IncludeSymbols>false</IncludeSymbols>
 		<Description>A companion code generator used by the Albatross.CommandLine library</Description>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 		<PackageTags>Analyzer;Roslyn</PackageTags>
