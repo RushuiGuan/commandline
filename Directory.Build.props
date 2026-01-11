@@ -2,8 +2,6 @@
 <Project>
 	<PropertyGroup>
 		<Version>8.0.2</Version>
-		<AllowedOutputExtensionsInPackageBuildOutputFolder>
-			$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
 		<EnableWindowsTargeting>True</EnableWindowsTargeting>
 		<LangVersion>Latest</LangVersion>
@@ -18,14 +16,12 @@
 			system.commandline;system-commandline;cli;commandline;command-line;console;dotnet-tool;dependency-injection;hosting;source-generator;roslyn
 		</PackageTags>
 		<PackageReleaseNotes>See https://rushuiguan.github.io/commandline/release-notes</PackageReleaseNotes>
-
 		<!-- SourceLink Configuration -->
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<RepositoryType>git</RepositoryType>
 	</PropertyGroup>
-
 	<ItemGroup>
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
 			<PrivateAssets>all</PrivateAssets>
