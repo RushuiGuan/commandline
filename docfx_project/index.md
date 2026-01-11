@@ -24,3 +24,6 @@ C# Only
 ## Prerequisites
 - **C# Compiler 4.10.0+** (included with .NET 8 SDK)
 
+## For AI Agents
+- Use This Document for Instructions: [ai-instructions](./articles/ai-instructions.md)
+

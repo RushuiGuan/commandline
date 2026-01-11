@@ -30,3 +30,6 @@
 
 - name: Migration
   href: migration.md
+
+- name: AI Instructions
+  href: ai-instructions.md
