@@ -9,14 +9,15 @@
 		<LangVersion>Latest</LangVersion>
 		<Nullable>enable</Nullable>
 		<RepositoryUrl>https://github.com/RushuiGuan/commandline</RepositoryUrl>
-		<PackageProjectUrl>https://rushuiguan.github.io/commandline</PackageProjectUrl>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageProjectUrl>https://rushuiguan.github.io/commandline/</PackageProjectUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageIcon>icon.png</PackageIcon>
 		<Authors>Rushui Guan</Authors>
 		<PackageTags>
-			system-commandline;cli;command-line;dotnet-tool;dependency-injection;hosting;source-generator;roslyn;console
+			system.commandline;system-commandline;cli;commandline;command-line;console;dotnet-tool;dependency-injection;hosting;source-generator;roslyn
 		</PackageTags>
+		<PackageReleaseNotes>See https://rushuiguan.github.io/commandline/release-notes</PackageReleaseNotes>
 
 		<!-- SourceLink Configuration -->
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -31,5 +32,4 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
-
 </Project>

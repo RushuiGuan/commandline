@@ -30,3 +30,6 @@
 
 - name: AI Instructions
   href: ai-instructions.md
+
+- name: Release Notes
+  href: release-notes.md  
