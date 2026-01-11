@@ -2,3 +2,5 @@
   href: articles/
 - name: API
   href: api/
+- name: Release Notes
+  href: release-notes.md
