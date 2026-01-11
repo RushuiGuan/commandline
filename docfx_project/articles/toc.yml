@@ -27,3 +27,6 @@
 
 - name: Execution Pipeline
   href: execution-pipeline.md
+
+- name: Migration
+  href: migration.md
