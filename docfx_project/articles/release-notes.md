@@ -1,4 +1,50 @@
 # Release Notes
+
+## 8.0.2 - Documentation & Packaging
+
+- **Documentation** - Published comprehensive documentation site with quick start guide, core concepts, migration instructions, and AI agent guidance
+- **SourceLink** - Added `Microsoft.SourceLink.GitHub` for source-stepping debugging support
+- **Symbol packages** - Now publishing `.snupkg` symbol packages to NuGet
+- **Package metadata** - Added package tags for improved discoverability, release notes URL, and documentation link
+
+---
+
+## 8.0.1 - Major Rewrite
+
+Version 8 is a complete redesign of Albatross.CommandLine, driven by the stable release of `System.CommandLine 2.0.1` (previously 2.0.0-beta4). The upstream library introduced significant breaking changes that required rethinking our approach.
+
+### Why a Rewrite?
+
+- **System.CommandLine 2.0.1** removed `InvocationContext` and changed how commands, options, and handlers interact
+- This created an opportunity to simplify the library's architecture and improve the developer experience
+- The new design is more idiomatic, leverages modern C# features, and provides better async/cancellation support
+
+### Key Architectural Changes
+
+| Area | v7 | v8 |
+|------|----|----|
+| Handler execution | Sync `Invoke(InvocationContext)` | Async `InvokeAsync(CancellationToken)` |
+| Parameter injection | `IOptions<T>` wrapper | Direct `T` injection |
+| Handler specification | Constructor parameter | Generic type argument `[Verb<THandler>]` |
+| Attributes namespace | `Albatross.CommandLine` | `Albatross.CommandLine.Annotations` |
+| Property annotation | Implicit (all properties are options) | Explicit (must use `[Option]` or `[Argument]`) |
+| Entry point | Custom `Setup` class | Generic `CommandHost` |
+| Class naming | `*Options` suffix | `*Params` suffix |
+
+### New Capabilities
+
+- **Reusable Parameters** - Create custom `Option<T>` and `Argument<T>` classes with `[UseOption<T>]` and `[UseArgument<T>]`
+- **Option Preprocessing** - Async validation with dependency injection via `IAsyncOptionHandler<T>`
+- **Input Transformation** - Transform raw input into complex objects before reaching the handler
+- **Partial Command Classes** - Customize generated commands via `partial void Initialize()`
+- **Built-in Input Types** - Ready-to-use file/directory validators in `Albatross.CommandLine.Inputs`
+
+### Migration
+
+This is a breaking release. See the [Migration Guide](ai-migration-instructions.md) for step-by-step upgrade instructions.
+
+---
+
 ## 7.8.7
 * Change the property type of ArgumentAttribute.ArityMin and ArgumentAttribute.ArityMax from int? to int because Nullable<int> is not a valid Attribute property type
 ## 7.8.5
