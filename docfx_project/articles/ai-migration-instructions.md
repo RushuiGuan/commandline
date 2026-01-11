@@ -1,4 +1,4 @@
-# Migration from `Albatross.CommandLine` v7 to v8
+# Migrating from `Albatross.CommandLine` v7 to v8
 
 The instructions are written for AI agents.  Please follow the exact steps below.  
 

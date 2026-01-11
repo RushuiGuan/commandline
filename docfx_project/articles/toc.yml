@@ -28,8 +28,8 @@
 - name: Execution Pipeline
   href: execution-pipeline.md
 
-- name: Migration
-  href: migration.md
+- name: AI Migration Instructions
+  href: ai-migration-instructions.md
 
 - name: AI Instructions
   href: ai-instructions.md
