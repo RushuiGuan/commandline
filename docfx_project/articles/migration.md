@@ -9,7 +9,7 @@ The instructions are written for AI agents.  Please follow the exact instruction
 |namespace of the `VerbAttribute`|`Albatross.CommandLine`|`Albatross.CommandLine.Annotations`| Import namespace `Albatross.CommandLine.Annotations`  |
 |namespace of the `OptionAttribute`|`Albatross.CommandLine`|`Albatross.CommandLine.Annotations`|  Import namespace `Albatross.CommandLine.Annotations` |
 |namespace of the `ArgumentAttribute`|`Albatross.CommandLine`|`Albatross.CommandLine.Annotations`| Import namespace `Albatross.CommandLine.Annotations`  |
-|Specify a CommandHandler for the VerbAttribute| Use the second constructor parameter| Use the first Generic Argument| Specify the command handler class using the Generic Argument|
+|Specify a CommandHandler for the `VerbAttribute`| Use the second constructor parameter| Use the first Generic Argument| Specify the command handler class using the Generic Argument.  See [VerbAttribute Change](#verbattribute-changes)|
 |How parameters are injected to command handlers| Inject Microsoft.Extensions.Options.IOptions\<T>|Inject parameters class T directly|Remove the reference to `Microsoft.Extensions.Options` namespace, Change the constructor parameter `IOption\<T> options` to `T parameters`|
 |`Albatross.CommandLine.BaseHandler` Class Constructor|Take a single parameter of type `Microsoft.Extensions.Options.IOptions<T>`|Has new signature (ParseResult, T).  T is the command's parameters class|Inject ParseResult to the derived class and fix the base class constructor invocation.  See [Changes in BaseHandler Class Constructor](#changes-in-basehandler-class-constructor)|
 |BaseHandler Class|Supports synchoronized invoke signature: `int Invoke(InvocationContext)`|Only supports async signature `Task<int> InvokeAsync(CancellationToken cancellationToken)`|Convert sync to async method.  See [Convert `Invoke` to `InvokeAsync` method](#convert-invoke-to-invokeasync-method)|
@@ -68,5 +68,21 @@ public override Task<int> InvokeAsync(CancellationToken cancellationToken) {
     // copy body of the Invoke method here
     ...
 	return Task.FromResult(0);
+}
+```
+
+### VerbAttribute Changes
+```csharp
+// V7
+[Verb("csharp-proxy", typeof(CSharpWebClientCodeGenCommandHandler), Description = "Generate CSharp Http Proxy class")]
+public record class CodeGenCommandOptions {
+	[Option("p")]
+	public FileInfo ProjectFile { get; set; } = null!;
+}
+// V8
+[Verb<CSharpWebClientCodeGenCommandHandler>("csharp-proxy", Description = "Generate CSharp Http Proxy class")]
+public record class CodeGenCommandOptions {
+	[Option("p")]
+	public FileInfo ProjectFile { get; set; } = null!;
 }
 ```
