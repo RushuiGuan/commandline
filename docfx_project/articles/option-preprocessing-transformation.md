@@ -49,7 +49,7 @@ This pattern allows you to run validation logic for an option before the main co
                 if (!valid) {
                     _logger.LogError("{id} is not a valid instrument id", id);
                     // Terminate the command because the input is invalid.
-                    _context.SetResult(1, new OptionHandlerStatus(option.Name, false, $"{id} is not a valid instrument id"));
+                    _context.SetInputActionStatus(new OptionHandlerStatus(option.Name, false, $"{id} is not a valid instrument id"));
                 }
             }
         }
