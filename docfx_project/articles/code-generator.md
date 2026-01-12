@@ -1,5 +1,8 @@
 # Code Generator
-`Albatross.CommandLine.CodeGen` is an incremental source generator that automatically creates command classes, service registration, and command registration methods from attributed parameters classes. This eliminates boilerplate code while maintaining full flexibility.
+`Albatross.CommandLine.CodeGen` is an incremental source generator that automatically creates command classes, service registration, and command registration methods from attributed parameters classes. This eliminates boilerplate code while maintaining full flexibility.  
+
+Unlike reflection-based approaches, the generator performs all wiring at compile time, so there is no runtime scanning, dynamic discovery, or Activator usage. This improves startup performance and makes the generated code AOT-friendly, since everything is statically known and compiled ahead of time. The result is predictable behavior, easier debugging, and better alignment with Native AOT and trimming scenarios.
+
 
 ### How to Use it
 `Albatross.CommandLine.CodeGen` is referenced automatically as a code generator when a project references the `Albatross.CommandLine` nuget package.
