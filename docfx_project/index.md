@@ -84,8 +84,13 @@ Usage: `dotnet run -- hello --name test`
 ## Source Code
 - https://github.com/RushuiGuan/commandline
 
-## Nuget Package
-- https://www.nuget.org/packages/Albatross.CommandLine
+## Nuget Packages
+|Name|Version|
+|-|-|
+|`Albatross.CommandLine`|[![NuGet Version](https://img.shields.io/nuget/v/Albatross.CommandLine)](https://www.nuget.org/packages/Albatross.CommandLine)|
+|`Albatross.CommandLine.CodeGen`|[![NuGet Version](https://img.shields.io/nuget/v/Albatross.CommandLine.CodeGen)](https://www.nuget.org/packages/Albatross.CommandLine.CodeGen)|
+|`Albatross.CommandLine.Defaults`|[![NuGet Version](https://img.shields.io/nuget/v/Albatross.CommandLine.Defaults)](https://www.nuget.org/packages/Albatross.CommandLine.Defaults)|
+|`Albatross.CommandLine.Inputs`|[![NuGet Version](https://img.shields.io/nuget/v/Albatross.CommandLine.Inputs)](https://www.nuget.org/packages/Albatross.CommandLine.Inputs)|
 
 ## For AI Agents
 - Use This Document for Instructions: [ai-instructions](./articles/ai-instructions.md)
