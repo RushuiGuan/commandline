@@ -4,16 +4,30 @@ using System.CommandLine;
 using System.Linq;
 
 namespace Albatross.CommandLine {
+	/// <summary>
+	/// A command-line option for controlling logging verbosity level.
+	/// Supports case-insensitive prefix matching (e.g., "v" matches "Verbose", "d" matches "Debug").
+	/// </summary>
 	public class VerbosityOption : Option<string> {
+		/// <summary>Maps to <see cref="LogLevel.Trace"/>.</summary>
 		public const string Verbose = "Verbose";
+		/// <summary>Maps to <see cref="LogLevel.Debug"/>.</summary>
 		public const string Debug = "Debug";
+		/// <summary>Maps to <see cref="LogLevel.Information"/>.</summary>
 		public const string Info = "Info";
+		/// <summary>Maps to <see cref="LogLevel.Warning"/>.</summary>
 		public const string Warning = "Warning";
+		/// <summary>Maps to <see cref="LogLevel.Error"/>.</summary>
 		public const string Error = "Error";
+		/// <summary>Maps to <see cref="LogLevel.Critical"/>.</summary>
 		public const string Critical = "Critical";
+		/// <summary>Maps to <see cref="LogLevel.None"/>.</summary>
 		public const string None = "None";
 
-
+		/// <summary>
+		/// Creates a new verbosity option with aliases --verbosity and -v.
+		/// Defaults to Error level.
+		/// </summary>
 		public VerbosityOption() : base("--verbosity", "-v") {
 			var allowedValues = new[] { Verbose, Debug, Info, Warning, Error, Critical, None };
 			DefaultValueFactory = _ => Error;
@@ -35,6 +49,11 @@ namespace Albatross.CommandLine {
 			this.CompletionSources.Add(_ => allowedValues);
 		}
 
+		/// <summary>
+		/// Converts the verbosity option value from the parse result to a <see cref="LogLevel"/>.
+		/// </summary>
+		/// <param name="result">The parse result containing the option value.</param>
+		/// <returns>The corresponding log level, or <see cref="LogLevel.Error"/> if parsing failed.</returns>
 		public LogLevel GetLogLevel(ParseResult result) {
 			var argumentResult = result.CommandResult.GetResult(this);
 			if (argumentResult == null || argumentResult.Errors.Any()) {

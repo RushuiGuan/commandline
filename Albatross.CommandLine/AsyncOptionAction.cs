@@ -87,25 +87,47 @@ namespace Albatross.CommandLine {
 		}
 	}
 
+	/// <summary>
+	/// An asynchronous command line action that wraps a custom async handler function.
+	/// This action is non-terminating, allowing subsequent actions to execute.
+	/// </summary>
 	public sealed class AsyncOptionAction : AsynchronousCommandLineAction {
+		/// <inheritdoc/>
 		public override bool Terminating => false;
 		private readonly Func<ParseResult, CancellationToken, Task<int>> handler;
 
+		/// <summary>
+		/// Creates a new async option action with the specified handler function.
+		/// </summary>
+		/// <param name="handler">The async function to execute when the action is invoked.</param>
 		public AsyncOptionAction(Func<ParseResult, CancellationToken, Task<int>> handler) {
 			this.handler = handler;
 		}
 
+		/// <inheritdoc/>
 		public override Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken = default) {
 			return handler(parseResult, cancellationToken);
 		}
 	}
 
+	/// <summary>
+	/// A synchronous command line action that wraps a custom sync handler function.
+	/// This action is non-terminating, allowing subsequent actions to execute.
+	/// </summary>
 	public sealed class SyncOptionAction : SynchronousCommandLineAction {
+		/// <inheritdoc/>
 		public override bool Terminating => false;
 		private readonly Func<ParseResult, int> handler;
+
+		/// <summary>
+		/// Creates a new sync option action with the specified handler function.
+		/// </summary>
+		/// <param name="handler">The sync function to execute when the action is invoked.</param>
 		public SyncOptionAction(Func<ParseResult, int> handler) {
 			this.handler = handler;
 		}
+
+		/// <inheritdoc/>
 		public override int Invoke(ParseResult parseResult) {
 			return handler(parseResult);
 		}

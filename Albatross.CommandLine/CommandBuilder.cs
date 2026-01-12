@@ -10,10 +10,22 @@ using System.Threading.Tasks;
 
 [assembly: InternalsVisibleTo("Albatross.CommandLine.Test")]
 namespace Albatross.CommandLine {
+	/// <summary>
+	/// Builds and manages a hierarchical command structure for command-line interfaces.
+	/// Commands are organized by space-separated keys (e.g., "parent child") that define the hierarchy.
+	/// </summary>
 	public class CommandBuilder {
 		private readonly Dictionary<string, Command> commands = new();
+		/// <summary>
+		/// Gets the root command of the command hierarchy.
+		/// </summary>
 		public RootCommand RootCommand { get; }
 
+		/// <summary>
+		/// Creates a new command builder with the specified description for the root command.
+		/// The root command includes a global verbosity option by default.
+		/// </summary>
+		/// <param name="rootCommandDescription">The description to display in help text for the root command.</param>
 		public CommandBuilder(string rootCommandDescription) {
 			RootCommand = new RootCommand(rootCommandDescription) {
 				VerbosityOption,
@@ -22,12 +34,25 @@ namespace Albatross.CommandLine {
 			commands.Add(string.Empty, RootCommand);
 		}
 
+		/// <summary>
+		/// Adds a new command instance of the specified type to the command hierarchy.
+		/// </summary>
+		/// <typeparam name="T">The command type to instantiate and add.</typeparam>
+		/// <param name="key">The space-separated key defining the command's position in the hierarchy.</param>
+		/// <returns>The newly created command instance.</returns>
 		public T Add<T>(string key) where T : Command, new() {
 			var t = new T();
 			Add(key, t);
 			return t;
 		}
 
+		/// <summary>
+		/// Adds an existing command to the command hierarchy.
+		/// </summary>
+		/// <typeparam name="T">The command type.</typeparam>
+		/// <param name="key">The space-separated key defining the command's position in the hierarchy.</param>
+		/// <param name="command">The command instance to add.</param>
+		/// <exception cref="ArgumentException">Thrown when a command with the same key already exists.</exception>
 		public void Add<T>(string key, T command) where T : Command {
 			try {
 				commands.Add(key, command);
@@ -36,6 +61,9 @@ namespace Albatross.CommandLine {
 			}
 		}
 
+		/// <summary>
+		/// Gets the global verbosity option shared across all commands.
+		/// </summary>
 		public static VerbosityOption VerbosityOption { get; } = new() {
 			Required = false,
 			Recursive = true,
@@ -83,6 +111,11 @@ namespace Albatross.CommandLine {
 			return commands.TryGetValue(key, out command);
 		}
 
+		/// <summary>
+		/// Builds the complete command tree by linking child commands to their parents and setting up command actions.
+		/// This method should be called after all commands have been added and before parsing.
+		/// </summary>
+		/// <param name="serviceFactory">A factory function that provides the service provider for dependency injection.</param>
 		public void BuildTree(Func<IServiceProvider> serviceFactory) {
 			var action = new GlobalCommandAction(serviceFactory);
 			// ordering is required here to ensure parent commands are created before child commands

@@ -2,6 +2,11 @@ using System;
 using System.CommandLine;
 
 namespace Albatross.CommandLine.Annotations {
+	/// <summary>
+	/// Marks a property to use a predefined option type with built-in validation and parsing logic.
+	/// The generated code will instantiate and configure the specified option type.
+	/// </summary>
+	/// <typeparam name="TOption">The predefined option type to use.</typeparam>
 	[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 	public class UseOptionAttribute<TOption> : OptionAttribute where TOption : Option {
 		/// <summary>

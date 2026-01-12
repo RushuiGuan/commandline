@@ -9,7 +9,15 @@ using Serilog.Events;
 using System;
 
 namespace Albatross.CommandLine.Defaults {
+	/// <summary>
+	/// Extension methods for configuring CommandHost with default settings including Serilog logging and configuration.
+	/// </summary>
 	public static class Extensions {
+		/// <summary>
+		/// Converts a Microsoft.Extensions.Logging.LogLevel to a Serilog.Events.LogEventLevel.
+		/// </summary>
+		/// <param name="level">The log level to convert.</param>
+		/// <returns>The equivalent Serilog log event level.</returns>
 		public static LogEventLevel ToSerilogLevel(this LogLevel level) =>
 			level switch {
 				LogLevel.Trace => LogEventLevel.Verbose,
