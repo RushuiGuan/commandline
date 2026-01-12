@@ -48,7 +48,7 @@
 		],
 		"globalMetadata": {
 			"_appName": "Albatross.CommandLine",
-			"_appTitle": "System.CommandLine + DI + Source Generator for enterprise .NET CLI apps",
+			"_appTitle": "System.CommandLine with Dependency Injection and AOT Compatibility for enterprise .NET CLI apps",
 			"_appLogoPath": "./images/logo.svg",
 			"_appFaviconPath": "./images/favicon.svg",
 			"_enableSearch": true,

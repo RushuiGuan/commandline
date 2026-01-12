@@ -6,6 +6,7 @@ Designed for enterprise CLI applications, Albatross.CommandLine enforces consist
 
 ## Key Features
 - **Minimal Boilerplate** - Attribute-based command definition with automatic code generation
+- **AOT-compatible** - Uses compile-time Roslyn source generation (no runtime reflection or emit), making it friendly to Native AOT scenarios
 - **Dependency Injection** - Built-in DI container integration
 - **Minimum Dependencies** - Only depends on `System.CommandLine` and `Microsoft.Extensions.Hosting`.
 - **Full Flexibility** - Direct access to `System.CommandLine` when needed
