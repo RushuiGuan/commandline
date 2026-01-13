@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:dev.to)"
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:rushuiguan.github.io)",
+      "Bash(curl:*)"
     ]
   }
 }

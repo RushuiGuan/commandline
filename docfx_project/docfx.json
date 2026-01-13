@@ -37,7 +37,8 @@
 				"files": [
 					"images/**",
 					"*.html",
-					"robots.txt"
+					"robots.txt",
+					".nojekyll"
 				]
 			}
 		],
