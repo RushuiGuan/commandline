@@ -3,7 +3,11 @@
     "allow": [
       "WebFetch(domain:dev.to)",
       "WebFetch(domain:rushuiguan.github.io)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet pack:*)",
+      "Bash(dotnet nuget search:*)"
     ]
   }
 }

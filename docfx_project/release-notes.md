@@ -1,5 +1,14 @@
 # Release Notes
 
+## 8.0.3 - Bug Fix & Documentation
+
+- **Bug Fix** - Changed `MaxArity` for collection arguments from `int.MaxValue` to `100_000` to align with the `MaximumArity` constant defined in System.CommandLine 2.0.2
+- **Dependency Update** - Updated `System.CommandLine` to version 2.0.2
+- **Packaging** - Disabled symbol package generation for `Albatross.CommandLine.CodeGen` (analyzer packages do not support symbol packages)
+- **Documentation** - Added comprehensive XML documentation comments to all public APIs across the library
+
+---
+
 ## 8.0.2 - Documentation & Packaging
 
 - **Documentation** - Published comprehensive documentation site with quick start guide, core concepts, migration instructions, and AI agent guidance

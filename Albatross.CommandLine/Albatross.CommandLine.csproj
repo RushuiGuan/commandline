@@ -10,7 +10,7 @@
 </Description>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="System.CommandLine" Version="2.0.1" />
+		<PackageReference Include="System.CommandLine" Version="2.0.2" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
 	</ItemGroup>
 	<ItemGroup>
