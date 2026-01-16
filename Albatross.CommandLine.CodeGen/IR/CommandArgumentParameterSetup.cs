@@ -9,11 +9,16 @@ namespace Albatross.CommandLine.CodeGen.IR {
 		public int ArityMin { get; }
 		public int ArityMax { get; }
 
+		/// <summary>
+		/// this is defined in System.CommandLine, weirdly the same value as v7 max arity.
+		/// </summary>
+		private const int MaximumArity = 100_000;
+
 		public CommandArgumentParameterSetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData argumentPropertyAttribute)
 			: base(compilation, propertySymbol, argumentPropertyAttribute) {
 			if (propertySymbol.Type.IsCollection(compilation)) {
 				this.ArityMin = 0;
-				this.ArityMax = int.MaxValue;
+				this.ArityMax = MaximumArity;
 			} else {
 				if (propertySymbol.Type.IsNullable(compilation) || this.DefaultToInitializer) {
 					this.ArityMin = 0;
