@@ -25,6 +25,9 @@
 - name: Execution Pipeline
   href: execution-pipeline.md
 
+- name: System.CommandLine Migration (beta4 to 2.0.2)
+  href: system-commandline-migration.md
+
 - name: AI Migration Instructions
   href: ai-migration-instructions.md
 

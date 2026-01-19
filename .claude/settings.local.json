@@ -9,7 +9,9 @@
       "Bash(dotnet pack:*)",
       "Bash(dotnet nuget search:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)"
     ]
   }
 }
