@@ -25,6 +25,9 @@
 - name: Execution Pipeline
   href: execution-pipeline.md
 
+- name: Logging & Verbosity
+  href: logging-verbosity.md
+
 - name: System.CommandLine Migration (beta4 to 2.0.2)
   href: system-commandline-migration.md
 
