@@ -10,7 +10,7 @@ namespace Sample.CommandLine {
 	public record class TestLoggingParams {
 	}
 
-	[Verb<TestLogging>("test default-logging", Description = "This command has a default logging of Info")]
+	[Verb<TestLogging>("test default-logging", Description = "This command has a default logging of debug")]
 	public record class TestDefaultLoggingParams {
 	}
 
