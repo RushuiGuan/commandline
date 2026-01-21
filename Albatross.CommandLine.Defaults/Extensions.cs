@@ -44,7 +44,11 @@ namespace Albatross.CommandLine.Defaults {
 		/// <returns></returns>
 		public static CommandHost WithSerilog(this CommandHost commandHost) {
 			commandHost.ConfigureHost((result, builder) => {
-				var logLevel = CommandBuilder.VerbosityOption.GetLogLevel(result);
+				var verbosityOption = result.GetVerbosityOption();
+				var logLevel = LogLevel.Error;
+				if (verbosityOption != null) {
+					logLevel = verbosityOption.GetLogLevel(result);
+				}
 				builder.UseSerilog();
 				var setupSerilog = new SetupSerilog()
 					.Configure(cfg => {

@@ -53,7 +53,9 @@ namespace Albatross.CommandLine {
 		/// </summary>
 		/// <param name="args"></param>
 		/// <returns></returns>
-		public CommandHost Parse(string[] args) {
+		public CommandHost Parse(string[] args) => Parse(args, true);
+
+		public CommandHost Parse(string[] args, bool withLogging) {
 			this.CommandBuilder.BuildTree(GetServiceProvider);
 			parseResult = this.CommandBuilder.RootCommand.Parse(args);
 			this.hostBuilder.ConfigureServices(services => {
@@ -61,9 +63,16 @@ namespace Albatross.CommandLine {
 				services.AddSingleton<ICommandContext, CommandContext>();
 			});
 
-			// configure default logging level based on parsed result
-			var logLevel = CommandBuilder.VerbosityOption.GetLogLevel(parseResult);
-			this.hostBuilder.ConfigureLogging((_, builder) => builder.SetMinimumLevel(logLevel));
+			if (withLogging) {
+				// configure default logging level based on parsed result
+				var verbosityOption = parseResult.GetVerbosityOption();
+				if (verbosityOption != null) {
+					var logLevel = verbosityOption.GetLogLevel(parseResult);
+					this.hostBuilder.ConfigureLogging((_, builder) => builder.SetMinimumLevel(logLevel));
+				}
+			} else {
+				this.hostBuilder.ConfigureLogging((_, builder) => builder.ClearProviders());
+			}
 			return this;
 		}
 

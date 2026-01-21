@@ -29,7 +29,7 @@ namespace Albatross.CommandLine {
 			if (!context.HasParsingError && !context.HasShortCircuitOptions) {
 				var logger = serviceProvider.GetRequiredService<ILogger<AsyncOptionAction<TOption, THandler>>>();
 				try {
-					logger.LogInformation("Invoking AsyncActionHandler for [ {CommandName} [ {SymbolName} ] ]", context.Key, Symbol.Name);
+					logger.LogDebug("Invoking AsyncActionHandler for [ {CommandName} [ {SymbolName} ] ]", context.Key, Symbol.Name);
 					var handler = serviceProvider.GetRequiredService<THandler>();
 					await handler.InvokeAsync(this.Symbol, parseResult, cancellationToken);
 				} catch (OperationCanceledException err) {
@@ -66,7 +66,7 @@ namespace Albatross.CommandLine {
 			if (!context.HasParsingError && !context.HasShortCircuitOptions) {
 				var logger = serviceProvider.GetRequiredService<ILogger<AsyncOptionAction<TOption, THandler, TContextValue>>>();
 				try {
-					logger.LogInformation("Invoking AsyncActionHandler for [ {CommandName} [ {SymbolName} ] ]", context.Key, Symbol.Name);
+					logger.LogDebug("Invoking AsyncActionHandler for [ {CommandName} [ {SymbolName} ] ]", context.Key, Symbol.Name);
 					var handler = serviceProvider.GetRequiredService<THandler>();
 					var result = await handler.InvokeAsync(this.Symbol, parseResult, cancellationToken);
 					if (result.HasValue) {

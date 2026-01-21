@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.Linq;
 
 namespace Albatross.CommandLine {
@@ -90,6 +91,23 @@ namespace Albatross.CommandLine {
 			var option = func(command);
 			option.Action = new AsyncOptionAction<TOption, THandler, TValue>(option, host.GetServiceProvider);
 			return command;
+		}
+
+		public static VerbosityOption? GetVerbosityOption(this ParseResult parseResult) {
+			var option = parseResult.CommandResult.Children.OfType<OptionResult>()
+					.FirstOrDefault(x => x.Option is VerbosityOption)?.Option as VerbosityOption;
+
+			// If a recursive option is not specified, it does not appear in CommandResult even if its default value is defined.
+			// Non recursive options does appear in CommandResult when not specified if it has a default value 
+			// therefore the next three line is not necessary
+			//if (option == null) {
+			//	option = parseResult.CommandResult.Command.Options.OfType<VerbosityOption>().FirstOrDefault();
+			//}
+			// need to get the defined VerbosityOption from the root command if not found in the current command
+			if (option == null) {
+				option = parseResult.RootCommandResult.Command.Options.OfType<VerbosityOption>().FirstOrDefault();
+			}
+			return option;
 		}
 	}
 }

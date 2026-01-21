@@ -26,7 +26,7 @@ namespace Albatross.CommandLine {
 			var services = this.serviceFactory();
 			var context = services.GetRequiredService<ICommandContext>();
 			var logger = services.GetRequiredService<ILogger<GlobalCommandAction>>();
-			logger.LogInformation("Executing command '{command}'", context.Key);
+			logger.LogDebug("Executing command '{command}'", context.Key);
 			if (context.HasInputActionError) {
 				return InputActionErrorExitCode;
 			}

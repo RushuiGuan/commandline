@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Help;
@@ -64,7 +63,7 @@ namespace Albatross.CommandLine {
 		/// <summary>
 		/// Gets the global verbosity option shared across all commands.
 		/// </summary>
-		public static VerbosityOption VerbosityOption { get; } = new() {
+		public VerbosityOption VerbosityOption { get; } = new() {
 			Required = false,
 			Recursive = true,
 		};

@@ -10,6 +10,22 @@ namespace Sample.CommandLine {
 	public record class TestLoggingParams {
 	}
 
+	[Verb<TestLogging>("test default-logging", Description = "This command has a default logging of Info")]
+	public record class TestDefaultLoggingParams {
+	}
+
+	public partial class TestDefaultLoggingCommand {
+		/// <summary>
+		/// add a verbosity option with default value of Debug to override the global recursive default of Error
+		/// </summary>
+		partial void Initialize() {
+			var myOwnVerbosityOption = new VerbosityOption {
+				DefaultValueFactory = _ => VerbosityOption.Debug
+			};
+			this.Add(myOwnVerbosityOption);
+		}
+	}
+
 	public class TestLogging : BaseHandler<TestLoggingParams> {
 		private readonly ILogger<TestLogging> logger;
 
