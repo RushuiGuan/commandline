@@ -63,7 +63,7 @@ namespace Albatross.CommandLine {
 		/// <summary>
 		/// Gets the global verbosity option shared across all commands.
 		/// </summary>
-		public VerbosityOption VerbosityOption { get; } = new() {
+		public static VerbosityOption VerbosityOption { get; } = new() {
 			Required = false,
 			Recursive = true,
 		};

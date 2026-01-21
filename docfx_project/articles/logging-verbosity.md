@@ -71,13 +71,13 @@ public class MyCommandHandler : BaseHandler<MyCommandParams> {
 
 ### Changing the Global Default
 
-By default, the verbosity level is `Error`. To change the global default for all commands, modify the `VerbosityOption.DefaultValueFactory` before parsing:
+By default, the verbosity level is `Error`. To change the global default for all commands, modify the static `CommandBuilder.VerbosityOption.DefaultValueFactory` before parsing:
 
 ```csharp
-await using var host = new CommandHost("My CLI Application");
-
 // Change the global default to Info level
-host.CommandBuilder.VerbosityOption.DefaultValueFactory = _ => VerbosityOption.Info;
+CommandBuilder.VerbosityOption.DefaultValueFactory = _ => VerbosityOption.Info;
+
+await using var host = new CommandHost("My CLI Application");
 
 host.RegisterServices(RegisterServices)
     .AddCommands()

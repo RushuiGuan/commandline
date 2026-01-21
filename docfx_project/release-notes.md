@@ -1,5 +1,30 @@
 # Release Notes
 
+## 8.0.4 - Customizable Verbosity & New Inputs
+
+### New Features
+
+- **Customizable Default Verbosity** - The global `VerbosityOption` now supports changing the default verbosity level:
+  ```csharp
+  // Change global default
+  CommandBuilder.VerbosityOption.DefaultValueFactory = _ => VerbosityOption.Info;
+  ```
+- **Per-Command Verbosity Override** - Individual commands can override the default verbosity using `partial void Initialize()` to add their own `VerbosityOption`
+- **New `TimeZoneOption`** - Added a reusable option in `Albatross.CommandLine.Inputs` for time zone input with validation (supports both Windows and IANA formats)
+- **Disable Logging Option** - New `Parse(args, false)` overload allows disabling logging entirely when not needed
+
+### Improvements
+
+- **Reduced Log Noise** - Internal framework logging changed from `Information` to `Debug` level for cleaner output
+- **New Extension Method** - Added `GetVerbosityOption()` extension on `ParseResult` to retrieve the active verbosity option
+
+### Documentation
+
+- Added comprehensive [Logging & Verbosity](articles/logging-verbosity.md) guide
+- Added [System.CommandLine Migration](articles/system-commandline-migration.md) guide for migrating from beta4 to 2.0.2
+
+---
+
 ## 8.0.3 - Bug Fix & Documentation
 
 - **Bug Fix** - Changed `MaxArity` for collection arguments from `int.MaxValue` to `100_000` to align with the `MaximumArity` constant defined in System.CommandLine 2.0.2
