@@ -6,7 +6,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Albatross.Config" Version="7.5.11" />
-		<PackageReference Include="Albatross.Logging" Version="10.0.1" />
+		<PackageReference Include="Albatross.Logging" Version="10.0.2" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
 	</ItemGroup>

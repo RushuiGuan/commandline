@@ -9,6 +9,7 @@ using Sample.CommandLine.Services;
 namespace Sample.CommandLine {
 	internal class Program {
 		static async Task<int> Main(string[] args) {
+			Albatross.Logging.Extensions.RemoveLegacySlackSinkOptions();
 			await using var host = new CommandHost("Sample Command Line Application");
 			// do this if you want to change the global verbosity default
 			// CommandBuilder.VerbosityOption.DefaultValueFactory = _ => "Info";

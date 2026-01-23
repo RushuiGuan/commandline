@@ -44,21 +44,16 @@ namespace Albatross.CommandLine.Defaults {
 		/// <returns></returns>
 		public static CommandHost WithSerilog(this CommandHost commandHost) {
 			commandHost.ConfigureHost((result, builder) => {
-				var verbosityOption = result.GetVerbosityOption();
-				var logLevel = LogLevel.Error;
-				if (verbosityOption != null) {
-					logLevel = verbosityOption.GetLogLevel(result);
-				}
 				builder.UseSerilog();
-				var setupSerilog = new SetupSerilog()
-					.Configure(cfg => {
-						cfg.MinimumLevel.Is(logLevel.ToSerilogLevel())
-							.WriteTo.Console(outputTemplate: SetupSerilog.DefaultOutputTemplate, standardErrorFromLevel: LogEventLevel.Error)
-							.Enrich.FromLogContext();
-					});
-				if (logLevel != LogLevel.None) {
+				builder.ConfigureLogging((context, logging) => {
+					var setupSerilog = new SetupSerilog();
+					setupSerilog.UseConfigFile(EnvironmentSetting.DOTNET_ENVIRONMENT.Value, null, null, true);
+					var logLevel = result.GetVerbosityOption()?.GetLogLevel(result) ?? LogLevel.Error;
+					if (logLevel != LogLevel.None) {
+						setupSerilog.UseConsole(logLevel.ToSerilogLevel());
+					}
 					setupSerilog.Create();
-				}
+				});
 			});
 			return commandHost;
 		}
