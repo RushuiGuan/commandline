@@ -1,5 +1,35 @@
 # Release Notes
 
+## 8.0.5 - TrackerOption & Automatic Resource Disposal
+
+### New Features
+
+- **`TrackerOption`** - New reusable option in `Albatross.CommandLine.Inputs` for resumable long-running jobs:
+  - Tracks processed items in a file, automatically skipping already-completed work on restart
+  - Immediate write-through persistence (survives process kill, power failure)
+  - Thread-safe for concurrent batch processing
+  - Case-insensitive by default, with `CaseSensitiveTrackerOption` variant
+  - Proper cancellation handling (`OperationCanceledException` propagates, other errors are logged)
+  ```csharp
+  [UseOption<TrackerOption>]
+  public Tracker? Tracker { get; init; }
+
+  // In handler:
+  await tracker.ProcessIfNew(itemId, (ct) => ProcessItem(ct), logger, cancellationToken);
+  ```
+
+- **Automatic Resource Disposal** - `CommandContext` now implements `IAsyncDisposable` and automatically disposes values stored via option handlers:
+  - Values implementing `IAsyncDisposable` are disposed asynchronously
+  - Values implementing `IDisposable` are disposed synchronously
+  - No manual cleanup required for resources created by option handlers
+
+### Documentation
+
+- Added comprehensive [TrackerOption](articles/reusable-parameters/tracker-file-option.md) guide
+- Updated [Command Context](articles/command-context.md) with automatic disposal documentation
+
+---
+
 ## 8.0.4 - Customizable Verbosity & New Inputs
 
 ### New Features

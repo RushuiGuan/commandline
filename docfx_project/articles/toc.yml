@@ -16,6 +16,9 @@
 - name: Reusable Parameter
   href: reusable-parameter.md
 
+- name: Reusable Parameters Reference
+  href: reusable-parameters/toc.yml
+
 - name: Option PreProcessing and Transformation
   href: option-preprocessing-transformation.md
 

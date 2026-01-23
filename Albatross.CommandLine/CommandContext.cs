@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
 	/// <summary>
@@ -61,7 +62,7 @@ namespace Albatross.CommandLine {
 	/// <summary>
 	/// Default implementation of <see cref="ICommandContext"/> that provides state sharing between option handlers and command handlers.
 	/// </summary>
-	public class CommandContext : ICommandContext {
+	public class CommandContext : ICommandContext, IAsyncDisposable {
 		/// <inheritdoc/>
 		public string Key { get; }
 		/// <inheritdoc/>
@@ -117,6 +118,16 @@ namespace Albatross.CommandLine {
 
 		public void SetInputActionStatus(OptionHandlerStatus status) {
 			this.inputStatus[status.Name] = status;
+		}
+
+		public async ValueTask DisposeAsync() {
+			foreach (var value in values.Values) {
+				if (value is IAsyncDisposable asyncDisposable) {
+					await asyncDisposable.DisposeAsync();
+				} else if (value is IDisposable disposable) {
+					disposable.Dispose();
+				}
+			}
 		}
 	}
 }

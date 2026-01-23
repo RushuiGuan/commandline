@@ -83,3 +83,36 @@ public class MyCommandHandler : BaseHandler<MyCommandParams> {
     }
 }
 ```
+
+### 3. Automatic Resource Disposal
+
+The `CommandContext` implements `IAsyncDisposable` and automatically disposes any values stored via `SetValue` that implement `IDisposable` or `IAsyncDisposable`. This ensures proper cleanup of resources created by option handlers without requiring manual disposal logic.
+
+When the command execution completes, the context iterates through all stored values and disposes them in the following order:
+1. Values implementing `IAsyncDisposable` are disposed asynchronously
+2. Values implementing only `IDisposable` are disposed synchronously
+
+This pattern is particularly useful for option handlers that create resources like file handles, database connections, or trackers:
+
+```csharp
+public class TrackerHandler : IAsyncOptionHandler<TrackerOption, Tracker> {
+    public Task<OptionHandlerResult<Tracker>> InvokeAsync(
+        TrackerOption symbol,
+        ParseResult result,
+        CancellationToken cancellationToken) {
+
+        var file = result.GetValue(symbol);
+        if (file != null) {
+            var tracker = new Tracker(file, StringComparer.OrdinalIgnoreCase);
+            // The Tracker implements IDisposable and will be
+            // automatically disposed when the command completes
+            return Task.FromResult(new OptionHandlerResult<Tracker>(tracker));
+        }
+        return Task.FromResult(new OptionHandlerResult<Tracker>());
+    }
+}
+```
+
+> [!NOTE]
+> You do not need to manually dispose values stored in the `CommandContext`. The disposal is handled automatically when the command execution pipeline completes
+```
