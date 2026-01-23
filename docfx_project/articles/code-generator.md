@@ -37,7 +37,6 @@ public static CommandHost AddCommands(this CommandHost host) {
 	host.CommandBuilder.Add<ExampleCommandSpecificRegistrationsCommand1>("example typescript web-client");
 }    
 ```
-
 ## Put It Together
 The genenerated code should be invoked during bootstrapping.
 ```csharp
@@ -53,4 +52,12 @@ internal class Program {
 		return await host.InvokeAsync();
 	}
 }
+```
+
+To view the generated files, put the following tags in the project file, build the project and they will be found in: `[project root]\obj\generated`.
+```xml
+<PropertyGroup>
+	<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+	<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)generated</CompilerGeneratedFilesOutputPath>
+</PropertyGroup>
 ```

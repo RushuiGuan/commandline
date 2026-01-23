@@ -1,5 +1,23 @@
 # Release Notes
 
+## 8.0.6 - Improved Serilog Configuration
+
+### Improvements
+
+- **File-Based Serilog Configuration** - The `WithSerilog()` extension now supports loading Serilog settings from configuration files:
+  - Loads `serilog.json` from the application's base directory (if present)
+  - Supports environment-specific files like `serilog.Development.json`
+  - Console logging is added on top of file-based configuration based on the `--verbosity` option
+  - This allows advanced Serilog configuration (file sinks, seq, etc.) without code changes
+
+- **Dependency Update** - Updated `Albatross.Logging` from 10.0.1 to 10.0.2
+
+### Internal
+
+- Fixed multiline package description in `Albatross.CommandLine.csproj`
+
+---
+
 ## 8.0.5 - TrackerOption & Automatic Resource Disposal
 
 ### New Features
