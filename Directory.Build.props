@@ -1,31 +1,31 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project>
-	<PropertyGroup>
-		<Version>8.0.5</Version>
-		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-		<EnableWindowsTargeting>True</EnableWindowsTargeting>
-		<LangVersion>Latest</LangVersion>
-		<Nullable>enable</Nullable>
-		<RepositoryUrl>https://github.com/RushuiGuan/commandline</RepositoryUrl>
-		<PackageProjectUrl>https://rushuiguan.github.io/commandline/</PackageProjectUrl>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageIcon>icon.png</PackageIcon>
-		<Authors>Rushui Guan</Authors>
-		<PackageTags>
+  <PropertyGroup>
+    <Version>8.0.6</Version>
+    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+    <EnableWindowsTargeting>True</EnableWindowsTargeting>
+    <LangVersion>Latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <RepositoryUrl>https://github.com/RushuiGuan/commandline</RepositoryUrl>
+    <PackageProjectUrl>https://rushuiguan.github.io/commandline/</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
+    <Authors>Rushui Guan</Authors>
+    <PackageTags>
 			system.commandline;system-commandline;cli;commandline;command-line;console;dotnet-tool;dependency-injection;hosting;source-generator;roslyn
 		</PackageTags>
-		<PackageReleaseNotes>See https://rushuiguan.github.io/commandline/release-notes</PackageReleaseNotes>
-		<!-- SourceLink Configuration -->
-		<PublishRepositoryUrl>true</PublishRepositoryUrl>
-		<IncludeSymbols>true</IncludeSymbols>
-		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<RepositoryType>git</RepositoryType>
-	</PropertyGroup>
-	<ItemGroup>
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
+    <PackageReleaseNotes>See https://rushuiguan.github.io/commandline/release-notes</PackageReleaseNotes>
+    <!-- SourceLink Configuration -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 </Project>
