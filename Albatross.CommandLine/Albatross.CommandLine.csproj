@@ -3,11 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<Nullable>enable</Nullable>
-		<Description>
-			Albatross.CommandLine is an opinionated integration layer for System.CommandLine:
-			dependency injection, hosting,
-			configuration, logging, and source-generator-friendly command wiring for .NET CLI apps.
-</Description>
+		<Description>A streamlined integration layer for System.CommandLine with dependency injection, hosting, configuration, logging, and	source-generated command wiring for .NET CLI apps.</Description>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="System.CommandLine" Version="2.0.2" />
