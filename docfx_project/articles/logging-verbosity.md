@@ -153,6 +153,9 @@ The Serilog configuration:
 - Writes to console with error and above going to stderr
 - Enriches logs with context information
 
+> [!NOTE]
+> When using a `serilog.json` configuration file, the global minimum level will always be set to `Verbose` by the Console sink. This ensures that the Console sink can emit log events at any level controlled by the `--verbosity` option. The sinks defined in `serilog.json` should use their own `restrictedToMinimumLevel` settings to control their output independently.
+
 ## How It Works
 
 1. **CommandBuilder** creates a global `VerbosityOption` with `Recursive = true`, making it available to all commands

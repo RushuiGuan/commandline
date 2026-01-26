@@ -1,5 +1,17 @@
 # Release Notes
 
+## 8.0.7 - Logging Bug Fix
+
+### Bug Fix
+
+- **Albatross.Logging 10.0.2 Bug** - `Albatross.Logging` 10.0.2 has a bug where `UseConsole` does not set the global minimum level. This caused the console sink to not respect the `--verbosity` option correctly. Updated to `Albatross.Logging` 10.0.3 which fixes this issue.
+
+### Dependency Update
+
+- Updated `Albatross.Logging` from 10.0.2 to 10.0.3
+
+---
+
 ## 8.0.6 - Improved Serilog Configuration
 
 ### Improvements
