@@ -9,15 +9,17 @@ using System.Linq;
 namespace Albatross.CommandLine {
 /// <summary>
 /// A command-line option that displays help for a command and all of its subcommands recursively.
+/// Supports "compact" (default) and "detailed" modes.
 /// This option terminates execution after displaying help.
 /// </summary>
-public class RecursiveHelpOption : Option<bool> {
+public class RecursiveHelpOption : Option<string> {
 /// <summary>
 /// Creates a new recursive help option with alias --help-all.
 /// </summary>
 public RecursiveHelpOption() : base("--help-all") {
-Description = "Show help for this command and all subcommands";
-DefaultValueFactory = _ => false;
+Description = "Show help for this command and all subcommands (compact|detailed)";
+Arity = ArgumentArity.ZeroOrOne;
+DefaultValueFactory = _ => "compact";
 // Set up the action to display recursive help when the option is specified
 this.Action = new RecursiveHelpAction(this);
 }
@@ -41,53 +43,95 @@ return 0;
 /// <param name="parseResult">The parse result containing the command context.</param>
 public void DisplayHelp(ParseResult parseResult) {
 var command = parseResult.CommandResult.Command;
+
+// Get the mode value, defaulting to "compact"
+var mode = parseResult.GetValue(this) ?? "compact";
+var isDetailed = mode.Equals("detailed", StringComparison.OrdinalIgnoreCase);
+
 var writer = new StringWriter();
-
-WriteRecursiveHelp(command, writer, 0);
-
+WriteRecursiveHelp(command, writer, 0, isDetailed, isCurrentCommand: true);
 Console.Out.Write(writer.ToString());
 }
 
-private void WriteRecursiveHelp(Command command, TextWriter writer, int depth) {
-var indent = new string(' ', depth * 2);
+private void WriteRecursiveHelp(Command command, TextWriter writer, int depth, bool isDetailed, bool isCurrentCommand) {
+var indent = new string(' ', depth * 4);
 
-// Write command name
+// For current command (depth 0), show full details
+// For child commands, show name and description on same line with alignment
+if (isCurrentCommand) {
+// Write current command in detail (like standard help)
 var commandName = GetFullCommandName(command);
-writer.WriteLine($"{indent}{commandName}");
+writer.WriteLine($"{commandName}");
 
-// Write description if available
 if (!string.IsNullOrWhiteSpace(command.Description)) {
-writer.WriteLine($"{indent}  {command.Description}");
+writer.WriteLine($"  {command.Description}");
 }
 
-// Write options for this command
+// Write options for current command
 var commandOptions = command.Options
-.Where(o => !o.Recursive && o != this) // Exclude global options and self
+.Where(o => !o.Recursive && o != this)
 .ToList();
 
 if (commandOptions.Any()) {
-writer.WriteLine($"{indent}  Options:");
+writer.WriteLine($"  Options:");
 foreach (var option in commandOptions) {
-WriteOptionHelp(option, writer, depth + 2);
+WriteOptionHelp(option, writer, 4);
 }
 }
 
-// Write arguments for this command
+// Write arguments for current command
 if (command.Arguments.Any()) {
-writer.WriteLine($"{indent}  Arguments:");
+writer.WriteLine($"  Arguments:");
 foreach (var argument in command.Arguments) {
-WriteArgumentHelp(argument, writer, depth + 2);
+WriteArgumentHelp(argument, writer, 4);
 }
 }
 
-// Add spacing between commands
+// Add blank line before subcommands
 if (command.Subcommands.Any()) {
 writer.WriteLine();
+}
+} else {
+// For child commands: write name and description on same line with alignment
+var commandName = command.Name;
+var description = command.Description ?? string.Empty;
+
+// Calculate alignment (standard System.CommandLine uses column ~30 for descriptions)
+const int alignColumn = 30;
+var nameWithIndent = $"{indent}{commandName}";
+
+if (string.IsNullOrWhiteSpace(description)) {
+writer.WriteLine(nameWithIndent);
+} else {
+var padding = Math.Max(1, alignColumn - nameWithIndent.Length);
+writer.WriteLine($"{nameWithIndent}{new string(' ', padding)}{description}");
+}
+
+// If detailed mode, show parameters for child commands
+if (isDetailed) {
+var commandOptions = command.Options
+.Where(o => !o.Recursive && o != this)
+.ToList();
+
+if (commandOptions.Any()) {
+writer.WriteLine($"{indent}    Options:");
+foreach (var option in commandOptions) {
+WriteOptionHelp(option, writer, depth * 4 + 8);
+}
+}
+
+if (command.Arguments.Any()) {
+writer.WriteLine($"{indent}    Arguments:");
+foreach (var argument in command.Arguments) {
+WriteArgumentHelp(argument, writer, depth * 4 + 8);
+}
+}
+}
 }
 
 // Recursively write help for subcommands
 foreach (var subcommand in command.Subcommands.OrderBy(c => c.Name)) {
-WriteRecursiveHelp(subcommand, writer, depth);
+WriteRecursiveHelp(subcommand, writer, depth + 1, isDetailed, isCurrentCommand: false);
 }
 }
 
@@ -107,8 +151,8 @@ current = current.Parents.OfType<Command>().FirstOrDefault();
 return string.Join(" ", parts);
 }
 
-private void WriteOptionHelp(Option option, TextWriter writer, int depth) {
-var indent = new string(' ', depth * 2);
+private void WriteOptionHelp(Option option, TextWriter writer, int indentSpaces) {
+var indent = new string(' ', indentSpaces);
 var aliases = string.Join(", ", option.Aliases);
 var valueHint = GetValueHint(option);
 
@@ -124,8 +168,8 @@ writer.Write($"  {option.Description}");
 writer.WriteLine();
 }
 
-private void WriteArgumentHelp(Argument argument, TextWriter writer, int depth) {
-var indent = new string(' ', depth * 2);
+private void WriteArgumentHelp(Argument argument, TextWriter writer, int indentSpaces) {
+var indent = new string(' ', indentSpaces);
 writer.Write($"{indent}<{argument.Name}>");
 
 if (!string.IsNullOrWhiteSpace(argument.Description)) {
