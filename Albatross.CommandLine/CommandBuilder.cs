@@ -22,12 +22,13 @@ namespace Albatross.CommandLine {
 
 		/// <summary>
 		/// Creates a new command builder with the specified description for the root command.
-		/// The root command includes a global verbosity option by default.
+		/// The root command includes global verbosity and recursive help options by default.
 		/// </summary>
 		/// <param name="rootCommandDescription">The description to display in help text for the root command.</param>
 		public CommandBuilder(string rootCommandDescription) {
 			RootCommand = new RootCommand(rootCommandDescription) {
 				VerbosityOption,
+				RecursiveHelpOption,
 			};
 			RootCommand.SetAction(new HelpAction().Invoke);
 			commands.Add(string.Empty, RootCommand);
@@ -64,6 +65,14 @@ namespace Albatross.CommandLine {
 		/// Gets the global verbosity option shared across all commands.
 		/// </summary>
 		public static VerbosityOption VerbosityOption { get; } = new() {
+			Required = false,
+			Recursive = true,
+		};
+
+		/// <summary>
+		/// Gets the global recursive help option shared across all commands.
+		/// </summary>
+		public static RecursiveHelpOption RecursiveHelpOption { get; } = new() {
 			Required = false,
 			Recursive = true,
 		};
