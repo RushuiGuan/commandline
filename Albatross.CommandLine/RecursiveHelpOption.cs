@@ -141,9 +141,9 @@ if (valueType == typeof(bool)) {
 return string.Empty;
 }
 
-// Try to get a meaningful hint from the option
-var hint = option.Name.TrimStart('-');
-return $"<{hint}>";
+// Try to get a meaningful parameter name from the option
+var parameterName = option.Name.TrimStart('-');
+return $"<{parameterName}>";
 }
 }
 }
