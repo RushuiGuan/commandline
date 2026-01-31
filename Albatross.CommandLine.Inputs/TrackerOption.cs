@@ -44,7 +44,8 @@ namespace Albatross.CommandLine.Inputs {
 						}
 					}
 				}
-				writer = new StreamWriter(file.FullName, append: true);
+				var fileStream = new FileStream(file.FullName, FileMode.Append, FileAccess.Write, FileShare.Read);
+				writer = new StreamWriter(fileStream, leaveOpen: false);
 			}
 		}
 
