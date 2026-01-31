@@ -19,6 +19,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Albatross.CommandLine\Albatross.CommandLine.csproj" />
+		<ProjectReference Include="..\Albatross.CommandLine.Inputs\Albatross.CommandLine.Inputs.csproj" />
 		<ProjectReference Include="..\Albatross.CommandLine.CodeGen\Albatross.CommandLine.CodeGen.csproj">
 			<PrivateAssets>all</PrivateAssets>
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
