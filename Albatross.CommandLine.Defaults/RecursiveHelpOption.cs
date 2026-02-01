@@ -40,6 +40,7 @@ namespace Albatross.CommandLine.Defaults {
 		/// <summary>
 		/// Displays recursive help for the specified command and all its subcommands.
 		/// </summary>
+		/// <param name="parseResult">The parse result containing the command context.</param>
 		public void DisplayHelp(ParseResult parseResult) {
 			var command = parseResult.CommandResult.Command;
 			var mode = parseResult.GetValue(this) ?? "compact";
@@ -223,12 +224,39 @@ namespace Albatross.CommandLine.Defaults {
 		/// Internal data structure to hold help information for a command.
 		/// </summary>
 		private class HelpData {
+			/// <summary>
+			/// The name of the command.
+			/// </summary>
 			public string Name { get; set; } = string.Empty;
+			
+			/// <summary>
+			/// The description of the command.
+			/// </summary>
 			public string? Description { get; set; }
+			
+			/// <summary>
+			/// The depth level in the command hierarchy (0 for root).
+			/// </summary>
 			public int Depth { get; set; }
+			
+			/// <summary>
+			/// Indicates whether this is the root command.
+			/// </summary>
 			public bool IsRoot { get; set; }
+			
+			/// <summary>
+			/// The list of options for this command.
+			/// </summary>
 			public List<ParameterInfo>? Options { get; set; }
+			
+			/// <summary>
+			/// The list of arguments for this command.
+			/// </summary>
 			public List<ParameterInfo>? Arguments { get; set; }
+			
+			/// <summary>
+			/// The list of subcommands.
+			/// </summary>
 			public List<HelpData> Subcommands { get; set; } = new();
 		}
 
@@ -236,8 +264,19 @@ namespace Albatross.CommandLine.Defaults {
 		/// Internal data structure to hold parameter (option or argument) information.
 		/// </summary>
 		private class ParameterInfo {
+			/// <summary>
+			/// The aliases for the parameter (e.g., "-o, --output").
+			/// </summary>
 			public string Aliases { get; set; } = string.Empty;
+			
+			/// <summary>
+			/// The value hint for the parameter (e.g., "<file>").
+			/// </summary>
 			public string? ValueHint { get; set; }
+			
+			/// <summary>
+			/// The description of the parameter.
+			/// </summary>
 			public string? Description { get; set; }
 		}
 	}
