@@ -6,7 +6,7 @@ using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 
-namespace Albatross.CommandLine.Defaults {
+namespace Albatross.CommandLine.Inputs {
 	/// <summary>
 	/// A command-line option that displays help for a command and all of its subcommands recursively.
 	/// This is an optional option that can be added to any command as needed.
