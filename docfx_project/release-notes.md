@@ -1,5 +1,22 @@
 # Release Notes
 
+## 8.0.8 - Bug Fix & Tracker Improvements
+
+### Bug Fix
+
+- **`CommandOptionParameterSetup.ContextValueType` Type Correction** - Fixed the property type from `INamedTypeSymbol?` to `ITypeSymbol?` in the source generator IR. This was causing a `InvalidCastException` at code generation time when a `[OptionHandler<TOption, THandler, TContextValue>]` attribute used an array type (e.g., `int[]`) as the context value type, since array types are `IArrayTypeSymbol` and cannot be cast to `INamedTypeSymbol`.
+
+### Improvements
+
+- **Tracker File Read Sharing** - `TrackerOption` now opens the tracker file with `FileShare.Read`, allowing other processes (log viewers, monitoring tools) to read the file concurrently while the tracker is writing. Previously the file was opened exclusively, blocking any concurrent readers.
+- **Tracker StreamWriter `leaveOpen`** - Added explicit `leaveOpen: true` to the `StreamWriter` constructor in `TrackerOption` to prevent premature stream closure and ensure the underlying `FileStream` lifetime is correctly managed.
+
+### Tests
+
+- Added `TestTrackerFileShare` test class verifying that the tracker file can be opened for reading by another handle while actively being written.
+
+---
+
 ## 8.0.7 - Logging Bug Fix
 
 ### Bug Fix
