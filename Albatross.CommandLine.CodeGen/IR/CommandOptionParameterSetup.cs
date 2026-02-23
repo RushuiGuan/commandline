@@ -26,7 +26,7 @@ namespace Albatross.CommandLine.CodeGen.IR {
 		/// OptionHandlerAttribute<TOption, THandler, TContextValue>
 		/// ]]>
 		/// </summary>
-		public INamedTypeSymbol? ContextValueType { get; }
+		public ITypeSymbol? ContextValueType { get; }
 		public bool AllowMultipleArgumentsPerToken { get; }
 
 		public CommandOptionParameterSetup(Compilation compilation, IPropertySymbol propertySymbol, AttributeData propertyAttribute, INamedTypeSymbol? explicitParamClass, bool useCustomName)
@@ -41,7 +41,7 @@ namespace Albatross.CommandLine.CodeGen.IR {
 							this.ExplicitParameterHandlerClass = (INamedTypeSymbol)attributeClass.TypeArguments[1];
 						} else if (attributeClass.OriginalDefinition.Is(compilation.OptionHandlerAttributeClassGeneric3())) {
 							this.ExplicitParameterHandlerClass = (INamedTypeSymbol)attributeClass.TypeArguments[1];
-							this.ContextValueType = (INamedTypeSymbol)attributeClass.TypeArguments[2];
+							this.ContextValueType = attributeClass.TypeArguments[2];
 						} else if (!useCustomName && attributeClass.Is(compilation.DefaultNameAliasesAttribute()) && attribute.ConstructorArguments.Length > 0) {
 							this.Key = Convert.ToString(attribute.ConstructorArguments[0].Value);
 							if (attribute.ConstructorArguments.Length > 1) {
