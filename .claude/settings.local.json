@@ -12,7 +12,14 @@
       "Bash(git commit:*)",
       "WebSearch",
       "WebFetch(domain:github.com)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh api:*)",
+      "Bash(head:*)",
+      "Bash(cd /c/app/commandline && dotnet run --project Sample.CommandLine -- test --help-all 2>&1)",
+      "Bash(cd /c/app/commandline && dotnet run --project Sample.CommandLine -- hello --help-all detailed 2>&1)",
+      "Bash(cd /c/app/commandline && git push 2>&1)"
     ]
-  }
+  },
+  "defaultMode": "acceptEdits"
 }
