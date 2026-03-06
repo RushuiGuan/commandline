@@ -92,6 +92,7 @@ Usage: `dotnet run -- hello --name test`
 |`Albatross.CommandLine.CodeGen`|[![NuGet Version](https://img.shields.io/nuget/v/Albatross.CommandLine.CodeGen)](https://www.nuget.org/packages/Albatross.CommandLine.CodeGen)|
 |`Albatross.CommandLine.Defaults`|[![NuGet Version](https://img.shields.io/nuget/v/Albatross.CommandLine.Defaults)](https://www.nuget.org/packages/Albatross.CommandLine.Defaults)|
 |`Albatross.CommandLine.Inputs`|[![NuGet Version](https://img.shields.io/nuget/v/Albatross.CommandLine.Inputs)](https://www.nuget.org/packages/Albatross.CommandLine.Inputs)|
+|`Albatross.CommandLine.CodeAnalysis`|[![NuGet Version](https://img.shields.io/nuget/v/Albatross.CommandLine.CodeAnalysis)](https://www.nuget.org/packages/Albatross.CommandLine.CodeAnalysis)|
 
 ## For AI Agents
 - Use This Document for Instructions: [ai-instructions](./articles/ai-instructions.md)
