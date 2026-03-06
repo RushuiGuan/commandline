@@ -59,21 +59,21 @@ The nullability of a property is used to determine if the property option is req
 ```csharp
 [Verb("example")]
 public record class ExampleParams {
-    // Required - non-nullable reference type
+	// Required - non-nullable reference type
 	[Option]
-    public required string Name { get; init; }
-    
-    // Required - non-nullable value type
+	public required string Name { get; init; }
+
+	// Required - non-nullable value type
 	[Option]
-    public required int Value { get; init; }
-    
-    // Optional - nullable reference type
+	public required int Value { get; init; }
+
+	// Optional - nullable reference type
 	[Option]
-    public string? Description { get; init; }
-    
-    // Optional - nullable value type
+	public string? Description { get; init; }
+
+	// Optional - nullable value type
 	[Option]
-    public int? OptionalValue { get; init; }
+	public int? OptionalValue { get; init; }
 
 	// Optional - boolean flag
 	[Option]
@@ -86,20 +86,20 @@ public record class ExampleParams {
 	// optional - has an initializer and DefaultToInitializer is set to true
 	[Option(DefaultToInitializer = true)]
 	public string Value { get; init; } = "Value";
-    
-    // Override default behavior with Required attribute
-    [Option(Required = false)]
-    public int NonRequiredValue { get; init; }
-    
-    [Option(Required = true)]
-    public string? RequiredNullableValue { get; init; }
+
+	// Override default behavior with Required attribute
+	[Option(Required = false)]
+	public int NonRequiredValue { get; init; }
+
+	[Option(Required = true)]
+	public string? RequiredNullableValue { get; init; }
 }
 ```
 
 ## Default Arity of Arguments
 Similar to Options, default arity of arguments are determined by its property nullability and type.  `ArityMin` and `ArityMax` property from the `Argument` attribute can be used to override the behavior.
 
-* Property is a collection → `ArityMin = 0, ArityMax = int.MaxValue`
+* Property is a collection → `ArityMin = 0, ArityMax = 100_000`
 * Property is nullable → `ArityMin = 0, ArityMax = 1`
 * Property is not nullable → `ArityMin = 1, ArityMax = 1`
 	- Property has an initializer and `DefaultToInitializer` as true → `ArityMin = 0, ArityMax = 1`
