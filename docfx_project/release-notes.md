@@ -1,5 +1,27 @@
 # Release Notes
 
+## 8.0.9 - Roslyn Code Analysis
+
+### New Package
+
+- **`Albatross.CommandLine.CodeAnalysis`** - New companion Roslyn analyzer package that catches common attribute misuse at compile time. Reference it as a development-only dependency — it adds no runtime overhead:
+  ```xml
+  <PackageReference Include="Albatross.CommandLine.CodeAnalysis" Version="*">
+    <PrivateAssets>all</PrivateAssets>
+  </PackageReference>
+  ```
+
+### Diagnostics
+
+| ID | Severity | Description |
+|----|----------|-------------|
+| ACL0001 | Warning | Two or more `[Option]`-annotated properties on a `[Verb]` class have names that are identical case-insensitively, producing duplicate CLI options (e.g. `Name` and `name` both map to `--name`). |
+| ACL0002 | Warning | When `VerbAttribute.BaseParamsClass` is set, the params class must derive from the specified type. Applies to both class-targeted and assembly-targeted verb attributes. |
+| ACL0003 | Error | The first type argument `TOption` of `OptionHandlerAttribute<TOption, THandler>` (or the three-argument variant) must be the attributed class itself or one of its base classes. Violations cause a compiler error in the generated code. |
+| ACL0004 | Warning | A property has both `[Option]` and `[Argument]` applied simultaneously, which is not allowed. |
+
+---
+
 ## 8.0.8 - Bug Fix & Tracker Improvements
 
 ### Bug Fix
