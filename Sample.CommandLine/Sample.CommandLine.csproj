@@ -8,6 +8,11 @@
 		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
 	</PropertyGroup>
 	<ItemGroup>
+		<ProjectReference Include="..\Albatross.CommandLine.CodeAnalysis\Albatross.CommandLine.CodeAnalysis.csproj">
+			<PrivateAssets>all</PrivateAssets>
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+			<OutputItemType>Analyzer</OutputItemType>
+		</ProjectReference>
 		<ProjectReference Include="..\Albatross.CommandLine.Inputs\Albatross.CommandLine.Inputs.csproj" />
 		<ProjectReference Include="..\Albatross.CommandLine.CodeGen\Albatross.CommandLine.CodeGen.csproj">
 			<PrivateAssets>all</PrivateAssets>

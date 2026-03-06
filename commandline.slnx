@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path=".projects" />
+    <File Path="alias.ps1" />
+    <File Path="CLAUDE.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="icon.png" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="Albatross.CommandLine.CodeGen/Albatross.CommandLine.CodeGen.csproj" />
+  <Project Path="Albatross.CommandLine.Defaults/Albatross.CommandLine.Defaults.csproj" />
+  <Project Path="Albatross.CommandLine.Inputs/Albatross.CommandLine.Inputs.csproj" />
+  <Project Path="Albatross.CommandLine.Test/Albatross.CommandLine.Test.csproj" />
+  <Project Path="Albatross.CommandLine/Albatross.CommandLine.csproj" />
+  <Project Path="Albatross.CommandLine.CodeAnalysis/Albatross.CommandLine.CodeAnalysis.csproj" />
+  <Project Path="Sample.CommandLine/Sample.CommandLine.csproj" />
+</Solution>

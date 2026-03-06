@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>Latest</LangVersion>
+		<Nullable>Enable</Nullable>
+		<IncludeSymbols>false</IncludeSymbols>
+		<Description>A companion code analysis used by the Albatross.CommandLine library</Description>
+		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+		<PackageTags>Analyzer;Roslyn</PackageTags>
+		<IncludeBuildOutput>false</IncludeBuildOutput>
+		<DevelopmentDependency>true</DevelopmentDependency>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+		<AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="..\icon.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+</Project>
