@@ -1,9 +1,7 @@
 ﻿using Albatross.CommandLine;
 using Albatross.CommandLine.Annotations;
 using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,8 +11,8 @@ namespace Sample.CommandLine {
 		[Option]
 		public string? Test { get; set; }
 
-		[Option]
-		public string? test { get; set; }
+		// [Option]
+		// public string? test { get; set; }
 
 		[UseOption<AnOptionWithAHandler>]
 		public string? AnotherOption { get; set; }
