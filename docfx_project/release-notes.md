@@ -1,5 +1,17 @@
 # Release Notes
 
+## 8.0.10 - Bug Fix
+
+### Bug Fix
+
+- **`OutputDirectoryOption` and `OutputDirectoryArgument`** - Removed the validation that required output directories to exist before command execution. Downstream programs can now create the directory themselves, making these types more flexible for common use cases where the output directory is created as part of the command's execution.
+
+### Documentation
+
+- Added `Albatross.CommandLine.CodeAnalysis` package to the packages table on the documentation home page
+
+---
+
 ## 8.0.9 - Roslyn Code Analysis
 
 ### New Package

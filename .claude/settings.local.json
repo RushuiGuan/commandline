@@ -14,7 +14,8 @@
       "WebFetch(domain:github.com)",
       "Bash(ls:*)",
       "Bash(gh issue create --title \"TrackerOption: Open tracker file with shared read and exclusive write access\" --body \"$\\(cat <<''EOF''\n## Summary\n\nThe `Tracker` class should open the tracker file with `FileShare.Read` to allow other processes to read the file while it''s in use, while maintaining exclusive write access.\n\n## Current Behavior\n\nThe `Tracker` class in `Albatross.CommandLine.Inputs/TrackerOption.cs` opens files using:\n- `file.OpenRead\\(\\)` for reading \\(line 38\\)\n- `new StreamWriter\\(file.FullName, append: true\\)` for writing \\(line 47\\)\n\nNeither of these specifies a `FileShare` mode, which defaults to `FileShare.None` for the writer, preventing other processes from reading the tracker file while the command is running.\n\n## Proposed Change\n\nModify the file access to use:\n- **Shared read**: Allow other processes to read the tracker file\n- **Exclusive write**: Prevent other processes from writing to the tracker file\n\nThis can be achieved by using the `FileStream` constructor with explicit `FileShare.Read`:\n\n```csharp\nvar stream = new FileStream\\(file.FullName, FileMode.Append, FileAccess.Write, FileShare.Read\\);\nwriter = new StreamWriter\\(stream\\);\n```\n\n## Use Case\n\nWhen a long-running command uses a tracker file, other tools or scripts may need to inspect the tracker file to monitor progress or check which items have been processed. The current implementation blocks these reads until the command completes.\nEOF\n\\)\")",
-      "Bash(gh issue create:*)"
+      "Bash(gh issue create:*)",
+      "Bash(git log:*)"
     ]
   }
 }
