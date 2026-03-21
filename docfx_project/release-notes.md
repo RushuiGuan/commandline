@@ -4,7 +4,7 @@
 
 ### Bug Fix
 
-- **`OutputDirectoryOption` and `OutputDirectoryArgument`** - Removed the validation that required output directories to exist before command execution. Downstream programs can now create the directory themselves, making these types more flexible for common use cases where the output directory is created as part of the command's execution.
+- **`Albatross.CommandLine.Inputs`** - `OutputDirectoryOption` and `OutputDirectoryArgument`: Removed the validation that required output directories to exist before command execution. Downstream programs can now create the directory themselves, making these types more flexible for common use cases where the output directory is created as part of the command's execution.
 
 ### Documentation
 
