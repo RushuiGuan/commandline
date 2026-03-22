@@ -2,6 +2,9 @@
 
 ## 8.0.10 - Bug Fix
 
+### Enhancement
+- **`Albatross.CommandLine`** - `Albatross.CommandLine` now references `Albatross.CommandLine.CodeAnalysis` as a dev dependency.
+
 ### Bug Fix
 
 - **`Albatross.CommandLine.Inputs`** - `OutputDirectoryOption` and `OutputDirectoryArgument`: Removed the validation that required output directories to exist before command execution. Downstream programs can now create the directory themselves, making these types more flexible for common use cases where the output directory is created as part of the command's execution.
