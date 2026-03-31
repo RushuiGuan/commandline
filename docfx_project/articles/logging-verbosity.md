@@ -87,34 +87,6 @@ host.RegisterServices(RegisterServices)
 
 return await host.InvokeAsync();
 ```
-
-### Changing the Default for a Specific Command
-
-To override the default verbosity for a specific command without affecting other commands, use the `partial void Initialize()` method in the generated command class:
-
-```csharp
-// Parameters class with the Verb attribute
-[Verb<MyCommandHandler>("my-command", Description = "Command with custom default logging")]
-public record class MyCommandParams {
-}
-
-// Partial class to customize the generated command
-public partial class MyCommandCommand {
-    /// <summary>
-    /// Override the global verbosity default for this command only
-    /// </summary>
-    partial void Initialize() {
-        // Create a new VerbosityOption with Debug as the default
-        var myOwnVerbosityOption = new VerbosityOption {
-            DefaultValueFactory = _ => VerbosityOption.Debug
-        };
-        this.Add(myOwnVerbosityOption);
-    }
-}
-```
-
-This technique adds a command-specific `VerbosityOption` that takes precedence over the global recursive option.
-
 ## Disabling Logging Entirely
 
 If you don't need logging in your CLI application, simply omit the logging setup methods. Calling `Parse()` without `WithDefaults()` or `WithSerilog()` will not configure any logging provider:
