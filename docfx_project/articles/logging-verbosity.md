@@ -156,6 +156,113 @@ The Serilog configuration:
 > [!NOTE]
 > When using a `serilog.json` configuration file, the global minimum level will always be set to `Verbose` by the Console sink. This ensures that the Console sink can emit log events at any level controlled by the `--verbosity` option. The sinks defined in `serilog.json` should use their own `restrictedToMinimumLevel` settings to control their output independently.
 
+## File-Based Logging (No Console)
+
+In some scenarios, you may want to reserve the console exclusively for application I/O (e.g., `Writer.WriteLineAsync()`) and send all log messages to a file instead. This is useful when your CLI application produces structured output that shouldn't be mixed with log messages.
+
+To achieve this, use `WithConfig()` instead of `WithDefaults()` and configure Serilog manually with `SetupSerilog` from `Albatross.Logging`. The key is to call `UseConfigFile()` to load the serilog.json configuration, but **not** call `UseConsole()`.
+
+### Program.cs
+
+See the [LoggingTest](https://github.com/RushuiGuan/commandline/tree/main/LoggingTest) project for a complete example:
+
+```csharp
+using Albatross.CommandLine;
+using Albatross.CommandLine.Defaults;
+using Albatross.Config;
+using Albatross.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Serilog;
+using System.CommandLine;
+
+namespace LoggingTest {
+    internal class Program {
+        static async Task<int> Main(string[] args) {
+            await using var host = new CommandHost("LoggingTest")
+                .RegisterServices(RegisterServices)
+                .AddCommands()
+                .Parse(args)
+                .WithConfig()
+                .ConfigureHost(builder => {
+                    builder.UseSerilog();
+                    builder.ConfigureLogging((context, logging) => {
+                        var setupSerilog = new SetupSerilog();
+                        setupSerilog.UseConfigFile(EnvironmentSetting.DOTNET_ENVIRONMENT.Value, null, null, true);
+                        // NOTE: Do NOT call UseConsole() - this keeps console free for application output
+                        setupSerilog.Create();
+                    });
+                })
+                .Build();
+            return await host.InvokeAsync();
+        }
+
+        static void RegisterServices(ParseResult result, IServiceCollection services) {
+            services.RegisterCommands();
+        }
+    }
+}
+```
+
+### serilog.json
+
+Create a `serilog.json` file in your project root to configure the file sink:
+
+```json
+{
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "System": "Error",
+        "Microsoft": "Error"
+      }
+    },
+    "WriteTo": {
+      "File": {
+        "Name": "File",
+        "Args": {
+          "restrictedToMinimumLevel": "Information",
+          "path": "./logs/logging-test.log",
+          "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ssz} {MachineName} {SourceContext} {ThreadId} [{Level:w3}] {Message:lj}{NewLine}{Exception}",
+          "rollingInterval": "Day"
+        }
+      }
+    },
+    "Using": [
+      "Albatross.Logging"
+    ],
+    "Enrich": [
+      "FromLogContext",
+      "WithThreadId",
+      "WithMachineName",
+      "WithErrorMessage"
+    ]
+  }
+}
+```
+
+### Project File
+
+Ensure the `serilog.json` file is copied to the output directory:
+
+```xml
+<ItemGroup>
+  <None Update="serilog.json">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
+</ItemGroup>
+```
+
+### Environment-Specific Configuration
+
+`UseConfigFile()` supports environment-specific configuration files. If `DOTNET_ENVIRONMENT` is set, it will also load:
+
+- `serilog.Development.json` when `DOTNET_ENVIRONMENT=Development`
+- `serilog.Production.json` when `DOTNET_ENVIRONMENT=Production`
+
+This allows you to use different log levels or file paths per environment.
+
 ## How It Works
 
 1. **CommandBuilder** creates a global `VerbosityOption` with `Recursive = true`, making it available to all commands
