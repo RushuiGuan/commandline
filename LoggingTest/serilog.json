@@ -1,5 +1,12 @@
 {
   "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "System": "Error",
+        "Microsoft": "Error"
+      }
+    },
     "WriteTo": {
       "File": {
         "Name": "File",
