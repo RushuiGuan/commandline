@@ -15,6 +15,7 @@ This skill helps you build CLI applications using the Albatross.CommandLine libr
 | `new-command <name> [description]` | Create a new command with handler |
 | `new-project <name>` | Bootstrap a new CLI project |
 | `add-reusable-option <name>` | Create a reusable option type |
+| `config-logging` | Configure Serilog logging (file-based, no console) |
 
 ---
 
@@ -414,6 +415,261 @@ Available when you add `Albatross.CommandLine.Inputs` package:
 
 ---
 
+# Action: config-logging
+
+Configure Serilog logging to disable console output and enable file-based logging.
+
+## Overview
+
+By default, `WithDefaults()` or `WithSerilog()` enables console logging controlled by `--verbosity`. To use file-based logging only (no console output), you need custom Serilog configuration.
+
+## Approach 1: Custom Serilog Setup (Recommended)
+
+Replace `WithDefaults()` with `WithConfig()` and configure Serilog manually.
+
+### Program.cs
+
+```csharp
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using Albatross.CommandLine;
+using Albatross.CommandLine.Defaults;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Serilog;
+using Serilog.Events;
+using System.CommandLine;
+
+namespace {{ProjectName}} {
+    internal class Program {
+        static async Task<int> Main(string[] args) {
+            await using var host = new CommandHost("{{ProjectName}}")
+                .RegisterServices(RegisterServices)
+                .AddCommands()
+                .Parse(args)
+                .WithConfig()           // Config only, no default Serilog
+                .WithFileLogging()      // Custom file logging
+                .Build();
+            return await host.InvokeAsync();
+        }
+
+        static void RegisterServices(ParseResult result, IServiceCollection services) {
+            services.RegisterCommands();
+        }
+    }
+
+    public static class LoggingExtensions {
+        public static CommandHost WithFileLogging(this CommandHost commandHost) {
+            commandHost.ConfigureHost((result, builder) => {
+                builder.UseSerilog();
+                builder.ConfigureLogging((context, logging) => {
+                    var logPath = Path.Combine(
+                        AppContext.BaseDirectory,
+                        "logs",
+                        "app-.log"
+                    );
+
+                    Log.Logger = new LoggerConfiguration()
+                        .MinimumLevel.Debug()
+                        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                        .MinimumLevel.Override("System", LogEventLevel.Warning)
+                        .Enrich.FromLogContext()
+                        .Enrich.WithMachineName()
+                        .Enrich.WithProcessId()
+                        .WriteTo.File(
+                            path: logPath,
+                            rollingInterval: RollingInterval.Day,
+                            retainedFileCountLimit: 30,
+                            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
+                        )
+                        .CreateLogger();
+                });
+            });
+            return commandHost;
+        }
+    }
+}
+```
+
+### Required NuGet Packages
+
+```bash
+dotnet add package Serilog.Sinks.File
+dotnet add package Serilog.Enrichers.Environment
+dotnet add package Serilog.Enrichers.Process
+```
+
+## Approach 2: Configuration File (serilog.json)
+
+Use a `serilog.json` file for flexible configuration without code changes.
+
+### Program.cs
+
+```csharp
+static async Task<int> Main(string[] args) {
+    await using var host = new CommandHost("{{ProjectName}}")
+        .RegisterServices(RegisterServices)
+        .AddCommands()
+        .Parse(args)
+        .WithConfig()
+        .WithFileLoggingFromConfig()
+        .Build();
+    return await host.InvokeAsync();
+}
+
+public static class LoggingExtensions {
+    public static CommandHost WithFileLoggingFromConfig(this CommandHost commandHost) {
+        commandHost.ConfigureHost((result, builder) => {
+            builder.UseSerilog();
+            builder.ConfigureLogging((context, logging) => {
+                var configuration = new ConfigurationBuilder()
+                    .SetBasePath(AppContext.BaseDirectory)
+                    .AddJsonFile("serilog.json", optional: false)
+                    .Build();
+
+                Log.Logger = new LoggerConfiguration()
+                    .ReadFrom.Configuration(configuration)
+                    .CreateLogger();
+            });
+        });
+        return commandHost;
+    }
+}
+```
+
+### serilog.json
+
+```json
+{
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Debug",
+      "Override": {
+        "Microsoft": "Warning",
+        "System": "Warning"
+      }
+    },
+    "WriteTo": [
+      {
+        "Name": "File",
+        "Args": {
+          "path": "logs/app-.log",
+          "rollingInterval": "Day",
+          "retainedFileCountLimit": 30,
+          "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
+        }
+      }
+    ],
+    "Enrich": ["FromLogContext", "WithMachineName", "WithProcessId"]
+  }
+}
+```
+
+### Required NuGet Packages
+
+```bash
+dotnet add package Serilog.Settings.Configuration
+dotnet add package Serilog.Sinks.File
+dotnet add package Serilog.Enrichers.Environment
+dotnet add package Serilog.Enrichers.Process
+```
+
+## Approach 3: Both File and Console (Conditional)
+
+Log to file always, console only when `--verbosity` is specified.
+
+```csharp
+public static CommandHost WithHybridLogging(this CommandHost commandHost) {
+    commandHost.ConfigureHost((result, builder) => {
+        builder.UseSerilog();
+        builder.ConfigureLogging((context, logging) => {
+            var logPath = Path.Combine(AppContext.BaseDirectory, "logs", "app-.log");
+
+            var loggerConfig = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                .Enrich.FromLogContext()
+                .WriteTo.File(
+                    path: logPath,
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 30
+                );
+
+            // Add console only if verbosity explicitly set
+            var verbosity = result.GetVerbosityOption();
+            if (verbosity != null) {
+                var logLevel = verbosity.GetLogLevel(result);
+                if (logLevel != LogLevel.None) {
+                    loggerConfig.WriteTo.Console(
+                        restrictedToMinimumLevel: logLevel.ToSerilogLevel()
+                    );
+                }
+            }
+
+            Log.Logger = loggerConfig.CreateLogger();
+        });
+    });
+    return commandHost;
+}
+```
+
+## Common File Sink Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `path` | Log file path (use `-` for rolling) | `"logs/app-.log"` |
+| `rollingInterval` | When to roll files | `Day`, `Hour`, `Month` |
+| `retainedFileCountLimit` | Max files to keep | `30` |
+| `fileSizeLimitBytes` | Max file size | `10485760` (10MB) |
+| `rollOnFileSizeLimit` | Roll when size exceeded | `true` |
+| `shared` | Allow multiple processes | `true` |
+| `outputTemplate` | Log format | See examples above |
+
+## Output Template Tokens
+
+| Token | Description |
+|-------|-------------|
+| `{Timestamp:format}` | Event timestamp |
+| `{Level:u3}` | Level (3-char uppercase) |
+| `{Message:lj}` | Message (literal, JSON-escaped) |
+| `{Exception}` | Exception details |
+| `{Properties:j}` | All properties as JSON |
+| `{SourceContext}` | Logger name |
+| `{NewLine}` | Line break |
+
+## Example: JSON Log Format
+
+For structured logging (useful for log aggregation):
+
+```csharp
+.WriteTo.File(
+    new JsonFormatter(),
+    path: "logs/app-.json",
+    rollingInterval: RollingInterval.Day
+)
+```
+
+Or in serilog.json:
+
+```json
+{
+  "Serilog": {
+    "WriteTo": [
+      {
+        "Name": "File",
+        "Args": {
+          "path": "logs/app-.json",
+          "formatter": "Serilog.Formatting.Json.JsonFormatter, Serilog"
+        }
+      }
+    ]
+  }
+}
+```
+
+---
+
 # Workflow
 
 1. **Parse the action** from user input
@@ -421,6 +677,7 @@ Available when you add `Albatross.CommandLine.Inputs` package:
    - `new-command`: command name, description, options/arguments needed
    - `new-project`: project name, optional features
    - `add-reusable-option`: option name, type, validation rules
+   - `config-logging`: file path, rolling interval, retention, console behavior
 3. **Generate the code** following templates above
 4. **Remind user** that `AddCommands()` and `RegisterCommands()` are auto-generated
 

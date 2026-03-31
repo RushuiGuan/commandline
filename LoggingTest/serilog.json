@@ -1,0 +1,24 @@
+{
+  "Serilog": {
+    "WriteTo": {
+      "File": {
+        "Name": "File",
+        "Args": {
+          "restrictedToMinimumLevel": "Information",
+          "path": "./logs/logging-test.log",
+          "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ssz} {MachineName} {SourceContext} {ThreadId} [{Level:w3}] {Message:lj}{NewLine}{Exception}",
+          "rollingInterval": "Day"
+        }
+      }
+    },
+    "Using": [
+      "Albatross.Logging"
+    ],
+    "Enrich": [
+      "FromLogContext",
+      "WithThreadId",
+      "WithMachineName",
+      "WithErrorMessage"
+    ]
+  }
+}

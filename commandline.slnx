@@ -17,5 +17,6 @@
   <Project Path="Albatross.CommandLine.Test/Albatross.CommandLine.Test.csproj" />
   <Project Path="Albatross.CommandLine/Albatross.CommandLine.csproj" />
   <Project Path="Albatross.CommandLine.CodeAnalysis/Albatross.CommandLine.CodeAnalysis.csproj" />
+  <Project Path="LoggingTest/LoggingTest.csproj" />
   <Project Path="Sample.CommandLine/Sample.CommandLine.csproj" />
 </Solution>
