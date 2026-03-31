@@ -10,6 +10,9 @@
 - name: Code Generator
   href: code-generator.md
 
+- name: Code Analysis
+  href: code-analysis.md
+
 - name: Mutually Exclusive Parameter Set
   href: mutually-exclusive-parameter-set.md
 
