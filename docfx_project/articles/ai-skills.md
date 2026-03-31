@@ -62,20 +62,20 @@ Once installed, invoke the skill in Claude Code by typing a slash command:
 
 | Action | Description |
 |--------|-------------|
-| `new-command <name> [description]` | Create a new command with handler |
+| `new-verb <name> [description]` | Create a new command with handler |
 | `new-project <name>` | Bootstrap a new CLI project |
 | `add-reusable-option <name>` | Create a reusable option type |
 | `config-logging` | Configure file-based Serilog logging |
 
 ## Detailed Action Examples
 
-### Action: `new-command`
+### Action: `new-verb`
 
 Creates a new command with its parameters class and handler.
 
 **Invoke:**
 ```
-/albatross-commandline new-command backup "Backup files to a destination"
+/albatross-commandline new-verb backup "Backup files to a destination"
 ```
 
 **What happens:**
@@ -109,7 +109,7 @@ public class BackupHandler : BaseHandler<BackupParams> {
 
 **Subcommands:** Use spaces in the name for hierarchical commands:
 ```
-/albatross-commandline new-command "config set" "Set a configuration value"
+/albatross-commandline new-verb "config set" "Set a configuration value"
 ```
 
 ### Action: `new-project`

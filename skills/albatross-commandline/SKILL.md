@@ -12,7 +12,7 @@ This skill helps you build CLI applications using the Albatross.CommandLine libr
 
 | Action | Description |
 |--------|-------------|
-| `new-command <name> [description]` | Create a new command with handler |
+| `new-verb <name> [description]` | Create a new command with handler |
 | `new-project <name>` | Bootstrap a new CLI project |
 | `add-reusable-option <name>` | Create a reusable option type |
 | `config-logging` | Configure Serilog logging (file-based, no console) |
@@ -44,7 +44,7 @@ This skill helps you build CLI applications using the Albatross.CommandLine libr
 
 ---
 
-# Action: new-command
+# Action: new-verb
 
 Create a new command with its handler.
 
@@ -162,7 +162,7 @@ public partial class MyCommand {
 
 ## Example
 
-For `new-command backup "Backup files"`:
+For `new-verb backup "Backup files"`:
 
 ```csharp
 using Albatross.CommandLine;
@@ -648,7 +648,7 @@ Available enrichers from `Albatross.Logging`:
 
 1. **Parse the action** from user input
 2. **Ask clarifying questions** based on action:
-   - `new-command`: command name, description, options/arguments needed
+   - `new-verb`: command name, description, options/arguments needed
    - `new-project`: project name, optional features
    - `add-reusable-option`: option name, type, validation rules
    - `config-logging`: file path, rolling interval, retention, console behavior
