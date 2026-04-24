@@ -4,12 +4,14 @@ This repository includes a [Claude Code](https://docs.anthropic.com/en/docs/clau
 
 ## What is a Claude Code Skill?
 
-A skill is a set of instructions that teaches Claude Code how to perform specific tasks. The `albatross-commandline` skill provides templates and guidance for:
+A skill is a set of instructions that teaches Claude Code how to perform specific tasks. The `alba-cli` skill provides templates and guidance for:
 
-- Creating new commands with handlers
 - Bootstrapping new CLI projects
-- Adding reusable option types
-- Configuring file-based Serilog logging
+- Creating new commands with handlers
+- Defining subcommand hierarchies
+- Creating reusable option and argument types
+- Adding async option pre-processing and validation
+- Configuring logging and JSON configuration
 
 ## Installation
 
@@ -24,16 +26,14 @@ mkdir -p .claude/skills
 2. Download the skill folder:
 
 ```bash
-# Using curl
-curl -L https://github.com/RushuiGuan/commandline/archive/main.tar.gz | tar -xz --strip-components=2 -C .claude/skills commandline-main/skills/albatross-commandline
-
+curl -L https://github.com/RushuiGuan/commandline/archive/main.tar.gz | tar -xz --strip-components=2 -C .claude/skills commandline-main/skills/alba-cli
+```
 
 ### Option 2: Manual Download
 
-1. Navigate to [skills/albatross-commandline](https://github.com/RushuiGuan/commandline/tree/main/skills/albatross-commandline) on GitHub
+1. Navigate to [skills/alba-cli](https://github.com/RushuiGuan/commandline/tree/main/skills/alba-cli) on GitHub
 2. Download `SKILL.md`
-3. Place it in your project at `.claude/skills/albatross-commandline/SKILL.md`
-
+3. Place it in your project at `.claude/skills/alba-cli/SKILL.md`
 
 ## Directory Structure
 
@@ -43,7 +43,7 @@ After installation, your project should have:
 your-project/
 ├── .claude/
 │   └── skills/
-│       └── albatross-commandline/
+│       └── alba-cli/
 │           └── SKILL.md
 ├── src/
 │   └── ...
@@ -52,185 +52,197 @@ your-project/
 
 ## Usage
 
-Once installed, invoke the skill in Claude Code by typing a slash command:
+Once installed, invoke the skill in Claude Code by typing:
 
 ```
-/albatross-commandline <action> [arguments]
+/alba-cli <what you want to do>
 ```
 
-### Available Actions
+The skill understands natural language descriptions of your goals. You don't need to memorize specific sub-commands — just describe what you want and Claude Code will apply the correct patterns.
 
-| Action | Description |
-|--------|-------------|
-| `new-verb <name> [description]` | Create a new command with handler |
-| `new-project <name>` | Bootstrap a new CLI project |
-| `add-reusable-option <name>` | Create a reusable option type |
-| `config-logging` | Configure file-based Serilog logging |
+**Examples:**
 
-## Detailed Action Examples
-
-### Action: `new-verb`
-
-Creates a new command with its parameters class and handler.
-
-**Invoke:**
 ```
-/albatross-commandline new-verb backup "Backup files to a destination"
+/alba-cli create a new command called "backup" that takes a source and destination directory
+/alba-cli bootstrap a new CLI project named MyTool
+/alba-cli add a reusable option for validating an API key asynchronously
+/alba-cli add a "config get" and "config set" subcommand pair
 ```
 
-**What happens:**
-1. Claude Code asks what options and arguments your command needs
-2. You describe your requirements (e.g., "source directory, destination directory, and an optional --overwrite flag")
-3. Claude Code generates the code:
+## What the Skill Knows
+
+### Packages
+
+The skill guides you to the right package for each scenario:
+
+| Package | Purpose |
+|---------|---------|
+| `Albatross.CommandLine` | Core runtime — always required |
+| `Albatross.CommandLine.Defaults` | Pre-configured Serilog + JSON config (`WithDefaults()`) |
+| `Albatross.CommandLine.Inputs` | Pre-built validated option/argument types for files and directories |
+| `Albatross.CommandLine.CodeAnalysis` | Roslyn analyzers for best practices |
+
+### Bootstrap Pattern
+
+The skill generates a correct `Program.cs` with the required call order:
 
 ```csharp
-[Verb<BackupHandler>("backup", Description = "Backup files to a destination")]
-public record class BackupParams {
-    [Argument(Description = "Source directory")]
-    public required DirectoryInfo Source { get; init; }
+await using var host = new CommandHost("My App Name")
+    .RegisterServices(RegisterServices)
+    .AddCommands()      // source-generated
+    .Parse(args)
+    .WithDefaults()     // optional — must come after Parse()
+    .Build();
+return await host.InvokeAsync();
+```
 
-    [Argument(Description = "Destination directory")]
-    public required DirectoryInfo Destination { get; init; }
+### Command Definition
 
-    [Option(Description = "Overwrite existing files")]
-    public bool Overwrite { get; init; }
+Every command has a params class and a handler class. The skill generates both:
+
+```csharp
+[Verb<HelloWorldHandler>("hello", Description = "Say hello")]
+public record class HelloWorldParams {
+    [Argument(Description = "The name to greet")]
+    public required string Name { get; init; }
+
+    // DefaultToInitializer = true is required to treat the initializer as a default value
+    [Option(DefaultToInitializer = true, Description = "Number of times to repeat")]
+    public int Count { get; init; } = 1;
+
+    [Option("--shout", "-s")]
+    public bool Shout { get; init; }
 }
 
-public class BackupHandler : BaseHandler<BackupParams> {
-    public BackupHandler(ParseResult result, BackupParams parameters)
-        : base(result, parameters) { }
+public class HelloWorldHandler : BaseHandler<HelloWorldParams> {
+    private readonly ILogger<HelloWorldHandler> logger;
+
+    public HelloWorldHandler(
+        ParseResult result,
+        HelloWorldParams parameters,
+        ILogger<HelloWorldHandler> logger) : base(result, parameters) {
+        this.logger = logger;
+    }
 
     public override async Task<int> InvokeAsync(CancellationToken cancellationToken) {
-        // Implementation here
+        Writer.WriteLine(parameters.Shout
+            ? $"HELLO, {parameters.Name.ToUpper()}!"
+            : $"Hello, {parameters.Name}!");
         return 0;
     }
 }
 ```
 
-**Subcommands:** Use spaces in the name for hierarchical commands:
-```
-/albatross-commandline new-verb "config set" "Set a configuration value"
-```
+### Subcommand Hierarchies
 
-### Action: `new-project`
-
-Bootstraps a new CLI project with all required files.
-
-**Invoke:**
-```
-/albatross-commandline new-project MyTool
-```
-
-**What Claude Code generates:**
-
-1. **MyTool.csproj** - Project file with package references:
-```xml
-<PackageReference Include="Albatross.CommandLine" Version="*" />
-<PackageReference Include="Albatross.CommandLine.Defaults" Version="*" />
-```
-
-2. **Program.cs** - Entry point with CommandHost:
-```csharp
-await using var host = new CommandHost("MyTool")
-    .RegisterServices(RegisterServices)
-    .AddCommands()
-    .Parse(args)
-    .WithDefaults()
-    .Build();
-return await host.InvokeAsync();
-```
-
-3. **HelloWorld.cs** - Sample command to get started
-
-### Action: `add-reusable-option`
-
-Creates a reusable option type with validation that can be shared across commands.
-
-**Invoke:**
-```
-/albatross-commandline add-reusable-option InputFile
-```
-
-**What happens:**
-1. Claude Code asks about the option type and validation rules
-2. Generates a reusable option class:
+Use spaces in the verb name to build parent→child command trees:
 
 ```csharp
-[DefaultNameAliases("--input", "-i")]
-public class InputFileOption : Option<FileInfo> {
-    public InputFileOption(string name, params string[] aliases)
-        : base(name, aliases) {
-        Description = "Input file path";
-        this.AddValidator(result => {
-            var file = result.GetValueForOption(this);
-            if (file != null && !file.Exists)
-                result.ErrorMessage = $"File not found: {file.FullName}";
+[Verb("config", Description = "Configuration commands")]
+public record class ConfigParams { }
+
+[Verb<ConfigGetHandler>("config get")]
+public record class ConfigGetParams {
+    [Argument]
+    public required string Key { get; init; }
+}
+
+[Verb<ConfigSetHandler>("config set")]
+public record class ConfigSetParams {
+    [Argument] public required string Key { get; init; }
+    [Argument] public required string Value { get; init; }
+}
+```
+
+### Reusable Option and Argument Types
+
+Define once, use across many commands. The skill generates the correct constructor signatures required by the source generator:
+
+```csharp
+[DefaultNameAliases("--input-dir", "--in", "-i")]
+public class InputDirectoryOption : Option<DirectoryInfo> {
+    public InputDirectoryOption(string name, params string[] aliases) : base(name, aliases) {
+        Description = "Specify an existing input directory";
+        AddValidator(result => {
+            if (result.GetValueForOption(this) is DirectoryInfo dir && !dir.Exists)
+                result.ErrorMessage = $"Directory {dir.FullName} does not exist";
         });
     }
 }
 ```
 
-**Usage in commands:**
+Use them in params classes with `[UseOption<T>]` or `[UseArgument<T>]`:
+
 ```csharp
-[Verb<ProcessHandler>("process")]
-public record class ProcessParams {
-    [UseOption<InputFileOption>]
-    public required FileInfo Input { get; init; }
+[Verb<BackupHandler>("backup")]
+public record class BackupParams {
+    [UseOption<InputDirectoryOption>]
+    public required DirectoryInfo Source { get; init; }
+
+    // UseCustomName = true derives the option name from the property name
+    [UseOption<InputDirectoryOption>(UseCustomName = true)]
+    public required DirectoryInfo Destination { get; init; }
 }
 ```
 
-### Action: `config-logging`
+### Async Option Pre-processing (`OptionHandler`)
 
-Configures Serilog for file-based logging without console output.
+The skill knows how to generate option handlers for two scenarios:
 
-**Invoke:**
-```
-/albatross-commandline config-logging
-```
+**Validation (short-circuit on failure):**
 
-**What Claude Code generates:**
-
-1. **Updated Program.cs** - Using `SetupSerilog` without console:
 ```csharp
-.WithConfig()
-.ConfigureHost(builder => {
-    builder.UseSerilog();
-    builder.ConfigureLogging((context, logging) => {
-        var setupSerilog = new SetupSerilog();
-        setupSerilog.UseConfigFile(EnvironmentSetting.DOTNET_ENVIRONMENT.Value, null, null, true);
-        // No UseConsole() - keeps console free for app output
-        setupSerilog.Create();
-    });
-})
-```
+[OptionHandler<ApiKeyOption, ApiKeyValidator>]
+public class ApiKeyOption : Option<string> { ... }
 
-2. **serilog.json** - File sink configuration:
-```json
-{
-  "Serilog": {
-    "MinimumLevel": { "Default": "Information" },
-    "WriteTo": {
-      "File": {
-        "Name": "File",
-        "Args": {
-          "path": "./logs/app.log",
-          "rollingInterval": "Day"
-        }
-      }
+public class ApiKeyValidator : IAsyncOptionHandler<ApiKeyOption> {
+    public async Task InvokeAsync(ApiKeyOption option, ParseResult result,
+        CancellationToken cancellationToken) {
+        if (!await auth.IsValidAsync(result.GetValue(option), cancellationToken))
+            context.SetInputActionStatus(new OptionHandlerStatus(option.Name, false, "Invalid API key"));
     }
-  }
 }
 ```
+
+**Input transformation (string ID → rich object):**
+
+```csharp
+[OptionHandler<InstrumentOption, InstrumentOptionHandler, InstrumentSummary>]
+public class InstrumentOption : Option<string> { ... }
+
+// Property type on the params class is the *output* type, not the raw CLI type
+[Verb<PriceHandler>("get-price")]
+public record class GetPriceParams {
+    [UseOption<InstrumentOption>]
+    public required InstrumentSummary Instrument { get; init; }
+}
+```
+
+Option handlers run before the command handler. If any handler marks the context as failed, the command handler is skipped.
+
+### Built-in Inputs (`Albatross.CommandLine.Inputs`)
+
+The skill knows to use these pre-built types instead of writing custom ones:
+
+| Type | What it does |
+|------|-------------|
+| `InputFileOption` / `InputFileArgument` | Validates file exists |
+| `InputDirectoryOption` / `InputDirectoryArgument` | Validates directory exists |
+| `OutputFileOption` | For output file paths |
+| `OutputDirectoryOption` / `OutputDirectoryArgument` | For output directory paths |
+| `OutputDirectoryWithAutoCreateOption` | Auto-creates directory if missing |
+| `FormatExpressionOption` | For format string inputs |
+| `TimeZoneOption` | For timezone name inputs |
 
 ## Tips for Best Results
 
-1. **Be specific** - Describe your requirements clearly when Claude Code asks questions
-2. **Use descriptive names** - Command names like `sync-files` are better than `sf`
-3. **Mention dependencies** - If your handler needs services, mention them so Claude Code adds constructor injection
-4. **Review generated code** - Claude Code follows conventions but you may want to customize
+1. **Describe your intent** — tell the skill what the command should do, not just its name. Claude Code will ask clarifying questions if needed.
+2. **Mention injected services** — if your handler needs services from DI, say so upfront so the skill adds the right constructor parameters.
+3. **Specify subcommand relationships** — if commands share a parent, mention that so the skill sets up the hierarchy correctly.
+4. **Review generated code** — the skill follows library conventions precisely, but you may want to customize descriptions or validation messages.
 
 ## Related Documentation
 
-- [AI Agent Instructions](ai-instructions.md) - Comprehensive guidance for AI agents working with the library
-- [Core Concepts](core-concepts.md) - Understanding commands, options, and arguments
-- [Conventions](conventions.md) - Naming conventions and patterns
+- [AI Agent Instructions](ai-instructions.md) — Comprehensive guidance for AI agents working with the library
+- [Core Concepts](core-concepts.md) — Understanding commands, options, and arguments
+- [Conventions](conventions.md) — Naming conventions and patterns

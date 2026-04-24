@@ -1,0 +1,36 @@
+{
+    "Serilog": {
+        "MinimumLevel": {
+            "Default": "Information",
+            "Override": {
+                "System": "Information",
+                "Microsoft": "Information"
+            }
+        },
+        "WriteTo": {
+            "Console": {
+                "Name": "Console",
+                "Args": {
+                    "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ssz} {MachineName} {TraceIdentifier} {RequestId} {SourceContext} {ThreadId} [{Level:w3}] {Message:lj}{NewLine}{Exception}"
+                }
+            },
+            "File": {
+                "Name": "File",
+                "Args": {
+                    "path": "%LogDirectory%\\{{ProjectName}}\\{{ProjectName}}.log",
+                    "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ssz} {MachineName} {TraceIdentifier} {RequestId} {SourceContext} {ThreadId} [{Level:w3}] {Message:lj}{NewLine}{Exception}",
+                    "rollingInterval": "Day"
+                }
+            }
+        },
+        "Using": [
+            "Albatross.Logging"
+        ],
+        "Enrich": [
+            "FromLogContext",
+            "WithThreadId",
+            "WithMachineName",
+            "WithErrorMessage"
+        ]
+    }
+}
