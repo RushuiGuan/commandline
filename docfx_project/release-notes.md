@@ -1,5 +1,13 @@
 # Release Notes
 
+## 8.0.11 - WithConfig Enhancement
+
+### Enhancement
+
+- **`Albatross.CommandLine.Defaults`** - `WithConfig()` now accepts an optional `configDirectory` parameter, allowing callers to specify a custom directory for loading `appsettings.json`. When omitted, the behavior is unchanged — it defaults to `AppContext.BaseDirectory`.
+
+---
+
 ## 8.0.10 - Bug Fix
 
 ### Enhancement
