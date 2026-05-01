@@ -63,12 +63,13 @@ namespace Albatross.CommandLine.Defaults {
 		/// This method will leverage the DOTNET_ENVIRONMENT environment variable to load environment specific configuration file.
 		/// </summary>
 		/// <param name="commandHost"></param>
+		/// <param name="configDirectory"></param>
 		/// <returns></returns>
-		public static CommandHost WithConfig(this CommandHost commandHost) {
+		public static CommandHost WithConfig(this CommandHost commandHost, string? configDirectory = null) {
 			commandHost.ConfigureHost(builder => {
 				var environment = EnvironmentSetting.DOTNET_ENVIRONMENT;
 				var configBuilder = new ConfigurationBuilder()
-					.SetBasePath(AppContext.BaseDirectory)
+					.SetBasePath(configDirectory ?? AppContext.BaseDirectory)
 					.AddJsonFile("appsettings.json", true, true);
 				if (!string.IsNullOrEmpty(environment.Value)) {
 					configBuilder.AddJsonFile($"appsettings.{environment.Value}.json", true, true);
