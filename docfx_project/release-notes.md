@@ -1,5 +1,28 @@
 # Release Notes
 
+## 8.0.12 - Global Error Handler
+
+### New Feature
+
+- **`Albatross.CommandLine`** - Added `ICommandErrorHandler` interface for pluggable global exception handling. Register an implementation via DI to intercept unhandled exceptions thrown by command handlers before the default error logging kicks in. Return a non-null exit code to indicate the error was handled; return `null` to fall through to the default behavior.
+
+  ```csharp
+  public class MyErrorHandler : ICommandErrorHandler {
+      public int? Handle(Exception exception) {
+          if (exception is UnauthorizedAccessException) {
+              Console.Error.WriteLine("Operation failed: execute with elevated privilege");
+              return 255;
+          }
+          return null;
+      }
+  }
+
+  // Registration
+  services.AddSingleton<ICommandErrorHandler, MyErrorHandler>();
+  ```
+
+---
+
 ## 8.0.11 - WithConfig Enhancement
 
 ### Enhancement

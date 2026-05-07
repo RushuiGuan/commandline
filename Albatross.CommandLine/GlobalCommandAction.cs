@@ -54,8 +54,14 @@ namespace Albatross.CommandLine {
 					logger.LogWarning("Command {command} was cancelled", context.Key);
 					return CancelledExitCode;
 				} catch (Exception err) {
-					logger.LogError(err, "Error invoking command {command}", context.Key);
-					return ErrorExitCode;
+					var errHandler = services.GetService<ICommandErrorHandler>();
+					var errorCode = errHandler?.Handle(err);
+					if (errorCode != null) {
+						return errorCode.Value;
+					} else {
+						logger.LogError(err, "Error invoking command {command}", context.Key);
+						return ErrorExitCode;
+					}
 				}
 			}
 		}
