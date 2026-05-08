@@ -31,6 +31,9 @@
 - name: Execution Pipeline
   href: execution-pipeline.md
 
+- name: Custom Global Error Handler
+  href: custom-error-handler.md
+
 - name: Logging & Verbosity
   href: logging-verbosity.md
 
