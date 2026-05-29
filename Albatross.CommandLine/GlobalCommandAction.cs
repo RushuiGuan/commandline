@@ -17,10 +17,22 @@ namespace Albatross.CommandLine {
 		/// Windows exit code is int but unix is only byte, so we use 255 or less so that it will have the same value on both platforms.
 		/// </summary>
 		const int ErrorExitCode = 255;
+
 		const int CancelledExitCode = 254;
 		const int InputActionErrorExitCode = 253;
-
 		private readonly Func<IServiceProvider> serviceFactory;
+
+		int HandleError(IServiceProvider services, ILogger logger, Exception err, string logMessage, string command) {
+			var errHandler = services.GetService<ICommandErrorHandler>();
+			if (errHandler != null) {
+				var errorCode = errHandler.Handle(err);
+				if (errorCode != null) {
+					return errorCode.Value;
+				}
+			}
+			logger.LogError(err, logMessage, command);
+			return ErrorExitCode;
+		}
 
 		public async Task<int> InvokeAsync(ParseResult result, CancellationToken cancellationToken) {
 			var services = this.serviceFactory();
@@ -34,8 +46,7 @@ namespace Albatross.CommandLine {
 			try {
 				handler = services.GetKeyedService<IAsyncCommandHandler>(context.Key);
 			} catch (Exception err) {
-				logger.LogError(err, "Error creating CommandHandler for command {command}", context.Key);
-				return ErrorExitCode;
+				return HandleError(services, logger, err, "Error creating CommandHandler for command {command}", context.Key);
 			}
 			if (handler == null) {
 				// if the command is a parent command, simply print the help
@@ -54,14 +65,7 @@ namespace Albatross.CommandLine {
 					logger.LogWarning("Command {command} was cancelled", context.Key);
 					return CancelledExitCode;
 				} catch (Exception err) {
-					var errHandler = services.GetService<ICommandErrorHandler>();
-					var errorCode = errHandler?.Handle(err);
-					if (errorCode != null) {
-						return errorCode.Value;
-					} else {
-						logger.LogError(err, "Error invoking command {command}", context.Key);
-						return ErrorExitCode;
-					}
+					return HandleError(services, logger, err, "Error invoking command {command}", context.Key);
 				}
 			}
 		}
