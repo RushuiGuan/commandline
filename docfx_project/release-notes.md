@@ -1,5 +1,13 @@
 # Release Notes
 
+## 8.0.13 - Error Handler Coverage
+
+### Enhancement
+
+- **`Albatross.CommandLine`** - `ICommandErrorHandler` now intercepts errors from handler creation (DI resolution failures) in addition to handler invocation errors. Previously, a DI exception during handler construction always logged and returned exit code 255; now the registered `ICommandErrorHandler` gets first chance to handle it.
+
+---
+
 ## 8.0.12 - Global Error Handler
 
 ### New Feature
