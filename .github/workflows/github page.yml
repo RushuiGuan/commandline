@@ -1,4 +1,4 @@
-# Your GitHub workflow file under .github/workflows/
+name: docfx
 # Trigger the action on push to main
 on:
   push:
