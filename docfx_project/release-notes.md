@@ -1,10 +1,15 @@
 # Release Notes
 
-## 8.0.13 - Error Handler Coverage
+## 8.0.14 - Error Handler & Input Improvements
+
+### New Feature
+
+- **`Albatross.CommandLine.Inputs`** - Added `ConfirmOption`, a reusable boolean option (`--confirm`, `-c`) that prompts the user for confirmation before proceeding. Defaults to `true`. Detects the System.CommandLine assembly version at runtime and appends `[default: true]` to its help description when running under v2, working around a bug where `DefaultValueFactory` does not cause the default to appear in help output (fixed in v3).
 
 ### Enhancement
 
 - **`Albatross.CommandLine`** - `ICommandErrorHandler` now intercepts errors from handler creation (DI resolution failures) in addition to handler invocation errors. Previously, a DI exception during handler construction always logged and returned exit code 255; now the registered `ICommandErrorHandler` gets first chance to handle it.
+- **`Albatross.CommandLine`** - Refactored `GlobalCommandAction` to extract a shared `HandleError` helper, eliminating duplicated `ICommandErrorHandler` lookup-and-dispatch logic from both catch blocks.
 
 ---
 

@@ -1,5 +1,6 @@
 ﻿using Albatross.CommandLine;
 using Albatross.CommandLine.Annotations;
+using Albatross.CommandLine.Inputs;
 using System;
 using System.CommandLine;
 using System.Threading;
@@ -25,6 +26,9 @@ namespace Sample.CommandLine {
 
 		[Option(DefaultToInitializer = true, Description = "Set DefautlToInitializer to true to use the property initializer as the default value.  If true, the option is not required.")]
 		public DateOnly Date { get; init; } = DateOnly.FromDateTime(DateTime.Today);
+
+		[UseOption<ConfirmOption>]
+		public bool Confirm { get; init; }
 	}
 
 	/// <summary>
@@ -34,7 +38,7 @@ namespace Sample.CommandLine {
 		partial void Initialize() {
 			this.Option_Date.Validators.Add(r => {
 				var value = r.GetValue(this.Option_Date);
-				if(value < DateOnly.FromDateTime(DateTime.Today)) {
+				if (value < DateOnly.FromDateTime(DateTime.Today)) {
 					r.AddError($"Invalid value {value:yyyy-MM-dd} for Date.  It cannot be in the past");
 				}
 			});
@@ -47,6 +51,7 @@ namespace Sample.CommandLine {
 
 		public override async Task<int> InvokeAsync(CancellationToken cancellationToken) {
 			await this.Writer.WriteLineAsync(parameters.ToString());
+			await this.Writer.WriteLineAsync(typeof(Option<>).Assembly.FullName);
 			return 0;
 		}
 	}
