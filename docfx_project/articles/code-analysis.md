@@ -26,7 +26,7 @@ Or when using project references (e.g., in this repository):
 
 | ID | Severity | Title |
 |----|----------|-------|
-| [ACL0001](#acl0001-duplicate-option-name) | Warning | Duplicate option name (case-insensitive) |
+| [ACL0001](#acl0001-duplicate-option-name) | Warning | Duplicate option name |
 | [ACL0002](#acl0002-baseparamsclass-inheritance) | Warning | Params class does not derive from `VerbAttribute.BaseParamsClass` |
 | [ACL0003](#acl0003-optionhandler-type-mismatch) | Error | `OptionHandlerAttribute` TOption is not assignable from the attributed class |
 | [ACL0004](#acl0004-conflicting-option-and-argument) | Warning | Property has both `[Option]` and `[Argument]` |
@@ -37,31 +37,54 @@ Or when using project references (e.g., in this repository):
 
 **Severity:** Warning
 
-**Description:** Two or more public properties on a `[Verb]` params class have names that are identical when compared case-insensitively. Because option names are derived from property names via kebab-case conversion (e.g., `MyValue` → `--my-value`), properties like `Name` and `name` both produce `--name`, creating a duplicate CLI option.
+**Description:** Two or more options on a `[Verb]` params class resolve to the **same effective CLI option name**. The name comes from the kebab-cased property name (`MyValue` → `--my-value`), or — for `[UseOption<T>]` — from `[DefaultNameAliases]` on the option type (unless `UseCustomName = true`). The diagnostic compares the *resolved* names, so it catches duplicates introduced by reused option types, and it does **not** flag properties whose names differ only by case when they resolve to *different* option names. Duplicate names compile and generate cleanly, then throw at runtime in `System.CommandLine` — see [Duplicate Symbol Names](system-commandline-duplicate-names.md).
 
 ### Example
 
 ```csharp
-// ❌ ACL0001 — 'Name' and 'name' both produce --name
+// ❌ ACL0001 — both resolve to --name
 [Verb<MyHandler>("greet")]
 public class GreetParams {
     [Option] public string? Name { get; set; }
     [Option] public string? name { get; set; }  // warning here
 }
+
+// ❌ ACL0001 — both resolve to --input via [DefaultNameAliases] on the reused option type
+[DefaultNameAliases("--input")]
+public class InputOption : Option<string> {
+    public InputOption(string name, params string[] aliases) : base(name, aliases) { }
+}
+[Verb<MyHandler>("run")]
+public class RunParams {
+    [UseOption<InputOption>] public string? Source { get; set; }
+    [UseOption<InputOption>] public string? Dest { get; set; }   // warning here
+}
+
+// ✅ No warning — the resolved names differ (--my-test vs --mytest)
+[Verb<MyHandler>("ok")]
+public class OkParams {
+    [Option] public string? MyTest { get; set; }   // --my-test
+    [Option] public string? mytest { get; set; }   // --mytest
+}
 ```
 
 ### Fix
 
-Use distinct property names:
+Give each option a distinct resolved name — rename a property, or set `UseCustomName = true` on all but one `[UseOption<T>]` that share a fixed `[DefaultNameAliases]` name so they fall back to their (distinct) property names:
 
 ```csharp
 // ✅ Correct
-[Verb<MyHandler>("greet")]
-public class GreetParams {
-    [Option] public string? Name { get; set; }
-    [Option] public string? Alias { get; set; }
+[Verb<MyHandler>("run")]
+public class RunParams {
+    [UseOption<InputOption>] public string? Source { get; set; }              // --input
+    [UseOption<InputOption>(UseCustomName = true)] public string? Dest { get; set; }  // --dest
 }
 ```
+
+> **Note:** this diagnostic currently compares primary option names; alias-level collisions and options inherited from a `BaseParamsClass` are not yet covered.
+
+> **See also:** [Duplicate Symbol Names (System.CommandLine Behavior)](system-commandline-duplicate-names.md)
+> explains the deferred runtime exception this diagnostic is meant to prevent.
 
 ---
 

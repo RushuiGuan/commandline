@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Albatross.CommandLine.Test.CodeGen {
 	[Verb("test command class", Alias = ["a", "b"], Description = "my test command class")]
-	public record TestCommandClassParams {
+	public record CommandClassParams {
 		[Argument(Description = "A required text argument")]
 		public required string TextArgument { get; init; }
 
@@ -54,10 +54,10 @@ namespace Albatross.CommandLine.Test.CodeGen {
 		public bool RequiredBooleanOption { get; init; }
 	}
 
-	public class TestCommandClassGeneration {
-		TestCommandClassCommand BuildCommand() {
+	public class CommandClassGeneration {
+		CommandClassCommand BuildCommand() {
 			var host = new CommandHost("test");
-			var cmd = host.CommandBuilder.Add<TestCommandClassCommand>("test command class");
+			var cmd = host.CommandBuilder.Add<CommandClassCommand>("test command class");
 			host.CommandBuilder.BuildTree(host.GetServiceProvider);
 			return cmd;
 		}

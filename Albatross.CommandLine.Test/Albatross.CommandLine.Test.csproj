@@ -27,5 +27,10 @@
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
 			<OutputItemType>Analyzer</OutputItemType>
 		</ProjectReference>
+		<ProjectReference Include="..\Albatross.CommandLine.CodeAnalysis\Albatross.CommandLine.CodeAnalysis.csproj">
+			<PrivateAssets>all</PrivateAssets>
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+			<OutputItemType>Analyzer</OutputItemType>
+		</ProjectReference>
 	</ItemGroup>
 </Project>

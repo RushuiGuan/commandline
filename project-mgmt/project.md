@@ -2,7 +2,7 @@
 
 status: active
 created: 2026-07-08T12:35:28-04:00
-updated: 2026-07-08T22:08:52-04:00
+updated: 2026-07-09T08:28:09-04:00
 ----
 
 ## Business Requirements
@@ -470,8 +470,12 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   `Recursive = true` to `host.CommandBuilder.RootCommand` before `Parse()` — the existing public API,
   so the once-planned dedicated "facility" is unnecessary.
 - The conventions doc notes a planned code-analysis warning for duplicate names arising
-  from case-only property differences — ACL0001 now covers this; confirm whether any
-  additional planned analyzers remain unimplemented.
+  from case-only property differences — ACL0001 covers *that* case, but a gap was found
+  (2026-07-09): ACL0001 only inspects `[Option]` properties and groups by **property name**,
+  so it misses duplicate *effective* option names from `[UseOption<T>]` reuse (a shared
+  `[DefaultNameAliases]`) and from explicit aliases. These compile clean but throw at runtime
+  ("more than one child named ..."). Tracked in `detect-duplicate-option-names.tsk.md`. Also
+  confirm whether any other planned analyzers remain unimplemented.
 - **Should Defaults adopt a `serilog.json` convention? — RESOLVED (2026-07-08): no.** After
   weighing the `Albatross.Hosting` dedicated-`serilog.json` convention, Defaults stays with the
   `Serilog` section in `appsettings.json`. Rationale and the code-owned baseline that this required

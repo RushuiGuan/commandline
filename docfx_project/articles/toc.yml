@@ -16,6 +16,9 @@
 - name: Code Analysis
   href: code-analysis.md
 
+- name: Duplicate Symbol Names (System.CommandLine Behavior)
+  href: system-commandline-duplicate-names.md
+
 - name: Mutually Exclusive Parameter Set
   href: mutually-exclusive-parameter-set.md
 

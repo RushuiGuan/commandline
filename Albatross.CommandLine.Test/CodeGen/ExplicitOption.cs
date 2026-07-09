@@ -62,16 +62,26 @@ namespace Albatross.CommandLine.Test.CodeGen {
 		}
 	}
 
+	// NOTE: several properties below intentionally resolve to the SAME option name "--option-without-handler"
+	// (ExplicitOptionWithoutHandler, ExplicitOptionWithItsOwnSetup, ExplicitOptionWithAliasOverride) because they
+	// reuse the OptionWithoutHandler type whose [DefaultNameAliases] fixes the name.  The generator deliberately
+	// leaves duplicate names as-is (see CommandClassBuilder) so developers can spot and fix their own mistakes.
+	// This fixture therefore only supports STRUCTURAL assertions: the command cannot be parsed/bound, because
+	// System.CommandLine throws "more than one child named ..." when a value is looked up by name across the tree.
+	// Detecting this mistake at compile time is tracked by the ACL0001 analyzer work (see project-mgmt).
 	[Verb("test explicit-option", Description = "A test verb with explicit option class and handler")]
-	public record class TestExplicitOptionClassAndHandlerParams {
+	public record class ExplicitOptionParams {
+		// this resolves to option name: --option-without-handler
 		[UseOption<OptionWithoutHandler>]
 		public required string ExplicitOptionWithoutHandler { get; init; }
 
-		[UseOption<OptionWithHandler>]
-		public required string ExplicitOptionWithHandler { get; init; }
-
+		// this also resolves to option name: --option-without-handler
+		// this will cause a runtime error, analyzer should pick this up
 		[UseOption<OptionWithoutHandler>(AllowMultipleArgumentsPerToken = true, DefaultToInitializer = true, Description = "my own desc", Hidden = true)]
 		public string? ExplicitOptionWithItsOwnSetup { get; init; }
+
+		[UseOption<OptionWithHandler>]
+		public required string ExplicitOptionWithHandler { get; init; }
 
 		[UseOption<OptionWithoutHandler>("-a")]
 		public required string ExplicitOptionWithAliasOverride { get; init; }
@@ -79,6 +89,7 @@ namespace Albatross.CommandLine.Test.CodeGen {
 		[UseOption<OptionWithoutDefaultNameAliases>]
 		public required string ExplicitOptionWithNoDefaultNameAliases { get; init; }
 
+		// this doesn't resolve to --option-without-handler because of `UseCustomName = true`
 		[UseOption<OptionWithoutHandler>(UseCustomName = true)]
 		public required string ExplicitOptionWithCustomName { get; init; }
 
@@ -86,13 +97,13 @@ namespace Albatross.CommandLine.Test.CodeGen {
 		public required Data ExplicitOptionWithDataTransformation { get; init; }
 	}
 
-	public class TestExplicitOptionClassAndHandler {
-		TestExplicitOptionClassAndHandlerCommand BuildCommand() {
+	public class ExplicitOption {
+		ExplicitOptionCommand BuildCommand() {
 			var host = new CommandHost("test");
 			host.AddCommands();
 			host.CommandBuilder.BuildTree(host.GetServiceProvider);
 			host.CommandBuilder.TryGetCommand("test explicit-option", out Command cmd);
-			return (TestExplicitOptionClassAndHandlerCommand)cmd;
+			return (ExplicitOptionCommand)cmd;
 		}
 
 		[Fact]

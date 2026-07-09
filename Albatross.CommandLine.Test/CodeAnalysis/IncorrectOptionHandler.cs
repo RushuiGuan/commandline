@@ -1,27 +1,10 @@
-﻿using Albatross.CommandLine;
-using Albatross.CommandLine.Annotations;
+﻿using Albatross.CommandLine.Annotations;
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Text;
 
-namespace Sample.CommandLine {
-	[Verb("test codeanalysis")]
-	public class TestCodeAnalysis {
-		[Option]
-		public string? Test { get; set; }
-
-		// [Option]
-		// public string? test { get; set; }
-
-		[UseOption<AnOptionWithAHandler>]
-		public string? AnotherOption { get; set; }
-
-		[Option]
-		[Argument]
-		public string? BothOptionAndArgument { get; set; }
-	}
-
+namespace Albatross.CommandLine.Test.CodeAnalysis {
 	// [OptionHandler<Option<int>, MyIntOptionHandler>]
 	[OptionHandler<Option<string>, MyStringOptionHandler>]
 	public class AnOptionWithAHandler : Option<string> {

@@ -15,7 +15,7 @@ namespace Albatross.CommandLine.Test.CodeGen {
 	}
 
 	[Verb("test explicit-argument", Description = "A test verb with explicit argument class")]
-	public class TestExplicitArgumentParams {
+	public class ExplicitArgumentParams {
 		[UseArgument<MyExplicitArgument>]
 		public required int ExplicitArgument1 { get; init; }
 
@@ -29,13 +29,13 @@ namespace Albatross.CommandLine.Test.CodeGen {
 		public int ExplicitArgument4 { get; init; } = 4;
 	}
 
-	public class TestExplicitArgument {
-		TestExplicitArgumentCommand BuildCommand() {
+	public class ExplicitArgument {
+		ExplicitArgumentCommand BuildCommand() {
 			var host = new CommandHost("test");
 			host.AddCommands();
 			host.CommandBuilder.BuildTree(host.GetServiceProvider);
 			host.CommandBuilder.TryGetCommand("test explicit-argument", out Command cmd);
-			return (TestExplicitArgumentCommand)cmd;
+			return (ExplicitArgumentCommand)cmd;
 		}
 
 		[Fact]
