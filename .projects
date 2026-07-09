@@ -3,6 +3,7 @@ Albatross.CommandLine
 Albatross.CommandLine.CodeGen
 Albatross.CommandLine.Defaults
 Albatross.CommandLine.Inputs
+Albatross.CommandLine.Outputs
 Albatross.CommandLine.CodeAnalysis
 
 # tests
