@@ -5,7 +5,6 @@
     <File Path=".gitignore" />
     <File Path=".projects" />
     <File Path="alias.ps1" />
-    <File Path="CLAUDE.md" />
     <File Path="Directory.Build.props" />
     <File Path="icon.png" />
     <File Path="LICENSE" />
@@ -20,4 +19,5 @@
   <Project Path="Albatross.CommandLine/Albatross.CommandLine.csproj" />
   <Project Path="project-mgmt/project-mgmt.csproj" />
   <Project Path="Sample.CommandLine/Sample.CommandLine.csproj" />
+  <Project Path="TopLevelStatementConsole/TopLevelStatementConsole.csproj" Id="b5c2cb76-c9fd-4c83-8978-13ce3e929be7" />
 </Solution>
