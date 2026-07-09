@@ -1,5 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -12,7 +12,7 @@
 		<PackageReference Include="Spectre.Console.Json" Version="0.57.2" />
 	</ItemGroup>
 	<ItemGroup>
-	  <ProjectReference Include="..\Albatross.CommandLine\Albatross.CommandLine.csproj" />
+		<ProjectReference Include="..\Albatross.CommandLine\Albatross.CommandLine.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="..\icon.png">
