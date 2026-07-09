@@ -1,48 +1,47 @@
 # Logging & Verbosity
 
-Albatross.CommandLine provides built-in logging support through a global `--verbosity` option that controls the minimum log level for your CLI application.
+Starting in v9, `Albatross.CommandLine` keeps **standard output and standard error clean by default**. The core library does not add a logging provider, does not emit log lines, and no longer creates a global `--verbosity` option. A command owns its output; logging is an explicit, opt-in concern.
 
-## Overview
+> [!IMPORTANT]
+> **Changed in v9.** v8 added a recursive `--verbosity`/`-v` option to every command and logged to the console by default. That behavior has been removed. If you relied on it, see [Migrating from v8](#migrating-from-v8-verbosity) below.
 
-Every command automatically inherits a `--verbosity` (or `-v`) option from the root command. This option is:
+## The v9 Model
 
-- **Recursive** - Available on all commands in the hierarchy
-- **Optional** - Defaults to `Error` level if not specified
-- **Case-insensitive** - Accepts prefix matching (e.g., `-v d` matches `Debug`)
+- **Clean by default** — with no logging configured, nothing is written to `stdout`/`stderr` except what your command writes. This makes output safe to pipe, parse, and feed to tooling.
+- **Opt in with Defaults** — the [`Albatross.CommandLine.Defaults`](defaults-library.md) package adds Serilog logging via `WithDefaults()` / `WithSerilog()`.
+- **Logging goes to a file, not the console** — Serilog writes to a daily-rolling file under `IApplicationPath.LogRoot`. No console sink is attached, so log lines never mix with command output.
+- **Verbosity is configuration, not a CLI flag** — the log level is controlled by a `Serilog` section in `appsettings.json`, editable at deploy time without recompiling.
 
-## Verbosity Levels
+## Enabling Logging
 
-The verbosity option maps to standard `Microsoft.Extensions.Logging.LogLevel` values:
+Add the `Albatross.CommandLine.Defaults` package and call `WithDefaults()`. Because logs are written to `IApplicationPath.LogRoot`, register an `IApplicationPath` and pass its `ConfigRoot` so configuration is read from the same stable location:
 
-| Verbosity Value | LogLevel | Description |
-|-----------------|----------|-------------|
-| `Verbose` | Trace | Most detailed logging, includes all messages |
-| `Debug` | Debug | Debugging information for development |
-| `Info` | Information | General operational messages |
-| `Warning` | Warning | Potentially harmful situations |
-| `Error` | Error | Error events (default) |
-| `Critical` | Critical | Severe errors causing application failure |
-| `None` | None | Disables all logging |
+```csharp
+using Albatross.CommandLine;
+using Albatross.CommandLine.Defaults;
+using Albatross.Config;
+using Microsoft.Extensions.DependencyInjection;
 
-## Command Line Usage
+static async Task<int> Main(string[] args) {
+    var appPath = new ApplicationPath(false, ["myapp"], "myapp", null, args);
+    appPath.Init();
 
-Use the `--verbosity` or `-v` option to control logging output:
-
-```bash
-# Full verbosity names
-myapp my-command --verbosity Debug
-myapp my-command --verbosity Info
-
-# Short form with prefix matching
-myapp my-command -v d       # Debug
-myapp my-command -v i       # Info
-myapp my-command -v v       # Verbose (Trace)
-myapp my-command -v w       # Warning
+    await using var host = new CommandHost("My CLI App")
+        .RegisterServices((result, services) => {
+            services.AddSingleton<IApplicationPath>(appPath);
+            services.RegisterCommands();
+        })
+        .AddCommands()
+        .Parse(args)
+        .WithDefaults(appPath.ConfigRoot)   // config + file logging
+        .Build();
+    return await host.InvokeAsync();
+}
 ```
 
 ## Using Logging in Command Handlers
 
-Inject `ILogger<T>` into your command handler to write log messages:
+Inject `ILogger<T>` into your handler to write log messages:
 
 ```csharp
 public class MyCommandHandler : BaseHandler<MyCommandParams> {
@@ -67,205 +66,132 @@ public class MyCommandHandler : BaseHandler<MyCommandParams> {
 }
 ```
 
-## Configuring Default Verbosity
+With the default configuration, messages at `Information` and above are written to the log file; `Trace` and `Debug` are filtered out until you raise the level (see below).
 
-### Changing the Global Default
+## Controlling Verbosity
 
-By default, the verbosity level is `Error`. To change the global default for all commands, modify the static `CommandBuilder.VerbosityOption.DefaultValueFactory` before parsing:
-
-```csharp
-// Change the global default to Info level
-CommandBuilder.VerbosityOption.DefaultValueFactory = _ => VerbosityOption.Info;
-
-await using var host = new CommandHost("My CLI Application");
-
-host.RegisterServices(RegisterServices)
-    .AddCommands()
-    .Parse(args, false)
-    .WithDefaults()
-    .Build();
-
-return await host.InvokeAsync();
-```
-## Disabling Logging Entirely
-
-If you don't need logging in your CLI application, simply omit the logging setup methods. Calling `Parse()` without `WithDefaults()` or `WithSerilog()` will not configure any logging provider:
-
-```csharp
-await using var host = new CommandHost("My CLI Application");
-
-host.RegisterServices(RegisterServices)
-    .AddCommands()
-    .Parse(args, false)
-    // No WithDefaults() or WithSerilog() - logging is not configured
-    .Build();
-
-return await host.InvokeAsync();
-```
-
-In this case, `ILogger<T>` injections will still work but log messages will not be written anywhere.
-
-## Serilog Integration
-
-When using the `Albatross.CommandLine.Defaults` package, logging is automatically configured with Serilog via the `WithDefaults()` or `WithSerilog()` extension methods:
-
-```csharp
-host.Parse(args, false)
-    .WithDefaults()  // Configures both Serilog and appsettings.json
-    .Build();
-
-// Or configure Serilog only
-host.Parse(args, false)
-    .WithSerilog()
-    .Build();
-```
-
-The Serilog configuration:
-- Sets the minimum level based on the `--verbosity` option
-- Writes to console with error and above going to stderr
-- Enriches logs with context information
-
-> [!NOTE]
-> When using a `serilog.json` configuration file, the global minimum level will always be set to `Verbose` by the Console sink. This ensures that the Console sink can emit log events at any level controlled by the `--verbosity` option. The sinks defined in `serilog.json` should use their own `restrictedToMinimumLevel` settings to control their output independently.
-
-## File-Based Logging (No Console)
-
-In some scenarios, you may want to reserve the console exclusively for application I/O (e.g., `Writer.WriteLineAsync()`) and send all log messages to a file instead. This is useful when your CLI application produces structured output that shouldn't be mixed with log messages.
-
-To achieve this, use `WithConfig()` instead of `WithDefaults()` and configure Serilog manually with `SetupSerilog` from `Albatross.Logging`. The key is to call `UseConfigFile()` to load the serilog.json configuration, but **not** call `UseConsole()`.
-
-### Program.cs
-
-See the [LoggingTest](https://github.com/RushuiGuan/commandline/tree/main/LoggingTest) project for a complete example:
-
-```csharp
-using Albatross.CommandLine;
-using Albatross.CommandLine.Defaults;
-using Albatross.Config;
-using Albatross.Logging;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Serilog;
-using System.CommandLine;
-
-namespace LoggingTest {
-    internal class Program {
-        static async Task<int> Main(string[] args) {
-            await using var host = new CommandHost("LoggingTest")
-                .RegisterServices(RegisterServices)
-                .AddCommands()
-                .Parse(args)
-                .WithConfig()
-                .ConfigureHost(builder => {
-                    builder.UseSerilog();
-                    builder.ConfigureLogging((context, logging) => {
-                        var setupSerilog = new SetupSerilog();
-                        setupSerilog.UseConfigFile(EnvironmentSetting.DOTNET_ENVIRONMENT.Value, null, null, true);
-                        // NOTE: Do NOT call UseConsole() - this keeps console free for application output
-                        setupSerilog.Create();
-                    });
-                })
-                .Build();
-            return await host.InvokeAsync();
-        }
-
-        static void RegisterServices(ParseResult result, IServiceCollection services) {
-            services.RegisterCommands();
-        }
-    }
-}
-```
-
-### serilog.json
-
-Create a `serilog.json` file in your project root to configure the file sink:
+The log level is the `Serilog:MinimumLevel` setting. Because `WithConfig()` loads `appsettings.json` from the directory you pass to `WithDefaults()` (typically `ConfigRoot`), you can change verbosity by editing that file — no rebuild required:
 
 ```json
 {
   "Serilog": {
     "MinimumLevel": {
-      "Default": "Information",
+      "Default": "Debug",
       "Override": {
-        "System": "Error",
-        "Microsoft": "Error"
+        "Microsoft": "Warning",
+        "System": "Warning"
       }
-    },
-    "WriteTo": {
-      "File": {
-        "Name": "File",
-        "Args": {
-          "restrictedToMinimumLevel": "Information",
-          "path": "./logs/logging-test.log",
-          "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ssz} {MachineName} {SourceContext} {ThreadId} [{Level:w3}] {Message:lj}{NewLine}{Exception}",
-          "rollingInterval": "Day"
-        }
-      }
-    },
-    "Using": [
-      "Albatross.Logging"
-    ],
-    "Enrich": [
-      "FromLogContext",
-      "WithThreadId",
-      "WithMachineName",
-      "WithErrorMessage"
-    ]
+    }
   }
 }
 ```
 
-### Project File
+- `Default` sets the global minimum level (`Verbose`, `Debug`, `Information`, `Warning`, `Error`, `Fatal`).
+- `Override` sets per-namespace floors so framework noise can be suppressed independently of your own code.
 
-Ensure the `serilog.json` file is copied to the output directory:
+Serilog levels map to `Microsoft.Extensions.Logging.LogLevel` as follows:
 
-```xml
-<ItemGroup>
-  <None Update="serilog.json">
-    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-  </None>
-</ItemGroup>
+| Serilog Level | LogLevel |
+|---------------|----------|
+| Verbose | Trace |
+| Debug | Debug |
+| Information | Information |
+| Warning | Warning |
+| Error | Error |
+| Fatal | Critical |
+
+### Per-Environment Verbosity
+
+`WithConfig()` also loads `appsettings.{DOTNET_ENVIRONMENT}.json`. Put a lower level in `appsettings.Development.json` and a higher one in `appsettings.Production.json`, and the level follows the environment automatically.
+
+## Where Logs Go
+
+`WithSerilog()` writes to:
+
+```
+{IApplicationPath.LogRoot}/{entryAssemblyName}-.log
 ```
 
-### Environment-Specific Configuration
+with a daily rolling interval, so the actual file is e.g. `myapp-20260708.log`. `LogRoot` is resolved from the `IApplicationPath` you register; its location depends on the `ApplicationPath` configuration (user vs. system paths). If no `IApplicationPath` is registered, `WithSerilog()` throws an `InvalidOperationException` explaining how to register one.
 
-`UseConfigFile()` supports environment-specific configuration files. If `DOTNET_ENVIRONMENT` is set, it will also load:
+### Zero-Config Baseline
 
-- `serilog.Development.json` when `DOTNET_ENVIRONMENT=Development`
-- `serilog.Production.json` when `DOTNET_ENVIRONMENT=Production`
+Even with no `Serilog` section present, logging works. `WithSerilog()` sets these defaults in code, then layers any configuration on top:
 
-This allows you to use different log levels or file paths per environment.
+- Minimum level `Information`
+- `Enrich.FromLogContext()` and `Enrich.WithThreadId()`
+- The file sink, using the default output template:
 
-## How It Works
-
-1. **CommandBuilder** creates a global `VerbosityOption` with `Recursive = true`, making it available to all commands
-2. When the command is parsed, the verbosity value is extracted from the parse result
-3. **WithSerilog()** reads the verbosity and configures Serilog's minimum level accordingly
-4. If `--verbosity None` is specified, logging is completely disabled
-
-## Example Output
-
-Running with different verbosity levels:
-
-```bash
-# Default (Error) - only errors and critical messages shown
-$ myapp test-logging
-[ERR] This is an Error log
-[FTL] This is a Critical log
-
-# With Debug level
-$ myapp test-logging -v d
-[DBG] This is a Debug log
-[INF] This is an Information log
-[WRN] This is a Warning log
-[ERR] This is an Error log
-[FTL] This is a Critical log
-
-# With Verbose (Trace) level
-$ myapp test-logging -v v
-[VRB] This is a Trace log
-[DBG] This is a Debug log
-[INF] This is an Information log
-[WRN] This is a Warning log
-[ERR] This is an Error log
-[FTL] This is a Critical log
 ```
+{Timestamp:yyyy-MM-dd HH:mm:sszzz} {SourceContext} {ThreadId} [{Level:w3}] {Message:lj}{NewLine}{Exception}
+```
+
+The file sink and its `LogRoot`-derived path are always added in code, so configuration never needs to know the log path.
+
+## Adding Sinks or Enrichers
+
+Because `ReadFrom.Configuration` is layered on top of the code baseline, the `Serilog` section can add anything Serilog's configuration supports — additional sinks, enrichers, or filters:
+
+```json
+{
+  "Serilog": {
+    "MinimumLevel": { "Default": "Information" },
+    "Enrich": [ "WithMachineName" ]
+  }
+}
+```
+
+Reference the corresponding Serilog package (for example `Serilog.Enrichers.Environment` for `WithMachineName`) so the setting can be resolved.
+
+> [!NOTE]
+> A sink whose secret is supplied through an environment variable (e.g. `Serilog__WriteTo__Slack__Args__…`) still needs its `Name` element defined in a JSON file. `ReadFrom.Configuration` fails fast at startup if a `WriteTo` entry has no `Name`.
+
+## Disabling Logging Entirely
+
+Logging is off unless you opt in. Simply omit `WithDefaults()` / `WithSerilog()`:
+
+```csharp
+await using var host = new CommandHost("My CLI Application")
+    .RegisterServices(RegisterServices)
+    .AddCommands()
+    .Parse(args)
+    // No WithDefaults()/WithSerilog() — no logging provider is configured
+    .Build();
+
+return await host.InvokeAsync();
+```
+
+`ILogger<T>` injections still resolve, but messages are not written anywhere.
+
+## Migrating from v8 Verbosity
+
+| v8 | v9 |
+|----|----|
+| Recursive `--verbosity`/`-v` option added automatically | Removed — no global logging flag |
+| Default console logging at `Error` | No logging by default; opt in with `WithDefaults()` |
+| Logs written to the console | Logs written to a file under `IApplicationPath.LogRoot` |
+| Change level with `-v Debug` at the command line | Set `Serilog:MinimumLevel` in `appsettings.json` |
+| `CommandBuilder.VerbosityOption.DefaultValueFactory` | Set `Serilog:MinimumLevel:Default` in configuration |
+
+## Adding Your Own Recursive Option
+
+The library no longer imposes a `--verbosity` flag, but nothing stops you from adding one — or any other cross-cutting option. `CommandBuilder.RootCommand` is public, so add a recursive option to it **before** `Parse()` and read the value afterward:
+
+```csharp
+var host = new CommandHost("My CLI App");
+
+// A recursive option is inherited by every command in the hierarchy.
+var verbosity = new Option<LogLevel>("--verbosity", "-v") {
+    Recursive = true,
+    DefaultValueFactory = _ => LogLevel.Information,
+};
+host.CommandBuilder.RootCommand.Options.Add(verbosity);
+
+host.RegisterServices(RegisterServices)
+    .AddCommands()
+    .Parse(args)                                   // must come after the option is added
+    .WithConfig(appPath.ConfigRoot)
+    .Build();
+```
+
+You can then read the parsed value and wire it into your own logging setup. This is the same mechanism the library itself uses; there is no dedicated API to learn.

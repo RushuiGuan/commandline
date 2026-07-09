@@ -62,17 +62,16 @@ namespace Albatross.CommandLine {
 				services.AddSingleton(parseResult);
 				services.AddSingleton<ICommandContext, CommandContext>();
 			});
-
-			if (withLogging) {
-				// configure default logging level based on parsed result
-				var verbosityOption = parseResult.GetVerbosityOption();
-				if (verbosityOption != null) {
-					var logLevel = verbosityOption.GetLogLevel(parseResult);
-					this.hostBuilder.ConfigureLogging((_, builder) => builder.SetMinimumLevel(logLevel));
-				}
-			} else {
-				this.hostBuilder.ConfigureLogging((_, builder) => builder.ClearProviders());
-			}
+			//if (withLogging) {
+			//	// configure default logging level based on parsed result
+			//	var verbosityOption = parseResult.GetVerbosityOption();
+			//	if (verbosityOption != null) {
+			//		var logLevel = verbosityOption.GetLogLevel(parseResult);
+			//		this.hostBuilder.ConfigureLogging((_, builder) => builder.SetMinimumLevel(logLevel));
+			//	}
+			//} else {
+			//	this.hostBuilder.ConfigureLogging((_, builder) => builder.ClearProviders());
+			//}
 			return this;
 		}
 

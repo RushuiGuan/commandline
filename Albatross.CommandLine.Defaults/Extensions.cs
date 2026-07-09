@@ -1,5 +1,4 @@
-﻿using Albatross.Config;
-using Albatross.Logging;
+using Albatross.Config;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -7,52 +6,69 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 using System;
+using System.IO;
+using System.Reflection;
 
 namespace Albatross.CommandLine.Defaults {
 	/// <summary>
-	/// Extension methods for configuring CommandHost with default settings including Serilog logging and configuration.
+	/// Extension methods for configuring CommandHost with default settings including file-based Serilog logging and configuration.
 	/// </summary>
 	public static class Extensions {
 		/// <summary>
-		/// Converts a Microsoft.Extensions.Logging.LogLevel to a Serilog.Events.LogEventLevel.
+		/// The default Serilog output template used by the file sink.
 		/// </summary>
-		/// <param name="level">The log level to convert.</param>
-		/// <returns>The equivalent Serilog log event level.</returns>
-		public static LogEventLevel ToSerilogLevel(this LogLevel level) =>
-			level switch {
-				LogLevel.Trace => LogEventLevel.Verbose,
-				LogLevel.Debug => LogEventLevel.Debug,
-				LogLevel.Information => LogEventLevel.Information,
-				LogLevel.Warning => LogEventLevel.Warning,
-				LogLevel.Error => LogEventLevel.Error,
-				LogLevel.Critical => LogEventLevel.Fatal,
-				_ => LogEventLevel.Information
-			};
+		public const string DefaultOutputTemplate = "{Timestamp:yyyy-MM-dd HH:mm:sszzz} {SourceContext} {ThreadId} [{Level:w3}] {Message:lj}{NewLine}{Exception}";
 
 		/// <summary>
-		/// Configure the CommandHost with default configuration and Serilog logging.  This method should be invoked after Parsing since logging level is determined by --verbosity option.
+		/// Configure the CommandHost with default configuration and file-based Serilog logging.
+		/// The console is left free for the command's own output; log messages are written to a file under
+		/// <see cref="IApplicationPath.LogRoot"/>.
 		/// </summary>
 		/// <param name="commandHost"></param>
 		/// <returns></returns>
-		public static CommandHost WithDefaults(this CommandHost commandHost)
-			=> commandHost.WithConfig().WithSerilog();
+		public static CommandHost WithDefaults(this CommandHost commandHost, string? configDirectory = null)
+			=> commandHost.WithConfig(configDirectory).WithSerilog();
 
 		/// <summary>
-		/// Configure the CommandHost with Serilog logging.  This method should be invoked after Parsing since logging level is determined by --verbosity option.
+		/// Configure the CommandHost with file-based Serilog logging. Log messages are written to a daily rolling file
+		/// under <see cref="IApplicationPath.LogRoot"/>; no console sink is attached, so standard output and standard
+		/// error remain available for the command's own output.
+		/// <para>
+		/// Requires an <see cref="IApplicationPath"/> to be registered with the service collection (its
+		/// <see cref="IApplicationPath.LogRoot"/> determines the log directory).
+		/// </para>
+		/// <para>
+		/// The code-configured defaults (minimum level <see cref="LogEventLevel.Information"/> and the file sink) can be
+		/// overridden at deploy time without recompiling: a <c>Serilog</c> section in <c>appsettings.json</c> (loaded by
+		/// <see cref="WithConfig"/>) is layered on top via <c>ReadFrom.Configuration</c>. For example, set
+		/// <c>Serilog:MinimumLevel:Default</c> to <c>Debug</c> to raise verbosity, or add per-namespace overrides and
+		/// extra sinks. Because <see cref="WithConfig"/> applies environment-specific files
+		/// (<c>appsettings.{DOTNET_ENVIRONMENT}.json</c>), the level can differ per environment for free.
+		/// </para>
 		/// </summary>
 		/// <param name="commandHost"></param>
 		/// <returns></returns>
 		public static CommandHost WithSerilog(this CommandHost commandHost) {
-			commandHost.ConfigureHost((result, builder) => {
-				builder.UseSerilog();
-				builder.ConfigureLogging((context, logging) => {
-					var setupSerilog = new SetupSerilog();
-					setupSerilog.UseConfigFile(EnvironmentSetting.DOTNET_ENVIRONMENT.Value, null, null, true);
-					var logLevel = result.GetVerbosityOption()?.GetLogLevel(result) ?? LogLevel.Error;
-					if (logLevel != LogLevel.None) {
-						setupSerilog.UseConsole(logLevel.ToSerilogLevel());
-					}
-					setupSerilog.Create();
+			commandHost.ConfigureHost(builder => {
+				builder.UseSerilog((context, services, configuration) => {
+					var applicationPath = services.GetService<IApplicationPath>()
+						?? throw new InvalidOperationException("WithSerilog() writes logs to IApplicationPath.LogRoot, but no IApplicationPath is registered.  Register one before building the host, e.g. services.AddSingleton<IApplicationPath>(new ApplicationPath(...)).");
+					var applicationName = Assembly.GetEntryAssembly()?.GetName().Name ?? "app";
+					configuration
+						.MinimumLevel.Information()
+						.Enrich.FromLogContext()
+						.Enrich.WithThreadId()
+						// Baseline above (Information + FromLogContext) is set in code so logging works with zero
+						// configuration.  A Serilog section in appsettings.json (loaded by WithConfig) is layered on
+						// top here — it can raise/lower the level, add per-namespace overrides, and add enrichers or
+						// sinks.  The file sink and its LogRoot-derived path are always added in code below, so
+						// configuration never needs to know the log path.
+						.ReadFrom.Configuration(context.Configuration)
+					.WriteTo.File(
+						Path.Combine(applicationPath.LogRoot, $"{applicationName}-.log"),
+						rollingInterval: RollingInterval.Day,
+						outputTemplate: DefaultOutputTemplate);
+
 				});
 			});
 			return commandHost;
@@ -70,9 +86,9 @@ namespace Albatross.CommandLine.Defaults {
 				var environment = EnvironmentSetting.DOTNET_ENVIRONMENT;
 				var configBuilder = new ConfigurationBuilder()
 					.SetBasePath(configDirectory ?? AppContext.BaseDirectory)
-					.AddJsonFile("appsettings.json", true, true);
+					.AddJsonFile("appsettings.json", true, false);
 				if (!string.IsNullOrEmpty(environment.Value)) {
-					configBuilder.AddJsonFile($"appsettings.{environment.Value}.json", true, true);
+					configBuilder.AddJsonFile($"appsettings.{environment.Value}.json", true, false);
 				}
 				var configuration = configBuilder.AddEnvironmentVariables().Build();
 				builder.ConfigureAppConfiguration(configurationBuilder => {

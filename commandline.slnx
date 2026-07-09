@@ -11,12 +11,13 @@
     <File Path="LICENSE" />
     <File Path="README.md" />
   </Folder>
+  <Project Path="Albatross.CommandLine.CodeAnalysis/Albatross.CommandLine.CodeAnalysis.csproj" />
   <Project Path="Albatross.CommandLine.CodeGen/Albatross.CommandLine.CodeGen.csproj" />
   <Project Path="Albatross.CommandLine.Defaults/Albatross.CommandLine.Defaults.csproj" />
   <Project Path="Albatross.CommandLine.Inputs/Albatross.CommandLine.Inputs.csproj" />
+  <Project Path="Albatross.CommandLine.Outputs/Albatross.CommandLine.Outputs.csproj" Id="586bdc71-646c-4cb2-8155-e4297c9affc1" />
   <Project Path="Albatross.CommandLine.Test/Albatross.CommandLine.Test.csproj" />
   <Project Path="Albatross.CommandLine/Albatross.CommandLine.csproj" />
-  <Project Path="Albatross.CommandLine.CodeAnalysis/Albatross.CommandLine.CodeAnalysis.csproj" />
-  <Project Path="LoggingTest/LoggingTest.csproj" />
+  <Project Path="project-mgmt/project-mgmt.csproj" />
   <Project Path="Sample.CommandLine/Sample.CommandLine.csproj" />
 </Solution>

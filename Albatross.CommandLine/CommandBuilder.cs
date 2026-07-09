@@ -22,13 +22,10 @@ namespace Albatross.CommandLine {
 
 		/// <summary>
 		/// Creates a new command builder with the specified description for the root command.
-		/// The root command includes a global verbosity option by default.
 		/// </summary>
 		/// <param name="rootCommandDescription">The description to display in help text for the root command.</param>
 		public CommandBuilder(string rootCommandDescription) {
-			RootCommand = new RootCommand(rootCommandDescription) {
-				VerbosityOption,
-			};
+			RootCommand = new RootCommand(rootCommandDescription);
 			RootCommand.SetAction(new HelpAction().Invoke);
 			commands.Add(string.Empty, RootCommand);
 		}
@@ -59,14 +56,6 @@ namespace Albatross.CommandLine {
 				throw new ArgumentException($"The command '{key}' has already been added");
 			}
 		}
-
-		/// <summary>
-		/// Gets the global verbosity option shared across all commands.
-		/// </summary>
-		public static VerbosityOption VerbosityOption { get; } = new() {
-			Required = false,
-			Recursive = true,
-		};
 
 		/// <summary>
 		/// Parse the command text and return the immediate (last) sub command and its complete parent command

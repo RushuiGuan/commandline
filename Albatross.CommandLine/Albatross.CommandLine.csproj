@@ -6,7 +6,7 @@
 		<Description>A streamlined integration layer for System.CommandLine with dependency injection, hosting, configuration, logging, and	source-generated command wiring for .NET CLI apps.</Description>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="System.CommandLine" Version="2.0.2" />
+		<PackageReference Include="System.CommandLine" Version="3.0.0-preview.5.26302.115" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
 	</ItemGroup>
 	<ItemGroup>

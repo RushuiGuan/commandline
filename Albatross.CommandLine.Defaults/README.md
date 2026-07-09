@@ -1,102 +1,77 @@
 # Albatross.CommandLine.Defaults
 
-**Optional package providing default integrations for common command-line application patterns**
+Adds opinionated, ready-to-use configuration and logging to an `Albatross.CommandLine` application through a single `.WithDefaults()` call. Logging is written to a **file** (never the console), so a command's standard output and standard error stay clean for its own output — a contract that scripts, pipes, and tooling can rely on. This package is optional; if you need a different logging framework or dependency versions, wire those up yourself against the core library.
 
-This package adds pre-configured integrations for configuration management and logging to Albatross.CommandLine applications. It eliminates boilerplate setup by providing sensible defaults for most command-line scenarios.
+## Key Features
+
+- **File-based logging by default** - Serilog writes to a daily-rolling file under `IApplicationPath.LogRoot`; no console sink is attached, so `stdout`/`stderr` belong entirely to the command's output.
+- **Config-driven verbosity** - the log level, per-namespace overrides, extra sinks, and enrichers are read from a `Serilog` section via `ReadFrom.Configuration`, so verbosity is editable at deploy time without recompiling.
+- **Sensible zero-config baseline** - with no configuration at all, logging still works: `Information` level, `FromLogContext` + `ThreadId` enrichment, and the file sink are set in code; a `Serilog` section only layers on top.
+- **JSON configuration** - loads `appsettings.json` (plus `appsettings.{DOTNET_ENVIRONMENT}.json`) and environment variables, and registers `ProgramSetting`, `EnvironmentSetting`, and `IHostEnvironment`.
+- **Composable** - use `.WithDefaults()` for both, or `.WithConfig()` / `.WithSerilog()` individually.
 
 ## Quick Start
 
-Install the package alongside Albatross.CommandLine:
+Install alongside `Albatross.CommandLine`:
 
 ```xml
 <PackageReference Include="Albatross.CommandLine.Defaults" Version="..." />
 ```
 
-Add `.WithDefaults()` to your command host setup:
+`WithSerilog()` writes to `IApplicationPath.LogRoot`, so register an `IApplicationPath` and pass its `ConfigRoot` to `WithDefaults()` (that is where `appsettings.json` is read from):
 
 ```csharp
 using Albatross.CommandLine;
 using Albatross.CommandLine.Defaults;
+using Albatross.Config;
+using Microsoft.Extensions.DependencyInjection;
 
 static async Task<int> Main(string[] args) {
+    var appPath = new ApplicationPath(false, ["myapp"], "myapp", null, args);
+    appPath.Init();   // creates ConfigRoot / LogRoot / DataRoot
+
     await using var host = new CommandHost("My CLI App")
-        .RegisterServices(RegisterServices)
+        .RegisterServices((result, services) => {
+            services.AddSingleton<IApplicationPath>(appPath);
+            services.RegisterCommands();
+        })
         .AddCommands()
         .Parse(args)
-        .WithDefaults()  // <-- Adds config + logging defaults
+        .WithDefaults(appPath.ConfigRoot)   // config + file logging
         .Build();
     return await host.InvokeAsync();
 }
 ```
 
-## What's Included
+To change verbosity, drop a `Serilog` section into `appsettings.json` (in `ConfigRoot`) — no rebuild required:
 
-### Configuration Support
-- **JSON Configuration**: Automatically loads `appsettings.json` and environment-specific variants
-- **Environment Variables**: Includes environment variable configuration provider  
-- **Environment Detection**: Uses `DOTNET_ENVIRONMENT` for configuration file selection
-- **DI Integration**: Registers configuration services for dependency injection
-- **Additional Documentation**: [Albatross.Config](https://github.com/RushuiGuan/config/tree/main/Albatross.Config)
-
-### Serilog Integration
-- **Console Logging**: Pre-configured console output with appropriate formatting
-- **Additional Documentation**: [Albatross.Logging](https://github.com/RushuiGuan/config/tree/main/Albatross.Logging)
-
-
-### Verbosity-Aware Logging
-
-The built-in `--verbosity` option automatically configures Serilog output levels:
-
-```bash
-# No logging output
-dotnet run -- my-command --verbosity None
-
-# Only errors and warnings  
-dotnet run -- my-command --verbosity Error
-
-# Full debug output
-dotnet run -- my-command --verbosity Debug
+```json
+{
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Debug",
+      "Override": { "Microsoft": "Warning", "System": "Warning" }
+    }
+  }
+}
 ```
-
-Level mapping:
-- `None` → No logging output
-- `Critical` → Serilog Fatal
-- `Error` → Serilog Error  
-- `Warning` → Serilog Warning
-- `Info` → Serilog Information
-- `Debug` → Serilog Debug
-- `Verbose` → Serilog Verbose
-
-## Individual Extensions
-
-You can use components separately instead of `.WithDefaults()`:
-
-```csharp
-await using var host = new CommandHost("My CLI App")
-    .Parse(args)
-    .WithConfig()    // Configuration only
-    .WithSerilog()   // Logging only
-    .Build();
-```
-
-### WithConfig()
-- Loads appsettings.json files based on environment
-- Adds environment variable support
-- Registers `IConfiguration`, `ProgramSetting`, and `IHostEnvironment` services
-
-### WithSerilog()  
-- Configures Serilog with console output
-- Maps verbosity levels appropriately
-- Uses the `--verbosity` option value
 
 ## Dependencies
 
-This package includes these integrations:
+- **Albatross.Config** (8.0.0-rc.51): application paths (`IApplicationPath`), configuration, and environment handling.
+- **Serilog** (4.3.0), **Serilog.Extensions.Hosting** (8.0.0), **Serilog.Settings.Configuration** (8.0.4), **Serilog.Sinks.File** (6.0.0), **Serilog.Enrichers.Thread** (4.0.0): file logging configured directly against Serilog.
+- **Microsoft.Extensions.Hosting** (8.0.1), **Microsoft.Extensions.DependencyInjection** (8.0.1): host builder and service container.
 
-- **Albatross.Config** (7.5.11): Configuration management and settings binding
-- **Albatross.Logging** (10.0.1): Serilog setup and configuration helpers
-- **Microsoft.Extensions.Hosting** (10.0.1): Host builder and environment abstractions
-- **Microsoft.Extensions.DependencyInjection** (10.0.1): Service container integration
+## Prerequisites
 
-## Target Framework
-- **.NET Standard 2.1**
+- **.NET 8** (`net8.0`) or newer.
+- An `IApplicationPath` must be registered with the service collection before the host is built — `WithSerilog()` throws a guiding exception if it is missing.
+
+## Documentation
+
+**[Complete Documentation](https://rushuiguan.github.io/commandline/)**
+
+### Links
+
+- **[Defaults Library](https://rushuiguan.github.io/commandline/articles/defaults-library.html)** — configuration and logging setup in depth.
+- **[Logging & Verbosity](https://rushuiguan.github.io/commandline/articles/logging-verbosity.html)** — the v9 file-based logging model and how to control log levels.
