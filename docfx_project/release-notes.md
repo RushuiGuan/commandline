@@ -1,5 +1,20 @@
 # Release Notes
 
+## 9.0.0 - Clean Output, File Logging & the Outputs Package (prerelease)
+
+Version 9 is a **breaking major release** built on lessons from real-world v8 use, and the move onto the **System.CommandLine v3** line. Its unifying theme: the library provides capabilities, not policies.
+
+- **Clean `stdout`/`stderr` by default** - the built-in recursive `--verbosity` option is removed; a command owns its output. Add your own recursive options via `CommandBuilder.RootCommand` when you need them.
+- **File-based logging in `Albatross.CommandLine.Defaults`** - Serilog now writes to a file under `IApplicationPath.LogRoot` (no console sink); verbosity is tuned through a `Serilog` section in `appsettings.json`. The `Albatross.Logging` dependency is dropped in favor of direct Serilog.
+- **New `Albatross.CommandLine.Outputs` package** - a `CommandOutput` envelope with JSON-first output, opt-in `--query` (JmesPath) / `--compact` options, and an opt-in global error handler.
+- **System.CommandLine v3** - core migrates to the v3 prerelease while keeping `netstandard2.1` and `Microsoft.Extensions.Hosting` 8.0.1 (consumers are not forced to Hosting v10).
+
+> Because it depends on the System.CommandLine v3 prerelease, v9 is published only on the prerelease channel until v3 reaches GA. v8.x remains the current stable line.
+
+**See the full write-up with rationale and a v8 → v9 migration checklist: [What's New in v9](articles/whats-new-v9.md).**
+
+---
+
 ## 8.0.14 - Error Handler & Input Improvements
 
 ### New Feature
