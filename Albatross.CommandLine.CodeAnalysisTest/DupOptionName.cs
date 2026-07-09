@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.Text;
 
-namespace Albatross.CommandLine.Test.CodeAnalysis {
+namespace Albatross.CommandLine.CodeAnalysisTest {
 	[DefaultNameAliases("--my-test")]
 	public class MyTest1Option : Option<string> {
 		public MyTest1Option(string name, params string[] aliases) : base(name, aliases) {

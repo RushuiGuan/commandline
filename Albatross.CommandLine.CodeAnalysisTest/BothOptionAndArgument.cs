@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.Text;
 
-namespace Albatross.CommandLine.Test.CodeAnalysis {
+namespace Albatross.CommandLine.CodeAnalysisTest {
 	[Verb("both-argument-and-option", Description = "Should cause a 'ACL00004' warning")]
 	public class BothArgumentAndOptionProperty {
 		[Option]

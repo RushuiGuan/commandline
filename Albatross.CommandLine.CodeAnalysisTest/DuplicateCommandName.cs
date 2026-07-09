@@ -1,10 +1,6 @@
 ﻿using Albatross.CommandLine.Annotations;
-using System;
-using System.Collections.Generic;
-using System.CommandLine;
-using System.Text;
 
-namespace Albatross.CommandLine.Test.CodeGen {
+namespace Albatross.CommandLine.CodeAnalysisTest {
 	[Verb("dup-command-name1")]
 	public class DuplicateCommandName1AParams {
 	}

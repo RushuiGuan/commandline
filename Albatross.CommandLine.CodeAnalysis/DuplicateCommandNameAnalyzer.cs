@@ -14,7 +14,7 @@ namespace Albatross.CommandLine.CodeAnalysis {
 		private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
 			id: DiagnosticId,
 			title: "Duplicate command name",
-			messageFormat: "Command name '{0}' is already declared at {1}; command names must be unique or AddCommands() throws at runtime",
+			messageFormat: "Duplicate command name '{0}'",
 			category: "Usage",
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true,
@@ -45,10 +45,11 @@ namespace Albatross.CommandLine.CodeAnalysis {
 					continue;
 				}
 				// Report only when an earlier declaration of the same name exists (all-but-first), pointing at it.
+				// TODO: optimize this.  this cause a scan of the project.  could be slow
 				var original = FindEarlierDeclaration(context.Compilation, key, location);
 				if (original != null) {
 					// original is passed as an additional location so IDEs link back to it.
-					context.ReportDiagnostic(Diagnostic.Create(Rule, location, new[] { original }, key, FormatPosition(original)));
+					context.ReportDiagnostic(Diagnostic.Create(Rule, location, key));
 				}
 			}
 		}
@@ -122,11 +123,6 @@ namespace Albatross.CommandLine.CodeAnalysis {
 			string.Equals(a.SourceTree?.FilePath, b.SourceTree?.FilePath, StringComparison.Ordinal)
 			&& a.SourceSpan.Start == b.SourceSpan.Start;
 
-		private static string FormatPosition(Location location) {
-			var span = location.GetLineSpan();
-			// MSBuild-style "path(line,col)" so the conflicting declaration is identifiable from the message.
-			return $"{span.Path}({span.StartLinePosition.Line + 1},{span.StartLinePosition.Character + 1})";
-		}
 
 		private static bool IsVerbAttribute(AttributeData attribute, out int typeArgCount) {
 			typeArgCount = 0;
