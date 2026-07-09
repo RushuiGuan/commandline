@@ -82,4 +82,3 @@ The package also ships a simplified, dependency-light, **opt-in** `GlobalErrorHa
 - [Logging & Verbosity](logging-verbosity.md)
 - [Defaults Library](defaults-library.md)
 - [Custom Global Error Handler](custom-error-handler.md)
-- [System.CommandLine Migration (beta4 to 2.0.2)](system-commandline-migration.md)
