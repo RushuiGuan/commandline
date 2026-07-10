@@ -44,4 +44,12 @@
 		<CodeGenPayloadPackTfm>net10.0</CodeGenPayloadPackTfm>
 	</PropertyGroup>
 	<Import Project="..\Albatross.CommandLine.CodeGen\CodeGen.Payload.targets" />
+	<ItemGroup>
+	  <PackageReference Update="Albatross.CodeGen" Version="9.0.6-rc.241">
+	    <IncludeAssets>build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	  <PackageReference Update="Albatross.CodeGen.CSharp" Version="9.0.6-rc.241">
+	    <IncludeAssets>build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	</ItemGroup>
 </Project>
