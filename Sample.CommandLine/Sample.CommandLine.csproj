@@ -13,11 +13,13 @@
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
 			<OutputItemType>Analyzer</OutputItemType>
 		</ProjectReference>
+		
 		<ProjectReference Include="..\Albatross.CommandLine.CodeGen\Albatross.CommandLine.CodeGen.csproj">
 			<PrivateAssets>all</PrivateAssets>
 			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
 			<OutputItemType>Analyzer</OutputItemType>
 		</ProjectReference>
+		
 		<ProjectReference Include="..\Albatross.CommandLine.Inputs\Albatross.CommandLine.Inputs.csproj" />
 		<ProjectReference Include="..\Albatross.CommandLine.Outputs\Albatross.CommandLine.Outputs.csproj" />
 		<ProjectReference Include="..\Albatross.CommandLine.Defaults\Albatross.CommandLine.Defaults.csproj" />

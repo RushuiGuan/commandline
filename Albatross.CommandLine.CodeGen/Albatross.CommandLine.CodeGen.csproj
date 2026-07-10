@@ -38,9 +38,6 @@
 			<TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_Text)\lib\netstandard2.0\Albatross.Text.dll" IncludeRuntimeDependency="false" />
 		</ItemGroup>
 	</Target>
-	<ItemGroup>
-		<None Remove="bin\Debug\netstandard2.0\\Albatross.CommandLine.CodeGen.dll" />
-	</ItemGroup>
 	<!-- end -->
 	<ItemGroup>
 		<None Include="..\icon.png">
