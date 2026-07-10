@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Albatross.Config" Version="8.0.0-rc.53" />
+		<PackageReference Include="Albatross.Config" Version="8.0.0-rc.54" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
 		<PackageReference Include="Serilog" Version="4.3.1" />

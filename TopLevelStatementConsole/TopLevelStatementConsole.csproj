@@ -1,5 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net10.0</TargetFramework>
@@ -8,7 +8,6 @@
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
 	</PropertyGroup>
-
 	<ItemGroup>
 		<ProjectReference Include="..\Albatross.CommandLine.CodeAnalysis\Albatross.CommandLine.CodeAnalysis.csproj">
 			<PrivateAssets>all</PrivateAssets>
@@ -25,5 +24,4 @@
 		<ProjectReference Include="..\Albatross.CommandLine.Defaults\Albatross.CommandLine.Defaults.csproj" />
 		<ProjectReference Include="..\Albatross.CommandLine\Albatross.CommandLine.csproj" />
 	</ItemGroup>
-
 </Project>

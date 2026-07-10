@@ -2,7 +2,7 @@
 
 status: active
 created: 2026-07-08T12:35:28-04:00
-updated: 2026-07-09T08:28:09-04:00
+updated: 2026-07-09T16:54:19-04:00
 ----
 
 ## Business Requirements
@@ -404,13 +404,29 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   The C# `required` keyword is deliberately **not** used because it is unavailable on all
   supported target frameworks; `[Option(Required = …)]` / `DefaultToInitializer` override
   when needed.
-- **Core library targets .NET Standard 2.1 with conservative dependencies**: Maximizes
-  compatibility so the library drops into existing .NET 6/7/8+ projects without version
-  conflicts. Modern conveniences (Serilog, config) are pushed into the optional Defaults
-  package. **v9 (verified in code):** core keeps the `netstandard2.1` target and raises **only**
-  `System.CommandLine` (to the 3.0 prerelease); `Microsoft.Extensions.Hosting` stays at 8.0.1.
-  So in v9 the compatibility guarantee rests on both the TFM *and* a held-back Hosting version —
-  see the dedicated decision below.
+- **Core library multi-targets `netstandard2.1;net10.0`, tracking System.CommandLine's own
+  TFMs** (decided 2026-07-09; supersedes the earlier "core must remain netstandard2.1-only"
+  stance): The guiding rule is *don't be more restrictive than the dependency you wrap*. The v3
+  prerelease Albatross references (`3.0.0-preview.5.26302.115`) ships `netstandard2.0` + `net10.0`
+  (its csproj is `$(NetMinimum);netstandard2.0`; Arcade resolves `NetMinimum` to `net10.0` in the
+  .NET 10 cycle). Albatross therefore keeps a **netstandard** floor and adds a **net10.0** leg that
+  matches System.CommandLine's modern target. Two sub-decisions:
+  - **The netstandard floor stays at 2.1, not 2.0.** Dropping to 2.0 (which would match
+    System.CommandLine's reach exactly, adding .NET Framework 4.6.1+) was investigated in prior
+    work and rejected as too hard to support. 2.1 is the deliberate floor.
+  - **The modern leg is net10.0, and a library TFM is a *floor, not a runtime mandate*.** Earlier
+    discussion weighed net8-only / net10-only / dropping netstandard; all moot once framed
+    correctly: a `netstandard2.1;net10.0` build is consumed by net8/net9/net10+ apps alike via
+    rollforward (NuGet picks the net10 asset for net10 apps, the netstandard2.1 asset for older),
+    so keeping the netstandard leg maximizes reach at zero cost while the net10 leg gives modern
+    consumers the better surface. net10 (current LTS) is chosen over net8 (EOL Nov 2026, ≈ v9's
+    own GA timing) simply because it is what System.CommandLine ships.
+  The net10 leg sets `IsAotCompatible=true` (valid on net7+ only, so gated by a TFM condition to
+  keep the netstandard2.1 leg from emitting NETSDK1210) to self-validate the AOT goal and unlock
+  `required`/newer BCL for net10 consumers. Modern conveniences (Serilog, config) still live in
+  the optional Defaults package. `Microsoft.Extensions.Hosting` stays at 8.0.1 on both legs —
+  now naturally aligned with the netstandard floor rather than a deliberate hold-back (see the
+  dedicated Hosting decision below).
 - **Core keeps `Microsoft.Extensions.Hosting` at 8.0.1 rather than bumping to 10.x** (decided
   2026-07-08): During v9 work the core Hosting reference was briefly raised to 10.0.9, then reverted
   to 8.0.1. Rationale (maintainer): `Microsoft.Extensions.Hosting` 8.x is still in support, and a
@@ -455,9 +471,11 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   the directory.
 - **API assessment done (2026-07-08): System.CommandLine v3 introduces no breaking changes to
   Albatross's usage** per the maintainer's source-code comparison; the migration currently looks
-  like a reference bump. `netstandard2.1` support is **confirmed** (2026-07-08) — v3 still
-  targets it, so the core's broad-compatibility stance is unaffected. Residual: re-verify the
-  API before GA, since the prerelease API can still shift.
+  like a reference bump. **Correction (2026-07-09):** the v3 package Albatross references
+  (`3.0.0-preview.5.26302.115`) ships `netstandard2.0` + `net10.0` — it does **not** target
+  netstandard2.1. Core now multi-targets `netstandard2.1;net10.0` to track System.CommandLine's
+  TFMs (see Key Design Decisions). Residual: re-verify the API before GA, since the prerelease
+  API can still shift.
 - **Core Hosting version — RESOLVED (2026-07-08): stays at 8.0.1.** Core keeps
   `Microsoft.Extensions.Hosting` at 8.0.1 (not 10.x) so the library does not force consumers to
   upgrade; recorded in Key Design Decisions.
@@ -492,12 +510,14 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   and a migration guide from `2.0.0-beta4` is maintained; consumers on beta4 APIs must
   migrate (`AddValidator` → `Validators.Add`, `GetValueForOption` → `GetValue`,
   `SetHandler` → `SetAction`, `InvocationContext` removed, etc.).
-- Core library must remain on **.NET Standard 2.1** to preserve broad compatibility; do not
-  raise the target framework without weighing the compatibility cost. Modern/heavier
-  dependencies belong in the Defaults package. **Note (v9, verified in code):** the TFM
-  constraint holds; the only raised core dependency is `System.CommandLine` (3.0 prerelease).
-  `Microsoft.Extensions.Hosting` is intentionally held at 8.0.1 so the library does not force
-  consumers onto Hosting 10.x (see Key Design Decisions).
+- Core library multi-targets **`netstandard2.1;net10.0`**, tracking System.CommandLine's own
+  TFMs (netstandard floor + its `NetMinimum` modern leg). Do not be more restrictive than the
+  wrapped dependency, do not raise the netstandard floor to 2.0 (investigated and rejected as too
+  hard to support), and do not drop the netstandard leg (a library TFM is a floor, not a runtime
+  mandate — the netstandard2.1 asset serves net8/net9 consumers, the net10 asset serves net10+).
+  Modern/heavier dependencies still belong in the Defaults package. The only raised core
+  dependency is `System.CommandLine` (3.0 prerelease); `Microsoft.Extensions.Hosting` is held at
+  8.0.1 (see Key Design Decisions).
 - Reusable `Option<T>` subclasses **must** expose a `(string name, params string[] aliases)`
   constructor; reusable `Argument<T>` subclasses **must** expose a `(string name)`
   constructor — the source generator relies on these signatures to instantiate them.

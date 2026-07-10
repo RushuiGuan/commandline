@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>netstandard2.1</TargetFramework>
+		<TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
 		<Description>A streamlined integration layer for System.CommandLine with dependency injection, hosting, configuration, logging, and	source-generated command wiring for .NET CLI apps.</Description>
+		<IsAotCompatible Condition="'$(TargetFramework)' == 'net10.0'">true</IsAotCompatible>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="System.CommandLine" Version="3.0.0-preview.5.26302.115" />
@@ -27,7 +28,20 @@
 		</None>
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\Albatross.CommandLine.CodeAnalysis\Albatross.CommandLine.CodeAnalysis.csproj" />
-		<ProjectReference Include="..\Albatross.CommandLine.CodeGen\Albatross.CommandLine.CodeGen.csproj" />
+		<ProjectReference Include="..\Albatross.CommandLine.CodeGen\Albatross.CommandLine.CodeGen.csproj">
+			<PrivateAssets>all</PrivateAssets>
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+			<OutputItemType>Analyzer</OutputItemType>
+		</ProjectReference>
 	</ItemGroup>
+	<!-- Bundle the CodeGen generator payload into this package's analyzers/dotnet/cs so that
+	     referencing Albatross.CommandLine auto-activates the source generator for consumers.
+	     BundleCodeGenPayloadOnly=true resolves the $(Pkg*) paths without pulling the deps into
+	     this project's compile (which would re-trigger the net10 CS0433 polyfill collision). -->
+	<PropertyGroup>
+		<BundleCodeGenPayloadOnly>true</BundleCodeGenPayloadOnly>
+		<!-- multi-targeted: contribute the analyzer payload from exactly one inner build to avoid NU5118 -->
+		<CodeGenPayloadPackTfm>net10.0</CodeGenPayloadPackTfm>
+	</PropertyGroup>
+	<Import Project="..\Albatross.CommandLine.CodeGen\CodeGen.Payload.targets" />
 </Project>

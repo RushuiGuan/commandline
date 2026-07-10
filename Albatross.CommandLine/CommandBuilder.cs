@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Help;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -76,13 +77,15 @@ namespace Albatross.CommandLine {
 		}
 
 		internal void GetOrCreateCommand(string key, Func<ParseResult, CancellationToken, Task<int>> globalHandler, out Command command) {
-			if (!commands.TryGetValue(key, out command)) {
+			if (!commands.TryGetValue(key, out var tmp)) {
 				ParseCommandText(key, out var parent, out var self);
 				command = new Command(self);
 				command.SetAction(globalHandler);
 				commands.Add(key, command);
 				GetOrCreateCommand(parent, globalHandler, out var parentCommand);
 				parentCommand.Add(command);
+			} else {
+				command = tmp;
 			}
 		}
 
@@ -95,7 +98,11 @@ namespace Albatross.CommandLine {
 			parentCommand.Add(command);
 		}
 
-		internal bool TryGetCommand(string key, out Command command) {
+		internal bool TryGetCommand(string key,
+#if NET10_0_OR_GREATER
+			[NotNullWhen(true)]
+#endif
+			out Command? command) {
 			return commands.TryGetValue(key, out command);
 		}
 
