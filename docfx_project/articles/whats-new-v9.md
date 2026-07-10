@@ -23,9 +23,9 @@ The unifying idea behind v9 is that a library should provide **capabilities, not
 
 ## 2. System.CommandLine v3
 
-**What changed:** The core library moves from `System.CommandLine` 2.0.2 to the 3.0 prerelease. It still targets `netstandard2.1`.
+**What changed:** The core library moves from `System.CommandLine` 2.0.2 to the 3.0 prerelease, and now multi-targets `netstandard2.1;net10.0` (tracking System.CommandLine's own target frameworks — a netstandard floor for reach plus a modern `net10.0` leg). The `net10.0` leg is AOT/trim-analyzed (`IsAotCompatible`).
 
-**Why:** A major version bump already signals breaking change to consumers, so it is the right moment to adopt the next System.CommandLine line. A source-level comparison found **no breaking changes to Albatross's usage** — at the API level the migration currently looks like a reference bump — and v3 still supports `netstandard2.1`, so the broad-compatibility stance holds. (The prerelease API can still shift before GA; this is re-verified as it evolves.)
+**Why:** A major version bump already signals breaking change to consumers, so it is the right moment to adopt the next System.CommandLine line. A source-level comparison found **no breaking changes to Albatross's usage** — at the API level the migration currently looks like a reference bump. System.CommandLine v3 itself ships `netstandard2.0` + `net10.0`; core keeps a `netstandard2.1` floor for broad reach and adds a `net10.0` leg to match v3's modern target, so the broad-compatibility stance holds. (The prerelease API can still shift before GA; this is re-verified as it evolves.)
 
 ## 3. File-based logging in `Albatross.CommandLine.Defaults`
 
@@ -60,11 +60,11 @@ The package also ships a simplified, dependency-light, **opt-in** `GlobalErrorHa
 
 **No new API required.** Adding a recursive option uses existing extensibility — `CommandBuilder.RootCommand` is public. Create an `Option<T>` with `Recursive = true` and add it to `host.CommandBuilder.RootCommand` before `Parse()`. (An early plan floated a dedicated "facility" for this; it turned out to be unnecessary.) See [Logging & Verbosity](logging-verbosity.md#adding-your-own-recursive-option) for a worked `--verbosity` example.
 
-## 6. Dependency stance: only System.CommandLine moved
+## 6. Dependency stance: System.CommandLine v3 and Hosting 10.x
 
-**What changed:** Core raises **only** `System.CommandLine` (to the v3 prerelease). `Microsoft.Extensions.Hosting` is intentionally kept at 8.0.1.
+**What changed:** Core moves to `System.CommandLine` v3 (prerelease) and raises `Microsoft.Extensions.Hosting`/`DependencyInjection` to **10.x** (10.0.9); `Albatross.CommandLine.Defaults` matches.
 
-**Why:** `Microsoft.Extensions.Hosting` 8.x is still in support. A `netstandard2.1` library referencing Hosting 10.x would raise the transitive floor and effectively push every consumer to upgrade to v10 for no benefit. The library should not force that. (Hosting 10.x *can* coexist with .NET 6/7/8, so this is about not imposing an unnecessary upgrade, not a runtime incompatibility.)
+**Why:** The original v9 plan held Hosting at 8.0.1 to avoid raising the transitive floor and forcing consumers onto Hosting v10. That was reversed: .NET 8 reaches EOL in Nov 2026 (≈ v9's own GA timing) and .NET 9 is already EOL, so the runtimes this library targets are moving to 10.x regardless. **Trade-off accepted:** because core still ships the `netstandard2.1` leg, a net8/net9 consumer resolving that asset is pulled up to Hosting 10.x — acceptable given those runtimes are EOL/near-EOL. Core builds clean on both the `netstandard2.1` and `net10.0` legs with Hosting 10.x (which still ships a netstandard-compatible asset).
 
 ---
 
@@ -76,6 +76,8 @@ The package also ships a simplified, dependency-light, **opt-in** `GlobalErrorHa
 - [ ] Move log-level tuning from the command line to a `Serilog:MinimumLevel` section in `appsettings.json`.
 - [ ] If you print structured results, adopt `Albatross.CommandLine.Outputs` (`CommandOutput` + `Print` + `--query`/`--compact`) instead of ad-hoc `Console.WriteLine`.
 - [ ] Verify your build against the System.CommandLine v3 prerelease (expected to be a reference bump).
+- [ ] If you referenced `Albatross.CommandLine.CodeGen` directly, **remove that package reference** — the source generator is now bundled into `Albatross.CommandLine`, so referencing the core package is enough (keeping both would double-load the generator). `Albatross.CommandLine.CodeAnalysis` stays an opt-in package you add explicitly.
+- [ ] Note that core now pulls in **`Microsoft.Extensions.Hosting` 10.x**; a .NET 8/9 app referencing core will get Hosting 10.x transitively.
 
 ## Related articles
 
