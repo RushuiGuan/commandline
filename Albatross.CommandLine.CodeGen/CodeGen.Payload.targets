@@ -20,19 +20,16 @@
 	       to net10.0.
 	-->
 	<ItemGroup>
-		<PackageReference Include="Humanizer.Core" Version="[2.14.1]" GeneratePathProperty="true" PrivateAssets="all">
+		<PackageReference Include="Albatross.CodeAnalysis" Version="[8.0.5]" GeneratePathProperty="true" PrivateAssets="all">
 			<ExcludeAssets Condition="'$(BundleCodeGenPayloadOnly)' == 'true'">compile;runtime</ExcludeAssets>
 		</PackageReference>
-		<PackageReference Include="Albatross.CodeAnalysis" Version="[8.0.3]" GeneratePathProperty="true" PrivateAssets="all">
+		<PackageReference Include="Albatross.CodeAnalysis.Polyfill" Version="[8.0.5]" GeneratePathProperty="true" PrivateAssets="all">
 			<ExcludeAssets Condition="'$(BundleCodeGenPayloadOnly)' == 'true'">compile;runtime</ExcludeAssets>
 		</PackageReference>
-		<PackageReference Include="Albatross.CodeAnalysis.Polyfill" Version="[8.0.3]" GeneratePathProperty="true" PrivateAssets="all">
+		<PackageReference Include="Albatross.CodeGen" Version="9.0.6" GeneratePathProperty="true" PrivateAssets="all">
 			<ExcludeAssets Condition="'$(BundleCodeGenPayloadOnly)' == 'true'">compile;runtime</ExcludeAssets>
 		</PackageReference>
-		<PackageReference Include="Albatross.CodeGen" Version="9.0.6-rc.239" GeneratePathProperty="true" PrivateAssets="all">
-			<ExcludeAssets Condition="'$(BundleCodeGenPayloadOnly)' == 'true'">compile;runtime</ExcludeAssets>
-		</PackageReference>
-		<PackageReference Include="Albatross.CodeGen.CSharp" Version="9.0.6-rc.239" GeneratePathProperty="true" PrivateAssets="all">
+		<PackageReference Include="Albatross.CodeGen.CSharp" Version="9.0.6" GeneratePathProperty="true" PrivateAssets="all">
 			<ExcludeAssets Condition="'$(BundleCodeGenPayloadOnly)' == 'true'">compile;runtime</ExcludeAssets>
 		</PackageReference>
 		<PackageReference Include="Albatross.Collections" Version="[8.0.1]" GeneratePathProperty="true" PrivateAssets="all">
@@ -53,7 +50,6 @@
 	<Target Name="_PackCodeGenPayload" Condition="'$(TargetFramework)' == '$(CodeGenPayloadPackTfm)'">
 		<ItemGroup>
 			<TfmSpecificPackageFile Include="$(MSBuildThisFileDirectory)bin\$(Configuration)\netstandard2.0\Albatross.CommandLine.CodeGen.dll" PackagePath="analyzers/dotnet/cs/" />
-			<TfmSpecificPackageFile Include="$(PkgHumanizer_Core)\lib\netstandard2.0\*.dll" PackagePath="analyzers/dotnet/cs/" />
 			<TfmSpecificPackageFile Include="$(PkgAlbatross_CodeAnalysis)\lib\netstandard2.0\*.dll" PackagePath="analyzers/dotnet/cs/" />
 			<TfmSpecificPackageFile Include="$(PkgAlbatross_CodeAnalysis_Polyfill)\lib\netstandard2.0\*.dll" PackagePath="analyzers/dotnet/cs/" />
 			<TfmSpecificPackageFile Include="$(PkgAlbatross_CodeGen)\lib\netstandard2.0\*.dll" PackagePath="analyzers/dotnet/cs/" />

@@ -12,6 +12,7 @@
   </Folder>
   <Project Path="Albatross.CommandLine.CodeAnalysis/Albatross.CommandLine.CodeAnalysis.csproj" />
   <Project Path="Albatross.CommandLine.CodeAnalysisTest/Albatross.CommandLine.CodeAnalysisTest.csproj" Id="f757c577-b535-47df-9281-cfe018a52a47" />
+  <Project Path="Albatross.CommandLine.CodeGen.UnitTest/Albatross.CommandLine.CodeGen.UnitTest.csproj" Id="3600b0f9-f713-4f95-bfcb-dca2f4f50d7c" />
   <Project Path="Albatross.CommandLine.CodeGen/Albatross.CommandLine.CodeGen.csproj" />
   <Project Path="Albatross.CommandLine.Defaults/Albatross.CommandLine.Defaults.csproj" />
   <Project Path="Albatross.CommandLine.Inputs/Albatross.CommandLine.Inputs.csproj" />

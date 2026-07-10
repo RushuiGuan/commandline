@@ -1,5 +1,4 @@
 ﻿using Albatross.CodeAnalysis;
-using Humanizer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;

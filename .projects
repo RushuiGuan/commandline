@@ -7,6 +7,7 @@ Albatross.CommandLine.CodeAnalysis
 
 # tests
 Albatross.CommandLine.Test
+Albatross.CommandLine.CodeGen.UnitTest
 
 # apps
 Sample.CommandLine

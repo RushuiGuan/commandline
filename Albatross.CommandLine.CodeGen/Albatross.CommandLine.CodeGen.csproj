@@ -29,7 +29,6 @@
 	</PropertyGroup>
 	<Target Name="GetDependencyTargetPaths">
 		<ItemGroup>
-			<TargetPathWithTargetPlatformMoniker Include="$(PKGHumanizer_Core)\lib\netstandard2.0\Humanizer.dll" IncludeRuntimeDependency="false" />
 			<TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_CodeAnalysis)\lib\netstandard2.0\Albatross.CodeAnalysis.dll" IncludeRuntimeDependency="false" />
 			<TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_CodeAnalysis_Polyfill)\lib\netstandard2.0\Albatross.CodeAnalysis.Polyfill.dll" IncludeRuntimeDependency="false" />
 			<TargetPathWithTargetPlatformMoniker Include="$(PKGAlbatross_CodeGen)\lib\netstandard2.0\Albatross.CodeGen.dll" IncludeRuntimeDependency="false" />
