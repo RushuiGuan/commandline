@@ -130,9 +130,13 @@ read parsed values such as `--verbosity`.
   compatibility across .NET 6+. **In v9 (verified in code) it multi-targets `netstandard2.1;net10.0`,
   moves to `System.CommandLine` 3.0 prerelease, and raises `Microsoft.Extensions.Hosting` to 10.0.9**
   (the earlier 8.0.1 hold-back was dropped now that net8/9 are EOL/near-EOL; see Key Design Decisions).
-- **Albatross.CommandLine.CodeGen** — the Roslyn incremental source generator, referenced
-  automatically when the core package is referenced.
-- **Albatross.CommandLine.CodeAnalysis** — development-only Roslyn analyzer.
+- **Albatross.CommandLine.CodeGen** — the Roslyn incremental source generator. **Not published as a
+  standalone package (v9):** it is bundled into the `Albatross.CommandLine` package's
+  `analyzers/dotnet/cs` (see `CodeGen.Payload.targets`), so referencing the core package
+  auto-activates it. Still built and consumed as a project reference in-repo (by the core lib and
+  tests). See Key Design Decisions.
+- **Albatross.CommandLine.CodeAnalysis** — development-only Roslyn analyzer, **published and opt-in**:
+  consumers add it directly (see the code-analysis article); it is *not* bundled into core.
 - **Albatross.CommandLine.Defaults** — optional Serilog logging + JSON configuration via
   `.WithDefaults()` / `.WithConfig()` / `.WithSerilog()`. Forward-looking dependency
   versions (Albatross.Config/Logging, Microsoft.Extensions.* 10.x). **v9 change:** logging
@@ -451,6 +455,21 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   attribute misuse (duplicate option names, bad `BaseParamsClass` inheritance, `OptionHandler`
   type mismatch, conflicting `[Option]`/`[Argument]`) as IDE diagnostics rather than as
   cryptic generated-code compiler errors or runtime failures.
+- **The source generator is bundled into the core package, not published standalone** (decided
+  2026-07-10): The `Albatross.CommandLine.CodeGen` DLL and its analyzer dependencies are packed into
+  the `Albatross.CommandLine` package under `analyzers/dotnet/cs` (via the shared
+  `CodeGen.Payload.targets`, using a `TargetsForTfmSpecificContentInPackage` target because
+  `GeneratePathProperty` paths only resolve in the per-TFM inner build while `dotnet pack` collects
+  static content at the outer evaluation). Referencing the core package therefore auto-activates the
+  generator. `Albatross.CommandLine.CodeGen` is no longer published as a standalone NuGet package — it
+  is simply omitted from the `.projects` file (the list that drives which projects CI packs/publishes),
+  so no separate package is produced. Rationale: the generator emits code that depends on core's types, so it has no
+  coherent standalone consumer; and publishing both would let a consumer reference core (bundled) *and*
+  the standalone package, double-loading the generator (duplicate generated types). The project still
+  exists and is consumed as a project reference in-repo (core and tests) via the `GetDependencyTargetPaths`
+  mechanism, which is independent of packaging. `Albatross.CommandLine.CodeAnalysis` is the exception —
+  it stays published and opt-in (consumers reference it directly), so it is not bundled. See the
+  `bundle-codegen-into-core-package` task for the full implementation and verification.
 
 ## Open Questions
 
