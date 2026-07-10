@@ -2,7 +2,7 @@
 
 status: active
 created: 2026-07-08T12:35:28-04:00
-updated: 2026-07-09T16:54:19-04:00
+updated: 2026-07-10T09:30:00-04:00
 ----
 
 ## Business Requirements
@@ -127,10 +127,9 @@ read parsed values such as `--verbosity`.
 - **Albatross.CommandLine** — core library: `CommandHost`, attributes, interfaces,
   pipeline. Targets .NET Standard 2.1. In v8 it used conservative dependency versions
   (`System.CommandLine` 2.0.2, `Microsoft.Extensions.Hosting` 8.0.1) for maximum
-  compatibility across .NET 6+. **In v9 (verified in code) it keeps the `netstandard2.1`
-  target, moves to `System.CommandLine` 3.0 prerelease, but deliberately keeps
-  `Microsoft.Extensions.Hosting` at 8.0.1** — so the only raised dependency is System.CommandLine;
-  the conservative Hosting version is retained on purpose (see Key Design Decisions).
+  compatibility across .NET 6+. **In v9 (verified in code) it multi-targets `netstandard2.1;net10.0`,
+  moves to `System.CommandLine` 3.0 prerelease, and raises `Microsoft.Extensions.Hosting` to 10.0.9**
+  (the earlier 8.0.1 hold-back was dropped now that net8/9 are EOL/near-EOL; see Key Design Decisions).
 - **Albatross.CommandLine.CodeGen** — the Roslyn incremental source generator, referenced
   automatically when the core package is referenced.
 - **Albatross.CommandLine.CodeAnalysis** — development-only Roslyn analyzer.
@@ -156,8 +155,8 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
 
 - **Done in code:**
   - Core `Albatross.CommandLine` is migrated to `System.CommandLine 3.0.0-preview.5.26302.115`
-    and still targets `netstandard2.1` (its `Microsoft.Extensions.Hosting` reference stays at
-    `8.0.1` — deliberately not raised; see Key Design Decisions).
+    and multi-targets `netstandard2.1;net10.0` (its `Microsoft.Extensions.Hosting` reference is now
+    `10.0.9`; see Key Design Decisions).
   - `Albatross.CommandLine.Outputs` exists and builds — `CommandOutput`/`CommandOutput<T>`, a
     **single** shared serializer (the Anchor double-definition did not carry over), the
     `Print`/`IsCompact`/`PrintSuccess`/`PrintError` surface, the `QueryOption`/`CompactOption`
@@ -165,8 +164,8 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
     written.
   - `Albatross.CommandLine.Defaults` now defaults to **file-based** Serilog logging (daily-rolling
     file under `IApplicationPath.LogRoot`, no console sink); the `Albatross.Logging` dependency was
-    removed in favor of direct Serilog packages. Builds clean. Defaults pins Hosting/DI at 8.0.1,
-    matching core's Hosting 8.0.1.
+    removed in favor of direct Serilog packages. Builds clean. Defaults pins Hosting/DI at 10.0.9,
+    matching core's Hosting 10.0.9.
   - **Clean-output-by-default / `--verbosity` removal is done**: `VebosityOption.cs` is deleted and
     the verbosity-to-log-level wiring in `CommandHost` is commented out, so `CommandBuilder` no longer
     adds any recursive option and stdout/stderr are clean by default. No replacement library API was
@@ -424,18 +423,19 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   The net10 leg sets `IsAotCompatible=true` (valid on net7+ only, so gated by a TFM condition to
   keep the netstandard2.1 leg from emitting NETSDK1210) to self-validate the AOT goal and unlock
   `required`/newer BCL for net10 consumers. Modern conveniences (Serilog, config) still live in
-  the optional Defaults package. `Microsoft.Extensions.Hosting` stays at 8.0.1 on both legs —
-  now naturally aligned with the netstandard floor rather than a deliberate hold-back (see the
-  dedicated Hosting decision below).
-- **Core keeps `Microsoft.Extensions.Hosting` at 8.0.1 rather than bumping to 10.x** (decided
-  2026-07-08): During v9 work the core Hosting reference was briefly raised to 10.0.9, then reverted
-  to 8.0.1. Rationale (maintainer): `Microsoft.Extensions.Hosting` 8.x is still in support, and a
-  `netstandard2.1` library referencing Hosting 10.x would raise the transitive floor and effectively
-  push consumers to upgrade to v10 for no benefit — the library should not force that. Hosting 10.x
-  *can* coexist with .NET 6/7/8, so the concern is not runtime incompatibility but not imposing an
-  unnecessary upgrade. The maintainer targets .NET 8 in practice; 8.0.1 is the conservative, in-support
-  choice. Reversible if a future need requires a newer Hosting API. (Note: the Defaults package also
-  pins Hosting/DI at 8.0.1, so the two agree.)
+  the optional Defaults package. `Microsoft.Extensions.Hosting` is referenced at 10.0.9 on both legs
+  (see the dedicated Hosting decision below).
+- **Core tracks current `Microsoft.Extensions.Hosting` 10.x (10.0.9), reversing the earlier
+  hold-at-8.0.1 stance** (decided 2026-07-10; supersedes the 2026-07-08 decision to pin 8.0.1):
+  Originally core pinned Hosting at 8.0.1 to avoid raising the transitive floor and forcing consumers
+  onto Hosting 10.x for no benefit. That reasoning is now outweighed by lifecycle: .NET 8 reaches EOL
+  Nov 2026 (≈ v9's own GA timing) and .NET 9 is already EOL, so the runtimes this library targets are
+  moving to 10.x regardless. Core (and Defaults) now reference Hosting/DI **10.0.9**. **Accepted
+  trade-off:** because core still ships the `netstandard2.1` leg, a net8/net9 consumer resolving that
+  asset is pulled up to Hosting 10.x — the exact consequence the old decision avoided — but that is
+  acceptable given those runtimes are EOL/near-EOL. Verified: core builds clean on both the
+  `netstandard2.1` and `net10.0` legs with Hosting 10.0.9 (10.x still ships a netstandard-compatible
+  asset). Defaults matches at 10.0.9.
 - **Enhanced pipeline with a shared per-execution DI scope**: Replaces `System.CommandLine`'s
   native actions with `AsyncOptionAction` and `GlobalCommandAction` to add DI, async
   support, dynamic short-circuiting, and centralized error handling — capabilities the base
@@ -476,9 +476,9 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   netstandard2.1. Core now multi-targets `netstandard2.1;net10.0` to track System.CommandLine's
   TFMs (see Key Design Decisions). Residual: re-verify the API before GA, since the prerelease
   API can still shift.
-- **Core Hosting version — RESOLVED (2026-07-08): stays at 8.0.1.** Core keeps
-  `Microsoft.Extensions.Hosting` at 8.0.1 (not 10.x) so the library does not force consumers to
-  upgrade; recorded in Key Design Decisions.
+- **Core Hosting version — RESOLVED (2026-07-10): tracks 10.x (10.0.9).** The earlier
+  hold-at-8.0.1 was reversed now that net8/9 are EOL/near-EOL; core and Defaults reference Hosting/DI
+  10.0.9. Recorded in Key Design Decisions.
 - **Clean-output / `--verbosity`-removal — DONE (verified in code 2026-07-08).** Core no longer
   registers a recursive `VerbosityOption`: `VebosityOption.cs` is deleted and the verbosity-to-log-level
   wiring in `CommandHost` is commented out, so stdout/stderr are clean by default. `LoggingTest` (which
@@ -515,9 +515,9 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   wrapped dependency, do not raise the netstandard floor to 2.0 (investigated and rejected as too
   hard to support), and do not drop the netstandard leg (a library TFM is a floor, not a runtime
   mandate — the netstandard2.1 asset serves net8/net9 consumers, the net10 asset serves net10+).
-  Modern/heavier dependencies still belong in the Defaults package. The only raised core
-  dependency is `System.CommandLine` (3.0 prerelease); `Microsoft.Extensions.Hosting` is held at
-  8.0.1 (see Key Design Decisions).
+  Modern/heavier dependencies still belong in the Defaults package. Raised core dependencies are
+  `System.CommandLine` (3.0 prerelease) and `Microsoft.Extensions.Hosting` 10.0.9 (see Key Design
+  Decisions).
 - Reusable `Option<T>` subclasses **must** expose a `(string name, params string[] aliases)`
   constructor; reusable `Argument<T>` subclasses **must** expose a `(string name)`
   constructor — the source generator relies on these signatures to instantiate them.
