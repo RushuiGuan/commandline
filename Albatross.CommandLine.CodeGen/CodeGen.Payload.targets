@@ -26,10 +26,10 @@
 		<PackageReference Include="Albatross.CodeAnalysis.Polyfill" Version="[8.0.5]" GeneratePathProperty="true" PrivateAssets="all">
 			<ExcludeAssets Condition="'$(BundleCodeGenPayloadOnly)' == 'true'">compile;runtime</ExcludeAssets>
 		</PackageReference>
-		<PackageReference Include="Albatross.CodeGen" Version="9.0.6" GeneratePathProperty="true" PrivateAssets="all">
+		<PackageReference Include="Albatross.CodeGen" Version="[9.0.6]" GeneratePathProperty="true" PrivateAssets="all">
 			<ExcludeAssets Condition="'$(BundleCodeGenPayloadOnly)' == 'true'">compile;runtime</ExcludeAssets>
 		</PackageReference>
-		<PackageReference Include="Albatross.CodeGen.CSharp" Version="9.0.6" GeneratePathProperty="true" PrivateAssets="all">
+		<PackageReference Include="Albatross.CodeGen.CSharp" Version="[9.0.6]" GeneratePathProperty="true" PrivateAssets="all">
 			<ExcludeAssets Condition="'$(BundleCodeGenPayloadOnly)' == 'true'">compile;runtime</ExcludeAssets>
 		</PackageReference>
 		<PackageReference Include="Albatross.Collections" Version="[8.0.1]" GeneratePathProperty="true" PrivateAssets="all">
