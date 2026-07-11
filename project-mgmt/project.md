@@ -232,8 +232,9 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   to a file and console logging becomes an explicit opt-in.
   **Implemented (2026-07-08, builds clean):** `WithSerilog()` configures Serilog via
   `IHostBuilder.UseSerilog((ctx, services, cfg) => …)`, writing a **daily-rolling file** under
-  `IApplicationPath.LogRoot` (resolved from DI — the consumer must register an `IApplicationPath`;
-  a missing registration throws a guiding exception) with `MinimumLevel.Information`,
+  `IApplicationPath.LogRoot` (resolved from DI — if the consumer registers no `IApplicationPath`,
+  it falls back to a `DefaultApplicationPath` that logs to a `log` folder under
+  `AppContext.BaseDirectory`, reducing friction) with `MinimumLevel.Information`,
   `Enrich.FromLogContext`, and no console sink. The file name is `{entryAssemblyName}-.log`.
   The **`Albatross.Logging` dependency was removed** in favor of a direct Serilog reference
   (Serilog 4.3.0, Serilog.Extensions.Hosting 8.0.0, Serilog.Sinks.File 6.0.0); the old

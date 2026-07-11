@@ -35,7 +35,7 @@ The unifying idea behind v9 is that a library should provide **capabilities, not
 
 **How verbosity works now:** The level is no longer a CLI flag. `WithSerilog()` sets a code baseline (`Information` + `FromLogContext` + `WithThreadId` + the file sink) and then layers `ReadFrom.Configuration` on top, so a `Serilog` section in `appsettings.json` can raise/lower the level, add per-namespace overrides, and add sinks — editable at deploy time without recompiling. Details in [Logging & Verbosity](logging-verbosity.md) and the [Defaults Library](defaults-library.md).
 
-**Impact / migration:** Consumers must register an `IApplicationPath` (from `Albatross.Config`) before building the host — `WithSerilog()` throws a guiding exception otherwise. Change level tuning from `-v Debug` to a `Serilog:MinimumLevel` setting.
+**Impact / migration:** Register an `IApplicationPath` (from `Albatross.Config`) before building the host to control where logs are written; if none is registered, `WithSerilog()` falls back to a `DefaultApplicationPath` that logs to a `log` folder under the application base directory. Change level tuning from `-v Debug` to a `Serilog:MinimumLevel` setting.
 
 ## 4. A first-class command output strategy: `Albatross.CommandLine.Outputs` (new package)
 
@@ -72,7 +72,7 @@ The package also ships a simplified, dependency-light, **opt-in** `GlobalErrorHa
 
 - [ ] Expect a **prerelease** package version; keep v8.x if you cannot take a prerelease dependency.
 - [ ] Remove any reliance on the automatic `--verbosity`/`-v` option or `CommandBuilder.VerbosityOption`.
-- [ ] If you want logging, add `Albatross.CommandLine.Defaults`, register an `IApplicationPath`, and call `WithDefaults(appPath.ConfigRoot)`. Logs now go to a **file**, not the console.
+- [ ] If you want logging, add `Albatross.CommandLine.Defaults` and call `WithDefaults(appPath.ConfigRoot)`. Register an `IApplicationPath` to control where logs are written, or rely on the `DefaultApplicationPath` fallback. Logs now go to a **file**, not the console.
 - [ ] Move log-level tuning from the command line to a `Serilog:MinimumLevel` section in `appsettings.json`.
 - [ ] If you print structured results, adopt `Albatross.CommandLine.Outputs` (`CommandOutput` + `Print` + `--query`/`--compact`) instead of ad-hoc `Console.WriteLine`.
 - [ ] Verify your build against the System.CommandLine v3 prerelease (expected to be a reference bump).

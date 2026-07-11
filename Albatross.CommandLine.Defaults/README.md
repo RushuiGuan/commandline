@@ -66,7 +66,7 @@ To change verbosity, drop a `Serilog` section into `appsettings.json` (in `Confi
 ## Prerequisites
 
 - **.NET 8** (`net8.0`) or newer.
-- An `IApplicationPath` must be registered with the service collection before the host is built — `WithSerilog()` throws a guiding exception if it is missing.
+- Registering an `IApplicationPath` before the host is built is optional — it controls where logs are written. If none is registered, `WithSerilog()` falls back to a `DefaultApplicationPath` that logs to a `log` folder under the application base directory.
 
 ## Documentation
 

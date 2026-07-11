@@ -14,7 +14,7 @@ Starting in v9, `Albatross.CommandLine` keeps **standard output and standard err
 
 ## Enabling Logging
 
-Add the `Albatross.CommandLine.Defaults` package and call `WithDefaults()`. Because logs are written to `IApplicationPath.LogRoot`, register an `IApplicationPath` and pass its `ConfigRoot` so configuration is read from the same stable location:
+Add the `Albatross.CommandLine.Defaults` package and call `WithDefaults()`. Logs are written to `IApplicationPath.LogRoot`; registering an `IApplicationPath` and passing its `ConfigRoot` lets configuration be read from the same stable location. Registering an `IApplicationPath` is optional — if none is registered, `WithSerilog()` falls back to a `DefaultApplicationPath` (see [Where Logs Go](#where-logs-go)):
 
 ```csharp
 using Albatross.CommandLine;
@@ -112,7 +112,7 @@ Serilog levels map to `Microsoft.Extensions.Logging.LogLevel` as follows:
 {IApplicationPath.LogRoot}/{entryAssemblyName}-.log
 ```
 
-with a daily rolling interval, so the actual file is e.g. `myapp-20260708.log`. `LogRoot` is resolved from the `IApplicationPath` you register; its location depends on the `ApplicationPath` configuration (user vs. system paths). If no `IApplicationPath` is registered, `WithSerilog()` throws an `InvalidOperationException` explaining how to register one.
+with a daily rolling interval, so the actual file is e.g. `myapp-20260708.log`. `LogRoot` is resolved from the `IApplicationPath` you register; its location depends on the `ApplicationPath` configuration (user vs. system paths). If no `IApplicationPath` is registered, `WithSerilog()` falls back to a `DefaultApplicationPath`, whose `LogRoot` is a `log` folder under the application base directory (`AppContext.BaseDirectory`). This keeps logging working with zero setup; register your own `IApplicationPath` when you want the log file somewhere more durable than the `bin` folder.
 
 ### Zero-Config Baseline
 

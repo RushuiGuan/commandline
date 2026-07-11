@@ -40,7 +40,7 @@ A defining v9 behavior: **logging goes to a file, never the console.** The conso
 
 ## Quick Start
 
-`WithSerilog()` writes logs to `IApplicationPath.LogRoot`, so an `IApplicationPath` must be registered before the host is built. The typical pattern creates the `ApplicationPath` up front, registers it, and passes its `ConfigRoot` to `WithDefaults()`:
+`WithSerilog()` writes logs to `IApplicationPath.LogRoot`. Registering an `IApplicationPath` before the host is built lets you control that location; if none is registered, `WithSerilog()` falls back to a `DefaultApplicationPath` (logging to a `log` folder under the application base directory) so logging works with no extra setup. The typical pattern still creates the `ApplicationPath` up front, registers it, and passes its `ConfigRoot` to `WithDefaults()`:
 
 ```csharp
 using Albatross.CommandLine;
@@ -157,7 +157,7 @@ host.Parse(args)
 **What it configures:**
 
 1. **File Sink under `IApplicationPath.LogRoot`**
-   - Resolves `IApplicationPath` from the service container. If none is registered, `WithSerilog()` throws an `InvalidOperationException` with guidance.
+   - Resolves `IApplicationPath` from the service container. If none is registered, it falls back to a `DefaultApplicationPath`, whose `LogRoot` is a `log` folder under the application base directory — logging works with zero setup.
    - Writes a daily-rolling file named `{entryAssemblyName}-.log` (Serilog inserts the date, e.g. `myapp-20260708.log`).
    - Uses the `DefaultOutputTemplate` constant for formatting.
 

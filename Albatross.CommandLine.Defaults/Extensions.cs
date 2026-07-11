@@ -34,8 +34,10 @@ namespace Albatross.CommandLine.Defaults {
 		/// under <see cref="IApplicationPath.LogRoot"/>; no console sink is attached, so standard output and standard
 		/// error remain available for the command's own output.
 		/// <para>
-		/// Requires an <see cref="IApplicationPath"/> to be registered with the service collection (its
-		/// <see cref="IApplicationPath.LogRoot"/> determines the log directory).
+		/// The <see cref="IApplicationPath.LogRoot"/> of the registered <see cref="IApplicationPath"/> determines the log
+		/// directory. If no <see cref="IApplicationPath"/> is registered, a <see cref="DefaultApplicationPath"/> is used as
+		/// a fallback (logging to a <c>log</c> folder under the application base directory) so logging works with no extra
+		/// setup.
 		/// </para>
 		/// <para>
 		/// The code-configured defaults (minimum level <see cref="LogEventLevel.Information"/> and the file sink) can be
@@ -51,8 +53,7 @@ namespace Albatross.CommandLine.Defaults {
 		public static CommandHost WithSerilog(this CommandHost commandHost) {
 			commandHost.ConfigureHost(builder => {
 				builder.UseSerilog((context, services, configuration) => {
-					var applicationPath = services.GetService<IApplicationPath>()
-						?? throw new InvalidOperationException("WithSerilog() writes logs to IApplicationPath.LogRoot, but no IApplicationPath is registered.  Register one before building the host, e.g. services.AddSingleton<IApplicationPath>(new ApplicationPath(...)).");
+					var applicationPath = services.GetService<IApplicationPath>() ?? new DefaultApplicationPath();
 					var applicationName = Assembly.GetEntryAssembly()?.GetName().Name ?? "app";
 					configuration
 						.MinimumLevel.Information()
