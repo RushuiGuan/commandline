@@ -28,8 +28,8 @@ namespace Sample.CommandLine.ParameterTransformation {
 			var id = result.GetValue(option);
 			if (id != 0) {
 				var valid = await instrumentProxy.VerifyId(id);
-				if(!valid) {
-					context.SetInputActionStatus(new OptionHandlerStatus(option.Name, false, $"Instrument id {id} is not valid.", null));
+				if (!valid) {
+					context.SetInputActionError(new Error(ErrorSource.OptionHandler, option.Name, $"Instrument id {id} is not valid.", null));
 				}
 			}
 		}

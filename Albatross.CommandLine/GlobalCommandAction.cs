@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Help;
 using System.Linq;
@@ -13,16 +14,10 @@ namespace Albatross.CommandLine {
 			this.serviceFactory = serviceFactory;
 		}
 
-		/// <summary>
-		/// Windows exit code is int but unix is only byte, so we use 255 or less so that it will have the same value on both platforms.
-		/// </summary>
-		const int ErrorExitCode = 255;
-
-		const int CancelledExitCode = 254;
-		const int InputActionErrorExitCode = 253;
+		const int ErrorExitCode = 1;
 		private readonly Func<IServiceProvider> serviceFactory;
 
-		int HandleError(IServiceProvider services, ILogger logger, Exception err, string logMessage, string command) {
+		int HandleError(IServiceProvider services, params IEnumerable<Error> err) {
 			var errHandler = services.GetService<ICommandErrorHandler>();
 			if (errHandler != null) {
 				var errorCode = errHandler.Handle(err);
@@ -30,7 +25,6 @@ namespace Albatross.CommandLine {
 					return errorCode.Value;
 				}
 			}
-			logger.LogError(err, logMessage, command);
 			return ErrorExitCode;
 		}
 
@@ -38,23 +32,27 @@ namespace Albatross.CommandLine {
 			var services = this.serviceFactory();
 			var context = services.GetRequiredService<ICommandContext>();
 			var logger = services.GetRequiredService<ILogger<GlobalCommandAction>>();
-			logger.LogDebug("Executing command '{command}'", context.Key);
-			if (context.HasInputActionError) {
-				return InputActionErrorExitCode;
+			logger.LogInformation("Invoking command [{command}]", context.Key);
+			var inputActionErrors = context.InputActionErrors.ToArray();
+			if (inputActionErrors.Any()) {
+				return HandleError(services, inputActionErrors);
 			}
 			IAsyncCommandHandler? handler = null;
 			try {
 				handler = services.GetKeyedService<IAsyncCommandHandler>(context.Key);
 			} catch (Exception err) {
-				return HandleError(services, logger, err, "Error creating CommandHandler for command {command}", context.Key);
+				var msg = $"Error creating CommandHandler for command {context.Key}";
+				logger.LogError(err, msg);
+				return HandleError(services, new Error(ErrorSource.ServiceRegistration, context.Key, msg, err));
 			}
 			if (handler == null) {
 				// if the command is a parent command, simply print the help
 				if (result.CommandResult.Command.Subcommands.Any()) {
 					return new HelpAction().Invoke(result);
 				} else {
-					logger.LogError("No CommandHandler is registered for command {command}", context.Key);
-					return ErrorExitCode;
+					var msg = $"No CommandHandler is registered for command {context.Key}";
+					logger.LogError(msg);
+					return HandleError(services, new Error(ErrorSource.ServiceRegistration, context.Key, msg, null));
 				}
 			} else {
 				// v2 inclueds a System.CommandLine.Invocation.DefaultExceptionHandler that could be used here.
@@ -62,10 +60,13 @@ namespace Albatross.CommandLine {
 				try {
 					return await handler.InvokeAsync(cancellationToken);
 				} catch (OperationCanceledException) {
-					logger.LogWarning("Command {command} was cancelled", context.Key);
-					return CancelledExitCode;
+					var msg = $"Command {context.Key} was cancelled";
+					logger.LogWarning(msg);
+					return HandleError(services, new Error(ErrorSource.CommandTaskCancellation, context.Key, msg, null));
 				} catch (Exception err) {
-					return HandleError(services, logger, err, "Error invoking command {command}", context.Key);
+					var msg = $"Error invoking command {context.Key}";
+					logger.LogError(err, msg);
+					return HandleError(services, new Error(ErrorSource.CommandHandler, context.Key, msg, err));
 				}
 			}
 		}

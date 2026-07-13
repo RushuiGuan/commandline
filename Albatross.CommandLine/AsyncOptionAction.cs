@@ -29,17 +29,17 @@ namespace Albatross.CommandLine {
 			if (!context.HasParsingError && !context.HasShortCircuitOptions) {
 				var logger = serviceProvider.GetRequiredService<ILogger<AsyncOptionAction<TOption, THandler>>>();
 				try {
-					logger.LogDebug("Invoking AsyncActionHandler for [ {CommandName} [ {SymbolName} ] ]", context.Key, Symbol.Name);
+					logger.LogInformation("Invoking AsyncOptionHandler: [{CommandName} [{SymbolName}]]", context.Key, Symbol.Name);
 					var handler = serviceProvider.GetRequiredService<THandler>();
 					await handler.InvokeAsync(this.Symbol, parseResult, cancellationToken);
-				} catch (OperationCanceledException err) {
-					var msg = $"Operation cancelled while processing argument or option [ {Symbol.Name} ]";
+				} catch (OperationCanceledException) {
+					var msg = $"Option {Symbol.Name} was cancelled";
 					logger.LogWarning(msg);
-					context.SetInputActionStatus(new OptionHandlerStatus(Symbol.Name, false, msg, err));
+					context.SetInputActionError(new Error(ErrorSource.OptionTaskCancellation, Symbol.Name, msg, null));
 				} catch (Exception err) {
-					var msg = $"Error occurred while processing argument or option [ {Symbol.Name} ]";
+					var msg = $"Error occurred while processing option [{Symbol.Name}]";
 					logger.LogError(err, msg);
-					context.SetInputActionStatus(new OptionHandlerStatus(Symbol.Name, false, msg, err));
+					context.SetInputActionError(new Error(ErrorSource.OptionHandler, Symbol.Name, msg, err));
 				}
 			}
 			// this return code has no impact
@@ -66,20 +66,20 @@ namespace Albatross.CommandLine {
 			if (!context.HasParsingError && !context.HasShortCircuitOptions) {
 				var logger = serviceProvider.GetRequiredService<ILogger<AsyncOptionAction<TOption, THandler, TContextValue>>>();
 				try {
-					logger.LogDebug("Invoking AsyncActionHandler for [ {CommandName} [ {SymbolName} ] ]", context.Key, Symbol.Name);
+					logger.LogInformation("Invoking AsyncOptionHandler: [{CommandName} [{SymbolName}]]", context.Key, Symbol.Name);
 					var handler = serviceProvider.GetRequiredService<THandler>();
 					var result = await handler.InvokeAsync(this.Symbol, parseResult, cancellationToken);
 					if (result.HasValue) {
 						context.SetValue<TContextValue>(this.Symbol.Name, result.Value);
 					}
-				} catch (OperationCanceledException err) {
-					var msg = $"Operation cancelled while processing argument or option [ {Symbol.Name} ]";
+				} catch (OperationCanceledException) {
+					var msg = $"Option {Symbol.Name} was cancelled";
 					logger.LogWarning(msg);
-					context.SetInputActionStatus(new OptionHandlerStatus(Symbol.Name, false, msg, err));
+					context.SetInputActionError(new Error(ErrorSource.OptionTaskCancellation, Symbol.Name, msg, null));
 				} catch (Exception err) {
-					var msg = $"Error occurred while processing argument or option [ {Symbol.Name} ]";
+					var msg = $"Error occurred while processing option [{Symbol.Name}]";
 					logger.LogError(err, msg);
-					context.SetInputActionStatus(new OptionHandlerStatus(Symbol.Name, false, msg, err));
+					context.SetInputActionError(new Error(ErrorSource.OptionHandler, Symbol.Name, msg, err));
 				}
 			}
 			// this return code has no impact
@@ -94,6 +94,7 @@ namespace Albatross.CommandLine {
 	public sealed class AsyncOptionAction : AsynchronousCommandLineAction {
 		/// <inheritdoc/>
 		public override bool Terminating => false;
+
 		private readonly Func<ParseResult, CancellationToken, Task<int>> handler;
 
 		/// <summary>
@@ -117,6 +118,7 @@ namespace Albatross.CommandLine {
 	public sealed class SyncOptionAction : SynchronousCommandLineAction {
 		/// <inheritdoc/>
 		public override bool Terminating => false;
+
 		private readonly Func<ParseResult, int> handler;
 
 		/// <summary>

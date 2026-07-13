@@ -7,11 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 using System.CommandLine;
 using Sample.CommandLine.Services;
 using Albatross.CommandLine.Outputs;
+using System;
 
 namespace Sample.CommandLine {
 	internal class Program {
 		static async Task<int> Main(string[] args) {
-			var appPath = new ApplicationPath(false, ["commandline-sample"], "commandline-sample", null, args);
+			var appPath = new EnterpriseApplicationPath("Sample.CommandLine", "LogDirectory", "DataDirectory");
 			appPath.Init();
 			await using var host = new CommandHost("Sample Command Line Application");
 			host.RegisterServices((result, services) => RegisterServices(result, services, appPath))

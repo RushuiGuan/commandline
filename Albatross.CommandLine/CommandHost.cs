@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.CommandLine;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Albatross.CommandLine {
@@ -23,15 +24,29 @@ namespace Albatross.CommandLine {
 		ParseResult? parseResult;
 		IHost? host;
 		private IServiceScope? scope;
-		private Action<ParseResult, IServiceProvider> configApplication = (result, provider) => { };
+
+		private Action<ParseResult, IServiceProvider> configApplication = (result, provider) => {
+			var logger = provider.GetRequiredService<ILogger<CommandHost>>();
+			logger.LogInformation("----------- {app} -----------", result.RootCommandResult.Command.Description);
+		};
+
 		/// <summary>
 		/// Gets the parse result. Throws if <see cref="Parse"/> has not been called.
 		/// </summary>
 		public ParseResult RequiredResult => this.parseResult ?? throw new InvalidOperationException("Parse(args) has not been called yet");
+
 		/// <summary>
 		/// Gets the command builder used to configure the command hierarchy.
 		/// </summary>
 		public CommandBuilder CommandBuilder { get; }
+
+		/// <summary>
+		/// The grace period the command handler is given to cancel and clean up after Ctrl+C
+		/// (SIGINT/SIGTERM) before the process is force-terminated. Defaults to 30 seconds; the
+		/// System.CommandLine default of 2 seconds is too short for handlers doing real I/O.
+		/// Set this before calling <see cref="Build"/>.
+		/// </summary>
+		public TimeSpan ProcessTerminationTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
 		/// <summary>
 		/// Gets the scoped service provider. Throws if <see cref="Build"/> has not been called.
@@ -125,6 +140,13 @@ namespace Albatross.CommandLine {
 			this.host = this.hostBuilder.Build();
 			this.scope = this.host.Services.CreateScope();
 			this.configApplication(this.RequiredResult, host.Services);
+			// System.CommandLine gives the command handler a grace period after Ctrl+C (SIGINT/SIGTERM):
+			// it cancels the token, waits up to ProcessTerminationTimeout for the handler to unwind, then
+			// force-terminates the process. The default is only 2 seconds, which is too short for handlers
+			// doing real I/O (e.g. an HTTP call with a longer timeout) to cancel and clean up gracefully.
+			// Must be set here, before InvokeAsync() runs: the pipeline reads this value and builds its
+			// termination handler before invoking the command action, so setting it later has no effect.
+			this.RequiredResult.InvocationConfiguration.ProcessTerminationTimeout = this.ProcessTerminationTimeout;
 			return this;
 		}
 
@@ -136,6 +158,9 @@ namespace Albatross.CommandLine {
 
 		/// <inheritdoc/>
 		public async ValueTask DisposeAsync() {
+			if (host != null) {
+				host.Services.GetRequiredService<ILogger<CommandHost>>().LogInformation("Disposing");
+			}
 			if (host is IAsyncDisposable hostAsyncDisposable) {
 				await hostAsyncDisposable.DisposeAsync();
 			} else if (host != null) {

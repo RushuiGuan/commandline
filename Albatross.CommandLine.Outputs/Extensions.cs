@@ -35,7 +35,7 @@ namespace Albatross.CommandLine.Outputs {
 		/// the stream is redirected or piped, so a tool/AI consumer still receives plain JSON.
 		/// </summary>
 		public static void Print<T>(this T value, JmesPathExpression? expression, bool compact, bool stderr = false) {
-			if(value == null) {
+			if (value == null) {
 				return;
 			}
 			JToken token = JToken.FromObject(value, Serializer);
@@ -88,9 +88,32 @@ namespace Albatross.CommandLine.Outputs {
 			new CommandOutput {
 				Command = result.CommandResult.Command.GetCommandKey(),
 				ExitCode = exitCode,
-				Error = error,
-				ErrorDetail = detail,
+				Errors = [
+					new ErrorOutput {
+						Source = ErrorSource.CommandHandler,
+						Key = result.CommandResult.Command.GetCommandKey(),
+						Message = error,
+						Detail = detail,
+					}
+				],
 				Message = message,
+			}.Print(null, result.IsCompact(), stderr: true);
+		}
+
+		public static void PrintError<T>(this ParseResult result, string error, T data, string? detail = null, string? message = null, int exitCode = 1) {
+			new CommandOutput<T> {
+				Command = result.CommandResult.Command.GetCommandKey(),
+				ExitCode = exitCode,
+				Errors = [
+					new ErrorOutput {
+						Source = ErrorSource.CommandHandler,
+						Key = result.CommandResult.Command.GetCommandKey(),
+						Message = error,
+						Detail = detail,
+					}
+				],
+				Message = message,
+				Data = data,
 			}.Print(null, result.IsCompact(), stderr: true);
 		}
 	}

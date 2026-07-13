@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,10 +16,12 @@ namespace Albatross.CommandLine {
 		/// Gets the parse result from command line parsing.
 		/// </summary>
 		ParseResult Result { get; }
+
 		/// <summary>
 		/// Gets the space-separated key identifying the current command in the hierarchy.
 		/// </summary>
 		string Key { get; }
+
 		/// <summary>
 		/// Gets a required value from the context. Throws if the value is not found or has the wrong type.
 		/// </summary>
@@ -26,6 +29,7 @@ namespace Albatross.CommandLine {
 		/// <param name="key">The key identifying the value.</param>
 		/// <returns>The stored value.</returns>
 		T GetRequiredValue<T>(string key);
+
 		/// <summary>
 		/// Gets a value from the context, or default if not found.
 		/// </summary>
@@ -33,6 +37,7 @@ namespace Albatross.CommandLine {
 		/// <param name="key">The key identifying the value.</param>
 		/// <returns>The stored value, or default if not found.</returns>
 		T? GetValue<T>(string key);
+
 		/// <summary>
 		/// Stores a value in the context for sharing between handlers.
 		/// </summary>
@@ -40,23 +45,28 @@ namespace Albatross.CommandLine {
 		/// <param name="key">The key to identify the value.</param>
 		/// <param name="value">The value to store.</param>
 		void SetValue<T>(string key, T value) where T : notnull;
+
 		/// <summary>
-		/// Records the status of an option handler execution.
+		/// Records an error produced by an option handler, keyed by the option name so the latest
+		/// error for a given option replaces any earlier one.
 		/// </summary>
-		/// <param name="status">The status to record.</param>
-		void SetInputActionStatus(OptionHandlerStatus status);
+		/// <param name="error">The error to record.</param>
+		void SetInputActionError(Error error);
+
 		/// <summary>
 		/// Gets a value indicating whether the parse result contains errors.
 		/// </summary>
 		bool HasParsingError { get; }
+
 		/// <summary>
 		/// Gets a value indicating whether short-circuit options (like --help or --version) were specified.
 		/// </summary>
 		bool HasShortCircuitOptions { get; }
+
 		/// <summary>
-		/// Gets a value indicating whether any option handler reported an error.
+		/// Gets the errors recorded by option handlers during the pre-action phase.
 		/// </summary>
-		bool HasInputActionError { get; }
+		IEnumerable<Error> InputActionErrors { get; }
 	}
 
 	/// <summary>
@@ -65,17 +75,20 @@ namespace Albatross.CommandLine {
 	public class CommandContext : ICommandContext, IAsyncDisposable {
 		/// <inheritdoc/>
 		public string Key { get; }
+
 		/// <inheritdoc/>
 		public ParseResult Result { get; }
+
 		private readonly Dictionary<string, object> values = new();
-		private readonly Dictionary<string, OptionHandlerStatus> inputStatus = new();
+		private readonly Dictionary<string, Error> inputActionErrors = new();
 
 		/// <inheritdoc/>
 		public bool HasParsingError => Result.Errors.Count > 0;
-		/// <inheritdoc/>
-		public bool HasInputActionError => inputStatus.Any(x => !x.Value.Success);
+
 		/// <inheritdoc/>
 		public bool HasShortCircuitOptions => Result.CommandResult.Children.OfType<OptionResult>().Any(x => x.Option.Action?.Terminating == true);
+
+		public IEnumerable<Error> InputActionErrors => inputActionErrors.Values;
 
 		/// <summary>
 		/// Initializes a new command context from the parse result.
@@ -116,8 +129,8 @@ namespace Albatross.CommandLine {
 			values[key] = value;
 		}
 
-		public void SetInputActionStatus(OptionHandlerStatus status) {
-			this.inputStatus[status.Name] = status;
+		public void SetInputActionError(Error error) {
+			this.inputActionErrors[error.Key] = error;
 		}
 
 		public async ValueTask DisposeAsync() {

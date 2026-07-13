@@ -12,7 +12,7 @@ namespace Albatross.CommandLine.Outputs {
 			Description = "JmesPath expression.  Find documentation@https://jmespath.org/";
 		}
 	}
-	
+
 	public class ParseQueryExpression : IAsyncOptionHandler<QueryOption, JmesPathExpression> {
 		private readonly ICommandContext context;
 		private readonly ILogger<ParseQueryExpression> logger;
@@ -30,12 +30,12 @@ namespace Albatross.CommandLine.Outputs {
 			var text = parseResult.GetValue(symbol);
 			if (!string.IsNullOrEmpty(text)) {
 				try {
-					var expression = new JmesPath().Parse(text);   // throws on invalid syntax
+					var expression = new JmesPath().Parse(text); // throws on invalid syntax
 					return Task.FromResult(new OptionHandlerResult<JmesPathExpression>(expression));
 				} catch (Exception err) {
-					var msg = $"Invalid Jmes Query Expression: {text}; {err.Message}";
-					logger.LogError(msg);
-					context.SetInputActionStatus(new OptionHandlerStatus(symbol.Name, false, msg, err));
+					var msg = $"Invalid Jmes Query Expression: {text}";
+					logger.LogError(msg, err);
+					context.SetInputActionError(new Error(ErrorSource.OptionHandler, symbol.Name, msg, err));
 				}
 			}
 			return Task.FromResult(new OptionHandlerResult<JmesPathExpression>());
