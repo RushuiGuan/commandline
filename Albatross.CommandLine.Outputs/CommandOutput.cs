@@ -11,7 +11,7 @@ namespace Albatross.CommandLine.Outputs {
 
 	public record class ErrorOutput {
 		public required ErrorSource Source { get; init; }
-		public string? Key { get; init; }
+		public string? Symbol { get; init; }
 		public required string Message { get; init; }
 		public string? Detail { get; init; }
 	}

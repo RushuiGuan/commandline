@@ -91,7 +91,7 @@ namespace Albatross.CommandLine.Outputs {
 				Errors = [
 					new ErrorOutput {
 						Source = ErrorSource.CommandHandler,
-						Key = result.CommandResult.Command.GetCommandKey(),
+						Symbol = result.CommandResult.Command.GetCommandKey(),
 						Message = error,
 						Detail = detail,
 					}
@@ -107,7 +107,7 @@ namespace Albatross.CommandLine.Outputs {
 				Errors = [
 					new ErrorOutput {
 						Source = ErrorSource.CommandHandler,
-						Key = result.CommandResult.Command.GetCommandKey(),
+						Symbol = result.CommandResult.Command.GetCommandKey(),
 						Message = error,
 						Detail = detail,
 					}

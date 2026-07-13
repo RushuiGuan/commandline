@@ -12,19 +12,19 @@ namespace Albatross.CommandLine {
 		CommandHandler = 0,
 		/// <summary>
 		/// An option handler (pre-action) reported an error — either it threw, or it recorded a
-		/// validation failure. <see cref="Error.Key"/> carries the option name.
+		/// validation failure. <see cref="Error.Symbol"/> carries the option name.
 		/// </summary>
 		OptionHandler = 1,
 		/// <summary>The command handler could not be resolved or created from the service container.</summary>
 		ServiceRegistration = 2,
 		/// <summary>
 		/// The command handler was cancelled (an <see cref="OperationCanceledException"/>), typically
-		/// from Ctrl+C. <see cref="Error.Key"/> carries the command key.
+		/// from Ctrl+C. <see cref="Error.Symbol"/> carries the command key.
 		/// </summary>
 		CommandTaskCancellation = 3,
 		/// <summary>
 		/// An async option handler (pre-action) was cancelled (an <see cref="OperationCanceledException"/>);
-		/// <see cref="Error.Key"/> carries the option name.
+		/// <see cref="Error.Symbol"/> carries the option name.
 		/// </summary>
 		/// <remarks>
 		/// Known limitation: this source is effectively unreachable via Ctrl+C today. System.CommandLine
@@ -49,7 +49,7 @@ namespace Albatross.CommandLine {
 		/// <summary>The pipeline stage that produced this error.</summary>
 		public ErrorSource Source { get; }
 		/// <summary>The option name for option errors, or the command key for command-level errors.</summary>
-		public string Key { get; }
+		public string Symbol { get; }
 		/// <summary>A user-facing description of the error.</summary>
 		public string Message { get; }
 
@@ -58,12 +58,12 @@ namespace Albatross.CommandLine {
 
 		/// <summary>Creates an error.</summary>
 		/// <param name="source">The pipeline stage that produced the error.</param>
-		/// <param name="key">The option name for option errors, or the command key for command-level errors.</param>
+		/// <param name="symbol">The option name for option errors, or the command key for command-level errors.</param>
 		/// <param name="message">A user-facing description of the error.</param>
 		/// <param name="exception">The exception that caused the error, or null if none.</param>
-		public Error(ErrorSource source, string key, string message, Exception? exception) {
+		public Error(ErrorSource source, string symbol, string message, Exception? exception) {
 			this.Source = source;
-			this.Key = key;
+			this.Symbol = symbol;
 			this.Message = message;
 			this.Exception = exception;
 		}

@@ -130,7 +130,7 @@ namespace Albatross.CommandLine {
 		}
 
 		public void SetInputActionError(Error error) {
-			this.inputActionErrors[error.Key] = error;
+			this.inputActionErrors[error.Symbol] = error;
 		}
 
 		public async ValueTask DisposeAsync() {

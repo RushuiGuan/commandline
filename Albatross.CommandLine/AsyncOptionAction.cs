@@ -37,7 +37,7 @@ namespace Albatross.CommandLine {
 					logger.LogWarning(msg);
 					context.SetInputActionError(new Error(ErrorSource.OptionTaskCancellation, Symbol.Name, msg, null));
 				} catch (Exception err) {
-					var msg = $"Error occurred while processing option [{Symbol.Name}]";
+					var msg = $"Error occurred while processing option [{context.Key} [{Symbol.Name}]]";
 					logger.LogError(err, msg);
 					context.SetInputActionError(new Error(ErrorSource.OptionHandler, Symbol.Name, msg, err));
 				}
@@ -77,7 +77,7 @@ namespace Albatross.CommandLine {
 					logger.LogWarning(msg);
 					context.SetInputActionError(new Error(ErrorSource.OptionTaskCancellation, Symbol.Name, msg, null));
 				} catch (Exception err) {
-					var msg = $"Error occurred while processing option [{Symbol.Name}]";
+					var msg = $"Error occurred while processing option [{context.Key} [{Symbol.Name}]]";
 					logger.LogError(err, msg);
 					context.SetInputActionError(new Error(ErrorSource.OptionHandler, Symbol.Name, msg, err));
 				}

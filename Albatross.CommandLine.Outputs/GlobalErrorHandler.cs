@@ -15,7 +15,7 @@ namespace Albatross.CommandLine.Outputs {
 				Command = context.Key,
 				Errors = errors.Select(x => new ErrorOutput {
 					Source = x.Source,
-					Key = x.Key,
+					Symbol = x.Symbol,
 					Message = x.Message,
 					Detail = x.Exception?.Message,
 				}).ToArray(),
