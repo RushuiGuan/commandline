@@ -80,6 +80,15 @@ namespace Albatross.CommandLine.Outputs {
 			}.Print(null, result.IsCompact());
 		}
 
+		public static void PrintSuccess<T>(this ParseResult result, T data, string? message = null) {
+			new CommandOutput<T> {
+				Command = result.CommandResult.Command.GetCommandKey(),
+				ExitCode = 0,
+				Message = message,
+				Data = data,
+			}.Print(null, result.IsCompact());
+		}
+
 		/// <summary>
 		/// Prints a failure <see cref="CommandOutput"/> to stderr for a command that detected an error itself
 		/// (rather than throwing). The command key is taken from the parse result.
