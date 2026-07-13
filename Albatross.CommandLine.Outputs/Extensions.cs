@@ -72,28 +72,28 @@ namespace Albatross.CommandLine.Outputs {
 		/// Prints a success <see cref="CommandOutput"/> (exit code 0) to stdout for a command that completed
 		/// successfully but has no data to return. The command key is taken from the parse result.
 		/// </summary>
-		public static void PrintSuccess(this ParseResult result, string? message = null) {
+		public static void PrintSuccess(this ParseResult result, string? message = null, JmesPathExpression? query = null) {
 			new CommandOutput {
 				Command = result.CommandResult.Command.GetCommandKey(),
 				ExitCode = 0,
 				Message = message,
-			}.Print(null, result.IsCompact());
+			}.Print(query, result.IsCompact());
 		}
 
-		public static void PrintSuccess<T>(this ParseResult result, T data, string? message = null) {
+		public static void PrintSuccess<T>(this ParseResult result, T data, string? message = null, JmesPathExpression? query = null) {
 			new CommandOutput<T> {
 				Command = result.CommandResult.Command.GetCommandKey(),
 				ExitCode = 0,
 				Message = message,
 				Data = data,
-			}.Print(null, result.IsCompact());
+			}.Print(query, result.IsCompact());
 		}
 
 		/// <summary>
 		/// Prints a failure <see cref="CommandOutput"/> to stderr for a command that detected an error itself
 		/// (rather than throwing). The command key is taken from the parse result.
 		/// </summary>
-		public static void PrintError(this ParseResult result, string error, string? detail = null, string? message = null, int exitCode = 1) {
+		public static int PrintError(this ParseResult result, string error, string? detail = null, string? message = null, JmesPathExpression? query = null, int exitCode = 1) {
 			new CommandOutput {
 				Command = result.CommandResult.Command.GetCommandKey(),
 				ExitCode = exitCode,
@@ -106,10 +106,11 @@ namespace Albatross.CommandLine.Outputs {
 					}
 				],
 				Message = message,
-			}.Print(null, result.IsCompact(), stderr: true);
+			}.Print(query, result.IsCompact(), stderr: true);
+			return exitCode;
 		}
 
-		public static void PrintError<T>(this ParseResult result, string error, T data, string? detail = null, string? message = null, int exitCode = 1) {
+		public static int PrintError<T>(this ParseResult result, string error, T data, string? detail = null, string? message = null, JmesPathExpression? query = null, int exitCode = 1) {
 			new CommandOutput<T> {
 				Command = result.CommandResult.Command.GetCommandKey(),
 				ExitCode = exitCode,
@@ -123,7 +124,8 @@ namespace Albatross.CommandLine.Outputs {
 				],
 				Message = message,
 				Data = data,
-			}.Print(null, result.IsCompact(), stderr: true);
+			}.Print(query, result.IsCompact(), stderr: true);
+			return exitCode;
 		}
 	}
 }
