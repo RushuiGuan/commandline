@@ -2,7 +2,7 @@
 
 status: active
 created: 2026-07-08T12:35:28-04:00
-updated: 2026-07-10T09:30:00-04:00
+updated: 2026-07-13T09:00:00-04:00
 ----
 
 ## Business Requirements
@@ -117,8 +117,11 @@ read parsed values such as `--verbosity`.
   no longer creates `--verbosity`. A consumer that wants a recursive option adds it directly to
   the public `CommandBuilder.RootCommand` (reachable via `host.CommandBuilder.RootCommand`) before
   `Parse()` — no dedicated library API is needed. Commands own their output (see Key Design Decisions).
-- **Custom global error handling** — `ICommandErrorHandler` maps unhandled exceptions to
-  exit codes (reserved codes: 255 unhandled, 254 cancelled, 253 option-handler error).
+- **Custom global error handling** — `ICommandErrorHandler` receives every error condition from
+  command execution as a set of `Error` records (each tagged with an `ErrorSource` and the option
+  name / command key) and notifies the user; it returns an exit code, or null to fall through to
+  the default. **Changed 2026-07-13:** the earlier reserved-exit-code scheme (255/254/253) was
+  removed in favor of a single default error exit code — see Key Design Decisions.
 - **Code analysis** — `Albatross.CommandLine.CodeAnalysis` Roslyn analyzer flags common
   attribute misuse (ACL0001–ACL0004) at compile time.
 
@@ -344,11 +347,14 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
     auto-wired** (revised 2026-07-08, implemented + builds clean). Earlier plan was that no error
     handler ship in the library and each app wire its own; the concern was forcing dependencies
     and app-specific opinions. The landed design threads that needle: a generic
-    `Albatross.CommandLine.Outputs.GlobalErrorHandler : ICommandErrorHandler` that logs the
-    exception and prints a `CommandOutput` envelope (`Error` = exception type name, `ErrorDetail`
-    = message) to stderr, returning exit code 1. It lives in **Outputs** (error reporting is
-    output) and adds **no new dependencies** — only core (`ICommandContext`/`ICommandErrorHandler`),
-    `CommandOutput`/`Print`, `ILogger`, and Newtonsoft (already present). It is **opt-in**: the
+    `Albatross.CommandLine.Outputs.GlobalErrorHandler : ICommandErrorHandler` that prints a
+    `CommandOutput` envelope to stderr, returning exit code 1. **Updated 2026-07-13** (unified error
+    contract): it no longer logs — each error is logged at its catch site — and it now renders the
+    full set of `Error` records into the envelope's `Errors` array (per error: `Source`, `Key`,
+    `Message`, and `Detail` = exception message) rather than a single `Error`/`ErrorDetail`. It lives
+    in **Outputs** (error reporting is output) and adds **no new dependencies** — only core
+    (`ICommandContext`/`ICommandErrorHandler`), `CommandOutput`/`Print`, and Newtonsoft (already
+    present). It is **opt-in**: the
     consumer registers `ICommandErrorHandler` (same capability-not-policy stance as
     `--query`/`--compact`), or replaces it with their own. Deliberately dropped from Anchor's
     richer version: (a) **semantic-error unwrapping** (an `Albatross.Exceptions`/Input opinion —
@@ -449,9 +455,20 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   from option handlers to command handlers should use the type-safe `[OptionHandler<…,TOut>]`
   transformation pattern; storing values in `CommandContext` is supported but discouraged as
   a fallback.
-- **Reserved exit codes for pipeline outcomes**: 255 (unhandled exception), 254 (cancelled),
-  253 (option-handler error). Custom `ICommandErrorHandler` implementations must avoid these
-  to prevent ambiguity.
+- **Unified error contract; reserved exit codes removed** (decided 2026-07-13; supersedes the
+  earlier "reserved exit codes for pipeline outcomes: 255/254/253"): Originally the pipeline mapped
+  distinct outcomes to reserved codes (255 unhandled, 254 cancelled, 253 option-handler error) and
+  told custom `ICommandErrorHandler`s to avoid them. That scheme was replaced by a single error
+  contract: every error condition — command handler, option handler, service resolution, and
+  command/option cancellation — is captured as an `Error` (`ErrorSource`, `Key`, `Message`, nullable
+  `Exception`) and routed through `ICommandErrorHandler.Handle(params IEnumerable<Error>)`. The
+  distinction the reserved codes used to carry now lives in `Error.Source`, so the handler (not the
+  exit code) is where an outcome is explained. Exit codes collapse to: whatever the handler returns,
+  else a single default `ErrorExitCode = 1`. Consequences: (a) the `OptionHandlerStatus` type was
+  removed and `ICommandContext` exposes `InputActionErrors`; (b) logging happens at the catch site,
+  so the handler only *notifies* (it no longer logs and cannot change the exit outcome); (c) an
+  option handler's non-exception validation failure is now a first-class `Error` (nullable
+  `Exception`). See the `route-option-handler-exception-to-error-handler` task.
 - **Ship a companion Roslyn analyzer**: `Albatross.CommandLine.CodeAnalysis` surfaces
   attribute misuse (duplicate option names, bad `BaseParamsClass` inheritance, `OptionHandler`
   type mismatch, conflicting `[Option]`/`[Argument]`) as IDE diagnostics rather than as

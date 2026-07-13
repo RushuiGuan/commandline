@@ -1,6 +1,6 @@
 # Route option-handler exceptions through the global error handler
 
-status: new
+status: completed
 created: 2026-07-11T18:40:33-04:00
 priority: normal
 tags: pipeline error-handling bug
@@ -89,3 +89,40 @@ above, the logging call is removed from it, leaving only the user-facing print.
    handler returns a code, honor it (consistent with the command-handler path).
 
 ## Conclusion
+
+Resolved by replacing the ad-hoc status/exit-code handling with a **single unified error
+contract**, rather than the narrow "route option exceptions to the handler" fix originally
+scoped. Committed on `main` as `90efc69`.
+
+What was done:
+- **New contract:** added `ErrorSource` (CommandHandler, OptionHandler, ServiceRegistration,
+  CommandTaskCancellation, OptionTaskCancellation) and an `Error` record (`Source`, `Key`,
+  `Message`, nullable `Exception`); **deleted `OptionHandlerStatus`**.
+  `ICommandErrorHandler.Handle` is now `int? Handle(params IEnumerable<Error> errors)`.
+- **Every** error branch in `GlobalCommandAction` now flows through `HandleError` →
+  `ICommandErrorHandler.Handle`: option-handler errors (via `CommandContext.InputActionErrors`),
+  command-handler exceptions, service resolution / no-handler-registered, and both command- and
+  option-handler cancellation. The original 253 short-circuit is gone.
+- **Responsibility split honored:** each error is logged at the catch site; the error handler
+  only notifies the user. `Outputs.GlobalErrorHandler` no longer logs — it renders the `Error`
+  set into a `CommandOutput` envelope on stderr.
+
+How the open decisions landed:
+- **#1 Multiple failed handlers** — neither "first" nor `AggregateException`: `Handle` receives
+  the **whole set** of `Error`s, so the handler explains each without any lossy collapse. This
+  also sidesteps the command-line-order non-determinism.
+- **#2 Exit code** — the reserved codes (255/254/253) were **removed**; the default is now a
+  single `ErrorExitCode = 1`, or whatever the handler returns. ⚠️ `project.md` still documents the
+  reserved codes as a Key Design Decision and Constraint, so it now contradicts the code — left as
+  a follow-up doc update.
+- **Validation-failure vs thrown-exception** — no longer a conflict: `Error.Exception` is nullable,
+  so a message-only failure is a first-class error. `InstrumentIdOption` records
+  `new Error(ErrorSource.OptionHandler, option.Name, "...", null)`.
+
+Related work spun off during this task (not part of closing it):
+- Added configurable `CommandHost.ProcessTerminationTimeout` (default 30s) because
+  System.CommandLine's 2s Ctrl+C grace window is too short for handlers doing real I/O.
+- Discovered and documented a System.CommandLine bug — async **pre-actions** get no
+  process-termination handling, so Ctrl+C during an async option handler hard-kills the process.
+  Captured in `project-mgmt/scommandline-preaction-cancellation-bug.md` and in the
+  `OptionTaskCancellation` XML doc as a known limitation.
