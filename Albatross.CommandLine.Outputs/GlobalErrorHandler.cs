@@ -1,9 +1,8 @@
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace Albatross.CommandLine.Outputs {
 	public class GlobalErrorHandler : ICommandErrorHandler {
-		private readonly ICommandContext context;
+		protected readonly ICommandContext context;
 
 		public GlobalErrorHandler(ICommandContext context) {
 			this.context = context;
@@ -12,8 +11,8 @@ namespace Albatross.CommandLine.Outputs {
 		// A real error outranks cancellation; cancellation-only gets the conventional
 		// "terminated by Ctrl+C" code (128 + SIGINT), which also matches what
 		// System.CommandLine's forced-termination path returns.
-		const int ErrorExitCode = 1;
-		const int CancelledExitCode = 130;
+		public const int ErrorExitCode = 1;
+		public const int CancelledExitCode = 130;
 
 
 		protected virtual ErrorOutput Convert(Error error) {
