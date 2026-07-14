@@ -22,6 +22,7 @@ namespace Albatross.CommandLine.Outputs {
 			Detail = error.Exception?.Message,
 		};
 
+		protected virtual string? GetLogFolderPath() => null;
 
 		public int? Handle(params IEnumerable<Error> errors) {
 			var exitCode = 0;
@@ -41,6 +42,7 @@ namespace Albatross.CommandLine.Outputs {
 				ExitCode = exitCode,
 				Command = context.Key,
 				Errors = list,
+				LogFolder = GetLogFolderPath(),
 			};
 			// Neither an error nor a cancellation is normal command output, so always to stderr.
 			output.Print(null, context.Result.IsCompact(), stderr: true);
