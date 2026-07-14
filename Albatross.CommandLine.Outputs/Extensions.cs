@@ -80,7 +80,7 @@ namespace Albatross.CommandLine.Outputs {
 			}.Print(query, result.IsCompact());
 		}
 
-		public static void PrintSuccess<T>(this ParseResult result, string message, T data, JmesPathExpression? query = null) {
+		public static void PrintSuccessWithData<T>(this ParseResult result, string message, T data, JmesPathExpression? query = null) {
 			new CommandOutput<T> {
 				Command = result.CommandResult.Command.GetCommandKey(),
 				ExitCode = 0,
@@ -114,7 +114,7 @@ namespace Albatross.CommandLine.Outputs {
 			return exitCode;
 		}
 
-		public static int PrintError<T>(this ParseResult result, string message, T data, string? errorMessage = null, string? errorDetail = null, JmesPathExpression? query = null, int exitCode = 1) {
+		public static int PrintErrorWithData<T>(this ParseResult result, string message, T data, string? errorMessage = null, string? errorDetail = null, JmesPathExpression? query = null, int exitCode = 1) {
 			new CommandOutput<T> {
 				Command = result.CommandResult.Command.GetCommandKey(),
 				ExitCode = exitCode,
