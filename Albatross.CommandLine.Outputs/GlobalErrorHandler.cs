@@ -15,14 +15,12 @@ namespace Albatross.CommandLine.Outputs {
 		public const int CancelledExitCode = 130;
 
 
-		protected virtual ErrorOutput Convert(Error error) {
-			return new ErrorOutput {
-				Source = error.Source,
-				Symbol = error.Symbol,
-				Message = error.Message,
-				Detail = error.Exception?.Message,
-			};
-		}
+		protected virtual ErrorOutput Convert(Error error) => new ErrorOutput {
+			Source = error.Source,
+			Symbol = error.Symbol,
+			Message = error.Message,
+			Detail = error.Exception?.Message,
+		};
 
 
 		public int? Handle(params IEnumerable<Error> errors) {
