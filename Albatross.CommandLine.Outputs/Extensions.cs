@@ -72,7 +72,7 @@ namespace Albatross.CommandLine.Outputs {
 		/// Prints a success <see cref="CommandOutput"/> (exit code 0) to stdout for a command that completed
 		/// successfully but has no data to return. The command key is taken from the parse result.
 		/// </summary>
-		public static void PrintSuccess(this ParseResult result, string? message = null, JmesPathExpression? query = null) {
+		public static void PrintSuccess(this ParseResult result, string message, JmesPathExpression? query = null) {
 			new CommandOutput {
 				Command = result.CommandResult.Command.GetCommandKey(),
 				ExitCode = 0,
@@ -80,50 +80,47 @@ namespace Albatross.CommandLine.Outputs {
 			}.Print(query, result.IsCompact());
 		}
 
-		public static void PrintSuccess<T>(this ParseResult result, T data, string? message = null, JmesPathExpression? query = null) {
+		public static void PrintSuccess<T>(this ParseResult result, string message, T data, JmesPathExpression? query = null) {
 			new CommandOutput<T> {
 				Command = result.CommandResult.Command.GetCommandKey(),
 				ExitCode = 0,
 				Message = message,
 				Data = data,
 			}.Print(query, result.IsCompact());
+		}
+
+
+		static ErrorOutput[]? BuildCommandHandlerErrorOutput(string? errorMessage, string? errorDetail) {
+			if (string.IsNullOrEmpty(errorMessage) && string.IsNullOrEmpty(errorDetail)) {
+				return null;
+			} else {
+				return [
+					new ErrorOutput (ErrorSource.CommandHandler, null, errorMessage, errorDetail)
+				];
+			}
 		}
 
 		/// <summary>
 		/// Prints a failure <see cref="CommandOutput"/> to stderr for a command that detected an error itself
 		/// (rather than throwing). The command key is taken from the parse result.
 		/// </summary>
-		public static int PrintError(this ParseResult result, string error, string? detail = null, string? message = null, JmesPathExpression? query = null, int exitCode = 1) {
+		public static int PrintError(this ParseResult result, string message, string? errorMessage = null, string? errorDetail = null, JmesPathExpression? query = null, int exitCode = 1) {
 			new CommandOutput {
 				Command = result.CommandResult.Command.GetCommandKey(),
-				ExitCode = exitCode,
-				Errors = [
-					new ErrorOutput {
-						Source = ErrorSource.CommandHandler,
-						Symbol = result.CommandResult.Command.GetCommandKey(),
-						Message = error,
-						Detail = detail,
-					}
-				],
 				Message = message,
+				ExitCode = exitCode,
+				Errors = BuildCommandHandlerErrorOutput(errorMessage, errorDetail),
 			}.Print(query, result.IsCompact(), stderr: true);
 			return exitCode;
 		}
 
-		public static int PrintError<T>(this ParseResult result, string error, T data, string? detail = null, string? message = null, JmesPathExpression? query = null, int exitCode = 1) {
+		public static int PrintError<T>(this ParseResult result, string message, T data, string? errorMessage = null, string? errorDetail = null, JmesPathExpression? query = null, int exitCode = 1) {
 			new CommandOutput<T> {
 				Command = result.CommandResult.Command.GetCommandKey(),
 				ExitCode = exitCode,
-				Errors = [
-					new ErrorOutput {
-						Source = ErrorSource.CommandHandler,
-						Symbol = result.CommandResult.Command.GetCommandKey(),
-						Message = error,
-						Detail = detail,
-					}
-				],
 				Message = message,
 				Data = data,
+				Errors = BuildCommandHandlerErrorOutput(errorMessage, errorDetail),
 			}.Print(query, result.IsCompact(), stderr: true);
 			return exitCode;
 		}

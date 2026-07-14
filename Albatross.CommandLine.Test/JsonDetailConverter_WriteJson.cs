@@ -6,11 +6,7 @@ namespace Albatross.CommandLine.Test {
 	public class JsonDetailConverter_WriteJson {
 		// Serializes an ErrorOutput through the shared CLI serializer and returns the `detail` token.
 		static JToken? SerializeDetail(string? detail) {
-			var error = new ErrorOutput {
-				Source = ErrorSource.CommandHandler,
-				Message = "message",
-				Detail = detail,
-			};
+			var error = new ErrorOutput(ErrorSource.CommandHandler, null, "message", detail);
 			return JObject.FromObject(error, Outputs.Extensions.Serializer)["detail"];
 		}
 
