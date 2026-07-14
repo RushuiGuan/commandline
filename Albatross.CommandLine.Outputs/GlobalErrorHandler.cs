@@ -15,16 +15,22 @@ namespace Albatross.CommandLine.Outputs {
 		const int ErrorExitCode = 1;
 		const int CancelledExitCode = 130;
 
+
+		protected virtual ErrorOutput Convert(Error error) {
+			return new ErrorOutput {
+				Source = error.Source,
+				Symbol = error.Symbol,
+				Message = error.Message,
+				Detail = error.Exception?.Message,
+			};
+		}
+
+
 		public int? Handle(params IEnumerable<Error> errors) {
 			var exitCode = 0;
 			var list = new List<ErrorOutput>();
 			foreach (var error in errors) {
-				list.Add(new ErrorOutput {
-					Source = error.Source,
-					Symbol = error.Symbol,
-					Message = error.Message,
-					Detail = error.Exception?.Message,
-				});
+				list.Add(Convert(error));
 				if (error.Source is ErrorSource.CommandTaskCancellation or ErrorSource.OptionTaskCancellation) {
 					// don't downgrade an error already recorded in this set
 					if (exitCode == 0) {
