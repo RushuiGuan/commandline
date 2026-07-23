@@ -26,8 +26,8 @@ namespace Albatross.CommandLine.Defaults {
 		/// </summary>
 		/// <param name="commandHost"></param>
 		/// <returns></returns>
-		public static CommandHost WithDefaults(this CommandHost commandHost, string? configDirectory = null)
-			=> commandHost.WithConfig(configDirectory).WithSerilog();
+		public static CommandHost WithDefaults(this CommandHost commandHost, string? configDirectory = null, Action<IConfiguration, IServiceCollection>? configureServices = null)
+			=> commandHost.WithConfig(configDirectory, configureServices).WithSerilog();
 
 		/// <summary>
 		/// Configure the CommandHost with file-based Serilog logging. Log messages are written to a daily rolling file
@@ -82,7 +82,7 @@ namespace Albatross.CommandLine.Defaults {
 		/// <param name="commandHost"></param>
 		/// <param name="configDirectory"></param>
 		/// <returns></returns>
-		public static CommandHost WithConfig(this CommandHost commandHost, string? configDirectory = null) {
+		public static CommandHost WithConfig(this CommandHost commandHost, string? configDirectory = null, Action<IConfiguration, IServiceCollection>? configureServices = null) {
 			commandHost.ConfigureHost(builder => {
 				var environment = EnvironmentSetting.DOTNET_ENVIRONMENT;
 				var configBuilder = new ConfigurationBuilder()
@@ -99,6 +99,7 @@ namespace Albatross.CommandLine.Defaults {
 					services.AddSingleton(environment);
 					services.AddSingleton(new ProgramSetting(configuration));
 					services.AddSingleton<IHostEnvironment, MyHostEnvironment>();
+					configureServices?.Invoke(configuration, services);
 				});
 			});
 			return commandHost;
