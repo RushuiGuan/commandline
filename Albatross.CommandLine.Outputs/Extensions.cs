@@ -38,7 +38,26 @@ namespace Albatross.CommandLine.Outputs {
 			if (value == null) {
 				return;
 			}
-			JToken token = JToken.FromObject(value, Serializer);
+			// Serialize to JSON text and re-parse rather than using JToken.FromObject.  FromObject preserves
+			// .NET scalars that have no JSON equivalent — Guid, DateTime, TimeSpan, Uri — as native JValue types
+			// (JTokenType.Guid, .Date, etc.) holding the boxed CLR value.  JmesPath is a JSON query language and
+			// only understands JSON types, so a Guid JValue never equals a string literal (`clientId=='...'` yields
+			// nothing) and string functions such as starts_with/length throw "Object must implement IConvertible"
+			// because System.Guid is not IConvertible.  Round-tripping through JSON text coerces those scalars to
+			// plain strings (a String JValue), which is what queries can actually match against.
+			JToken token;
+			using (var sw = new StringWriter()) {
+				using (var jw = new JsonTextWriter(sw)) {
+					Serializer.Serialize(jw, value);
+				}
+				// DateParseHandling.None keeps ISO date/time strings as strings; otherwise JToken would re-type
+				// them back into Date JValues and reintroduce the same type-mismatch problem for date fields.
+				using (var reader = new JsonTextReader(new StringReader(sw.ToString())) {
+					DateParseHandling = DateParseHandling.None,
+				}) {
+					token = JToken.ReadFrom(reader);
+				}
+			}
 			if (expression != null) {
 				token = expression.Transform(token).AsJToken();
 			}
