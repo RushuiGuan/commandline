@@ -11,6 +11,7 @@ tmpclaude-*
 *.sln.docstates
 *.debug.txt
 .DS_Store
+.claude
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
