@@ -19,6 +19,7 @@
   <Project Path="Albatross.CommandLine.Outputs/Albatross.CommandLine.Outputs.csproj" Id="586bdc71-646c-4cb2-8155-e4297c9affc1" />
   <Project Path="Albatross.CommandLine.Test/Albatross.CommandLine.Test.csproj" />
   <Project Path="Albatross.CommandLine/Albatross.CommandLine.csproj" />
+  <Project Path="CustomRootCommandConsole/CustomRootCommandConsole.csproj" />
   <Project Path="project-mgmt/project-mgmt.csproj" />
   <Project Path="Sample.CommandLine/Sample.CommandLine.csproj" />
   <Project Path="TopLevelStatementConsole/TopLevelStatementConsole.csproj" Id="b5c2cb76-c9fd-4c83-8978-13ce3e929be7" />

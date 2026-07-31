@@ -15,6 +15,11 @@ namespace Albatross.CommandLine {
 		}
 
 		const int ErrorExitCode = 1;
+		/// <summary>
+		/// The root command's key is an empty string, which reads as a hole in a log or error message.  Messages use
+		/// this stand-in instead; <see cref="Error.Symbol"/> still carries the real key.
+		/// </summary>
+		const string RootCommandDisplayKey = "<root>";
 		private readonly Func<IServiceProvider> serviceFactory;
 
 		int HandleError(IServiceProvider services, params IEnumerable<Error> err) {
@@ -32,7 +37,8 @@ namespace Albatross.CommandLine {
 			var services = this.serviceFactory();
 			var context = services.GetRequiredService<ICommandContext>();
 			var logger = services.GetRequiredService<ILogger<GlobalCommandAction>>();
-			logger.LogInformation("Invoking command [{command}]", context.Key);
+			var displayKey = context.Key == CommandBuilder.RootCommandKey ? RootCommandDisplayKey : context.Key;
+			logger.LogInformation("Invoking command [{command}]", displayKey);
 			var inputActionErrors = context.InputActionErrors.ToArray();
 			if (inputActionErrors.Any()) {
 				return HandleError(services, inputActionErrors);
@@ -41,16 +47,16 @@ namespace Albatross.CommandLine {
 			try {
 				handler = services.GetKeyedService<IAsyncCommandHandler>(context.Key);
 			} catch (Exception err) {
-				var msg = $"Error creating CommandHandler for command {context.Key}";
+				var msg = $"Error creating CommandHandler for command {displayKey}";
 				logger.LogError(err, msg);
 				return HandleError(services, new Error(ErrorSource.ServiceRegistration, context.Key, msg, err));
 			}
 			if (handler == null) {
 				// if the command is a parent command, simply print the help
-				if (result.CommandResult.Command.Subcommands.Any()) {
+				if (result.CommandResult.Command.Subcommands.Any() || result.CommandResult.Command is RootCommand) {
 					return new HelpAction().Invoke(result);
 				} else {
-					var msg = $"No CommandHandler is registered for command {context.Key}";
+					var msg = $"No CommandHandler is registered for command {displayKey}";
 					logger.LogError(msg);
 					return HandleError(services, new Error(ErrorSource.ServiceRegistration, context.Key, msg, null));
 				}
@@ -60,11 +66,11 @@ namespace Albatross.CommandLine {
 				try {
 					return await handler.InvokeAsync(cancellationToken);
 				} catch (OperationCanceledException) {
-					var msg = $"Command {context.Key} was cancelled";
+					var msg = $"Command {displayKey} was cancelled";
 					logger.LogWarning(msg);
 					return HandleError(services, new Error(ErrorSource.CommandTaskCancellation, context.Key, msg, null));
 				} catch (Exception err) {
-					var msg = $"Error invoking command {context.Key}";
+					var msg = $"Error invoking command {displayKey}";
 					logger.LogError(err, msg);
 					return HandleError(services, new Error(ErrorSource.CommandHandler, context.Key, msg, err));
 				}

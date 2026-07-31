@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Help;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -15,9 +14,16 @@ namespace Albatross.CommandLine {
 	/// Commands are organized by space-separated keys (e.g., "parent child") that define the hierarchy.
 	/// </summary>
 	public class CommandBuilder {
+		/// <summary>
+		/// The key that identifies the root command.  Register a keyed <see cref="IAsyncCommandHandler"/> under this
+		/// key - or declare a verb with an empty name - to give the root command its own handler.
+		/// </summary>
+		public const string RootCommandKey = "";
+
 		private readonly Dictionary<string, Command> commands = new();
 		/// <summary>
-		/// Gets the root command of the command hierarchy.
+		/// Gets the root command of the command hierarchy.  Mutate it directly to give the root its own options and
+		/// arguments - code generation cannot, because a verb with an empty name produces no command class.
 		/// </summary>
 		public RootCommand RootCommand { get; }
 
@@ -27,18 +33,45 @@ namespace Albatross.CommandLine {
 		/// <param name="rootCommandDescription">The description to display in help text for the root command.</param>
 		public CommandBuilder(string rootCommandDescription) {
 			RootCommand = new RootCommand(rootCommandDescription);
-			RootCommand.SetAction(new HelpAction().Invoke);
-			commands.Add(string.Empty, RootCommand);
+			// The root command action is assigned by BuildTree along with every other command so that a handler
+			// registered under RootCommandKey is honored.  Without a handler the global action falls back to
+			// printing help, which is the behavior a bare root command had when it was wired to HelpAction here.
+			commands.Add(RootCommandKey, RootCommand);
 		}
 
 		/// <summary>
 		/// Adds a new command instance of the specified type to the command hierarchy.
 		/// </summary>
-		/// <typeparam name="T">The command type to instantiate and add.</typeparam>
+		/// <typeparam name="T">
+		/// The command type to instantiate and add.  It must expose a parameterless constructor unless
+		/// <paramref name="key"/> is <see cref="RootCommandKey"/>, in which case nothing is constructed.  The
+		/// constraint cannot be expressed as <c>new()</c> because <see cref="System.CommandLine.RootCommand"/>
+		/// declares only a constructor with an optional parameter, which does not satisfy it.
+		/// </typeparam>
 		/// <param name="key">The space-separated key defining the command's position in the hierarchy.</param>
-		/// <returns>The newly created command instance.</returns>
-		public T Add<T>(string key) where T : Command, new() {
-			var t = new T();
+		/// <returns>
+		/// The newly created command instance, or the existing <see cref="RootCommand"/> when <paramref name="key"/>
+		/// is <see cref="RootCommandKey"/>.
+		/// </returns>
+		public T Add<
+#if NET10_0_OR_GREATER
+	  [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+#endif
+			T>(string key) where T : Command {
+			// The root command is created by this class, so an empty key does not create anything - it resolves the
+			// existing instance.  This is how a verb with an empty name attaches its handler to the root command.
+			if (key == RootCommandKey) {
+				if (RootCommand is T root) {
+					return root;
+				}
+				throw new ArgumentException($"The root command cannot be created as '{typeof(T).FullName}'.  Use the {nameof(RootCommand)} property to configure the existing root command");
+			}
+			T t;
+			try {
+				t = Activator.CreateInstance<T>();
+			} catch (MissingMethodException err) {
+				throw new ArgumentException($"The command '{key}' cannot be created because '{typeof(T).FullName}' has no parameterless constructor", err);
+			}
 			Add(key, t);
 			return t;
 		}

@@ -2,7 +2,7 @@
 
 status: active
 created: 2026-07-08T12:35:28-04:00
-updated: 2026-07-13T09:00:00-04:00
+updated: 2026-07-31T12:25:10-04:00
 ----
 
 ## Business Requirements
@@ -488,6 +488,22 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   mechanism, which is independent of packaging. `Albatross.CommandLine.CodeAnalysis` is the exception —
   it stays published and opt-in (consumers reference it directly), so it is not bundled. See the
   `bundle-codegen-into-core-package` task for the full implementation and verification.
+- **The root command accepts a consumer's own handler, but a root verb contributes no options or
+  arguments** (decided 2026-07-31): A verb declared with an empty name binds a handler to the root
+  command, so invoking the app with no subcommand can do real work instead of only printing help.
+  The root command's action is no longer hard-wired to the help action at construction; it is
+  assigned by the same tree-building pass as every other command, so a handler registered under the
+  root key is honored. When no root handler is registered the pipeline still falls back to printing
+  help, so the prior behavior of a bare parent command is preserved. **Accepted limitation:** the
+  root verb's parameters class cannot contribute options or arguments. The root command is created
+  and owned by the command builder, so an empty-name verb generates no command class, and generated
+  options have nowhere to live. Declared options either never reach the parser or, when the reused
+  option type carries an option handler, break the build. **Rejected alternative:** generating a
+  root-derived command class and swapping it in for the builder's instance. It would have carried
+  root options, but it introduces a replacement path through the builder and a second root instance
+  to buy something a consumer already has — the root command is public and can be mutated directly,
+  which is the documented way to add root-level or recursive options (the same mechanism already
+  recorded for `--verbosity`-style flags above).
 
 ## Open Questions
 
@@ -531,6 +547,12 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   `[DefaultNameAliases]`) and from explicit aliases. These compile clean but throw at runtime
   ("more than one child named ..."). Tracked in `detect-duplicate-option-names.tsk.md`. Also
   confirm whether any other planned analyzers remain unimplemented.
+- **Should the root-verb option limitation be enforced by an analyzer?** Declaring an option or
+  argument on a root verb's parameters class is accepted as unsupported (see Key Design Decisions),
+  but nothing reports it: most cases compile clean and fail silently at parse time, and the one case
+  that does fail surfaces as a compiler error inside generated code rather than at the declaration.
+  A dedicated diagnostic on the verb would turn all of them into one clear message. Deferred, not
+  rejected.
 - **Should Defaults adopt a `serilog.json` convention? — RESOLVED (2026-07-08): no.** After
   weighing the `Albatross.Hosting` dedicated-`serilog.json` convention, Defaults stays with the
   `Serilog` section in `appsettings.json`. Rationale and the code-owned baseline that this required

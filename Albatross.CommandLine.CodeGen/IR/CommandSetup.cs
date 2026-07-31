@@ -9,6 +9,11 @@ namespace Albatross.CommandLine.CodeGen.IR {
 		public const string CommandClassPostfix = "Command";
 		public string Key { get; }
 		public string Name { get; }
+		/// <summary>
+		/// An empty key targets the root command.  The root command is created by the CommandBuilder itself, so no
+		/// command class is generated for it - the verb only contributes a handler (and its params class).
+		/// </summary>
+		public bool IsRoot => string.IsNullOrEmpty(this.Key);
 		public INamedTypeSymbol ParamsClass { get; }
 		public INamedTypeSymbol? BaseParamsClass { get; }
 		public ITypeSymbol? HandlerClass { get; }

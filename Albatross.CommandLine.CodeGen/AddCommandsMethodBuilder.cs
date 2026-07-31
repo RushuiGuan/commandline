@@ -19,10 +19,14 @@ namespace Albatross.CommandLine.CodeGen {
 
 		private IEnumerable<IExpression> CreateAddCommandsBody(ImmutableArray<CommandSetup> commandSetups) {
 			foreach (var setup in commandSetups) {
+				// a root verb has no generated command class - the CommandBuilder already owns the RootCommand
+				// instance, so the generated call resolves it rather than creating one.
 				IExpression expression = new InvocationExpression {
 					CallableExpression = new IdentifierNameExpression("host.CommandBuilder.Add") {
 						GenericArguments = new ListOfGenericArguments {
-							new TypeExpression(new QualifiedIdentifierNameExpression(setup.CommandClassName, new NamespaceExpression(setup.CommandClassNamespace)))
+							setup.IsRoot
+								? new TypeExpression("System.CommandLine.RootCommand")
+								: new TypeExpression(new QualifiedIdentifierNameExpression(setup.CommandClassName, new NamespaceExpression(setup.CommandClassNamespace)))
 						}
 					},
 					Arguments = {

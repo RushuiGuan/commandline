@@ -83,7 +83,10 @@ namespace Albatross.CommandLine.CodeGen {
 					var typeConverter = new DefaultTypeConverter(new Dictionary<string, string>());
 					var (compilation, commandSetups, rootNamespace) = data;
 					var builder = new CommandClassBuilder(compilation, typeConverter);
-					foreach (var group in commandSetups.GroupBy(x => x.CommandClassName)) {
+					// the root command is owned by the CommandBuilder, so a root verb gets no generated command class
+					// and takes no part in the class name deduplication below.
+					var classSetups = commandSetups.Where(x => !x.IsRoot).ToArray();
+					foreach (var group in classSetups.GroupBy(x => x.CommandClassName)) {
 						if (group.Count() > 1) {
 							int index = 0;
 							foreach (var item in group.OrderBy(x => x.Name)) {
@@ -91,7 +94,7 @@ namespace Albatross.CommandLine.CodeGen {
 							}
 						}
 					}
-					foreach (var setup in commandSetups.OrderBy(x => x.Name)) {
+					foreach (var setup in classSetups.OrderBy(x => x.Name)) {
 						var file = new FileDeclaration($"{setup.CommandClassName}.g") {
 							Namespace = new NamespaceExpression(setup.CommandClassNamespace),
 							Classes = [
