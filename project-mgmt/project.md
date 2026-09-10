@@ -2,7 +2,7 @@
 
 status: active
 created: 2026-07-08T12:35:28-04:00
-updated: 2026-07-31T12:25:10-04:00
+updated: 2026-08-25T22:44:29-04:00
 ----
 
 ## Business Requirements
@@ -323,9 +323,10 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   Only the genuinely reusable output pieces are promoted:
   - **`CommandOutput` / `CommandOutput<T>` envelope (the core pattern)** — a standard result
     record (`Command`, `Message`, `Error`, `ErrorDetail`, `ExitCode`, `LogFolder`, and generic
-    `Data` ordered last via `[JsonProperty(Order = 100)]`) so every command emits one
-    predictable, machine-parseable shape for both success and failure. This is the primary
-    artifact the package exists to provide.
+    `Data` ordered last via `[JsonProperty(Order = 100)]`) so every command that reports an
+    outcome emits one predictable, machine-parseable shape for both success and failure. This
+    is the primary artifact the package exists to provide. Scope qualified 2026-08-25 — see
+    "the envelope wraps outcomes, not data" below.
   - **Shared JSON serializer** — camelCase names, enums as names (`StringEnumConverter`),
     `NullValueHandling.Ignore` to drop nulls while **keeping** defaults and empty collections —
     the exact lossless-compaction contract from the output-strategy decision above.
@@ -368,6 +369,21 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   `Inputs` and `Outputs` namespaces) — collapse to a single definition in the Outputs package.
   **Resolved in code:** the shipped `Albatross.CommandLine.Outputs` defines the serializer once
   (in its `Extensions`); the Anchor duplication did not carry over.
+- **The envelope wraps outcomes, not data; a pure-query command returns bare JSON** (decided
+  2026-08-25): `CommandOutput`/`CommandOutput<T>` is used when a command has a **side effect** or
+  an **error** to report — an entity was created or updated, a job ran, a parse or runtime failure
+  occurred. The envelope's `Message`/`Errors`/`ExitCode` exist to carry exactly that outcome
+  (`"x has been updated successfully"`). When a command's sole job is to **return data**, it emits
+  the data itself as pure JSON with no envelope: nothing has happened that needs reporting, and a
+  wrapper only forces every consumer to unwrap `data` before querying. A side-effect command that
+  also returns the affected data still uses `CommandOutput<T>` — outcome plus payload.
+  Both paths already exist in `Albatross.CommandLine.Outputs` and need no new API: a pure-data
+  command calls `Print` directly; an outcome-reporting command goes through `PrintSuccess` /
+  `PrintSuccessWithData` / `PrintError` / `GlobalErrorHandler`. Note that `PrintSuccessWithData`
+  serves the *side-effect-plus-payload* case — it is not the helper a pure-query command reaches
+  for. This also settles output that is neither a result nor an error: `--json-help` describes the
+  CLI rather than reporting an outcome, so it emits a bare help document (tracked in
+  `global-json-help-option.tsk.md`), while parse errors are errors and keep the envelope.
 - **`Albatross.CommandLine.Outputs` and `Albatross.CommandLine.Defaults` stay separate sibling
   opt-in packages — not merged** (decided 2026-07-08): Both are opinionated (unlike the
   dependency-light core), and `CommandOutput.LogFolder` pairs naturally with file-based logging,
