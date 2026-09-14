@@ -7,7 +7,7 @@
 		<IsAotCompatible Condition="'$(TargetFramework)' == 'net10.0'">true</IsAotCompatible>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="System.CommandLine" Version="3.0.0-preview.5.26302.115" />
+		<PackageReference Include="System.CommandLine" Version="3.0.0-rc.1.26425.128" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
 	</ItemGroup>
 	<ItemGroup>
