@@ -8,7 +8,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="System.CommandLine" Version="3.0.0-preview.5.26302.115" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
 	</ItemGroup>
 	<ItemGroup>
 		<InternalsVisibleTo Include="Albatross.CommandLine.Test" />
@@ -45,11 +45,15 @@
 	</PropertyGroup>
 	<Import Project="..\Albatross.CommandLine.CodeGen\CodeGen.Payload.targets" />
 	<ItemGroup>
-	  <PackageReference Update="Albatross.CodeGen" Version="[9.0.6]">
-	    <IncludeAssets>build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
-	  <PackageReference Update="Albatross.CodeGen.CSharp" Version="[9.0.6]">
-	    <IncludeAssets>build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
+		<PackageReference Update="Albatross.CodeGen" Version="[9.0.6]">
+			<IncludeAssets>build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Update="Albatross.CodeGen.CSharp" Version="[9.0.6]">
+			<IncludeAssets>build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 </Project>
