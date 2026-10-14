@@ -59,7 +59,7 @@ namespace Albatross.CommandLine {
 		/// </summary>
 		/// <param name="description">The description to display in help text for the root command.</param>
 		public CommandHost(string description) {
-			this.hostBuilder = Host.CreateDefaultBuilder();
+			this.hostBuilder = new HostBuilder();
 			CommandBuilder = new CommandBuilder(description);
 		}
 
@@ -160,6 +160,11 @@ namespace Albatross.CommandLine {
 		public async ValueTask DisposeAsync() {
 			if (host != null) {
 				host.Services.GetRequiredService<ILogger<CommandHost>>().LogInformation("Disposing");
+			}
+			if (scope is IAsyncDisposable scopeAsyncDisposable) {
+				await scopeAsyncDisposable.DisposeAsync();
+			} else {
+				scope?.Dispose();
 			}
 			if (host is IAsyncDisposable hostAsyncDisposable) {
 				await hostAsyncDisposable.DisposeAsync();
