@@ -66,6 +66,16 @@ The package also ships a simplified, dependency-light, **opt-in** `GlobalErrorHa
 
 **Why:** The original v9 plan held Hosting at 8.0.1 to avoid raising the transitive floor and forcing consumers onto Hosting v10. That was reversed: .NET 8 reaches EOL in Nov 2026 (≈ v9's own GA timing) and .NET 9 is already EOL, so the runtimes this library targets are moving to 10.x regardless. **Trade-off accepted:** because core still ships the `netstandard2.1` leg, a net8/net9 consumer resolving that asset is pulled up to Hosting 10.x — acceptable given those runtimes are EOL/near-EOL. Core builds clean on both the `netstandard2.1` and `net10.0` legs with Hosting 10.x (which still ships a netstandard-compatible asset).
 
+## 7. Lightweight host startup
+
+**What changed:** `CommandHost` builds its container from a bare `new HostBuilder()` instead of `Host.CreateDefaultBuilder()`. The DI scope created for the command is now disposed along with the host.
+
+**Why:** The host is only ever *built*, never started — it serves purely as the DI container. Ctrl+C cancellation comes from System.CommandLine (`ProcessTerminationTimeout`), not the host's console lifetime, which only engages on `StartAsync`. Everything else `CreateDefaultBuilder` adds is a policy this release removes: console/debug/event-log logging providers (which wrote log lines to `stdout` for apps without `WithDefaults()`, contradicting section 1), `appsettings.json` loaded from the *current working directory* with a file watcher, environment-variable configuration, and Development-only DI validation. Dropping it roughly halves container startup (≈190 ms → ≈100 ms, 53 → 29 loaded assemblies in a cold-start measurement).
+
+This also fixes a latent bug: `CreateDefaultBuilder` turned on `ValidateOnBuild` when `DOTNET_ENVIRONMENT=Development`, and that check rejects the conditional-registration pattern (registering a service only for the command being run). Any app using that pattern failed every command at startup in Development, while working in every other environment. DI validation is therefore deliberately **not** turned back on by default; `ValidateScopes` alone would add little when there is one scope per process.
+
+**Impact / migration:** Apps using `WithDefaults()` / `WithConfig()` see no difference — those already load configuration from the application directory. Apps that read `IConfiguration` without `WithConfig()` must call it (or add sources through `ConfigureHost`). To restore DI validation, call `ConfigureHost(b => b.UseDefaultServiceProvider(o => { ... }))`.
+
 ---
 
 ## Migration checklist (v8 → v9)
@@ -78,6 +88,7 @@ The package also ships a simplified, dependency-light, **opt-in** `GlobalErrorHa
 - [ ] Verify your build against the System.CommandLine v3 prerelease (expected to be a reference bump).
 - [ ] If you referenced `Albatross.CommandLine.CodeGen` directly, **remove that package reference** — the source generator is now bundled into `Albatross.CommandLine`, so referencing the core package is enough (keeping both would double-load the generator). `Albatross.CommandLine.CodeAnalysis` stays an opt-in package you add explicitly.
 - [ ] Note that core now pulls in **`Microsoft.Extensions.Hosting` 10.x**; a .NET 8/9 app referencing core will get Hosting 10.x transitively.
+- [ ] If you read `IConfiguration` (`appsettings.json`, environment variables) without calling `WithConfig()`/`WithDefaults()`, add that call — `CommandHost` no longer loads configuration implicitly.
 
 ## Related articles
 
