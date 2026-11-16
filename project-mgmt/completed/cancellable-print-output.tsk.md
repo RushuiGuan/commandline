@@ -1,6 +1,6 @@
 ---
 name: Ctrl+C is ignored while Print<T> renders a large payload
-status: deferred
+status: completed
 created: 2026-09-14T05:13:25-04:00
 priority: normal
 tags: outputs cancellation print
@@ -156,7 +156,7 @@ or a small in-house tokenizer over the JSON text.
 ### Since deferral: JmesPath and Newtonsoft are gone
 
 The Outputs package no longer ships `--query` or depends on JmesPath.Net or Newtonsoft.Json
-(see [project.md](project.md), "Outputs has no built-in query layer"). The four-stage
+(see [project.md](../project.md), "Outputs has no built-in query layer"). The four-stage
 pipeline described under *Design* no longer exists: `Print` now serializes to a
 `System.Text.Json` node and renders it, so the Newtonsoft re-parse (stage 2) and the
 JmesPath transform (stage 3) — including the JmesPath known gap — are gone, and the
@@ -179,29 +179,23 @@ unchanged, so the colored path remains uninterruptible — this task's original 
 
 ## Conclusion
 
-**Deferred** (2026-09-14), not abandoned — see *Why the task is deferred* above. Reopen if
-a cancellable colored-JSON renderer turns up.
+**Completed (2026-11-16)** by adding a second method rather than making `Print` cancellable — see
+*Since deferral: `PrintAsync` ships alongside `Print`* above. The objective, Ctrl+C interrupting a
+large print within a bounded time, is met by `PrintAsync`: it stops within one 16K-character slice
+and lets the cancellation reach the pipeline as `CommandTaskCancellation` (exit 130). The trade the
+deferral rejected, giving up color for everyone, is avoided by keeping `Print` as the colored
+path; each command chooses between the two.
 
-The work done before deferral is on branch `cancellable-print-output` and is left there
-rather than merged.
+- `Albatross.CommandLine.Outputs/Extensions.cs` — `PrintAsync`, plus `ShouldPrintJson` and
+  `SerializeScalar` shared with `Print`.
+- `Albatross.CommandLine.Test/Extensions_PrintAsync.cs` — output shape, runtime-type
+  serialization, and a pre-cancelled token throwing before anything is written.
+- `Sample.CommandLine/TestInterruptableOutput.cs` — `test interrutable-output <count>`, the
+  manual Ctrl+C repro.
 
-- `Albatross.CommandLine.Outputs/Extensions.cs` — new `Print<T>` signature, token
-  observed across all four stages, `PrettyPrintThreshold`, `ToJsonText` helper, and the
-  wrapper helpers updated per the rule above.
-- `Albatross.CommandLine.Outputs/CancellationTextWriter.cs`,
-  `CancellationTextReader.cs` — new internal wrappers.
-- `Albatross.CommandLine.Outputs/GlobalErrorHandler.cs`, `Sample.CommandLine/ShowConfig.cs`
-  — call sites updated; the README gained the feature bullet and the token in its sample.
-- `Sample.CommandLine/TestLargeOutput.cs` — new `test large-output --count N` command as
-  the manual Ctrl+C repro vehicle (the original plan reused `ShowConfig`, whose payload
-  is far too small).
-- `Albatross.CommandLine.Test/Extensions_Print.cs` — covers a pre-cancelled token
-  throwing before any output is written, an uncancelled token printing complete JSON,
-  and the over-threshold path producing complete indented JSON.
+Verified: cancelled 300 ms into a 400,000-item print, `PrintAsync` threw within about 1 ms with
+5.3 MB of 33.9 MB written; uncancelled output is complete, valid JSON. Not covered: `Print` itself
+stays uninterruptible, and serialization before the first slice cannot be interrupted.
 
-Verified: all 90 tests in `Albatross.CommandLine.Test` pass; `Sample.CommandLine` builds
-and `test large-output` prints correctly.
-
-What that branch does *not* solve is the case the task exists for: a colored render on a
-TTY. It only stays interruptible by abandoning color above `PrettyPrintThreshold`, which
-is the trade the deferral rejects.
+The earlier attempt on branch `cancellable-print-output` (Newtonsoft-based, colored output dropped
+above a size threshold) is superseded and was not merged.

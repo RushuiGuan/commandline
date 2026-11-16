@@ -33,7 +33,7 @@ truth; verify every claim against them and by packing):
 - `Albatross.CommandLine.CodeGen/Albatross.CommandLine.CodeGen.csproj` — the *generator* side:
   imports the same shared targets (compiles against the deps), keeps `Microsoft.CodeAnalysis.CSharp`
   out of the payload, and carries the `GetDependencyTargetPaths` target for the project-reference path.
-- `project-mgmt/bundle-codegen-into-core-package.tsk.md` — the full investigation, both gotchas, and
+- [bundle-codegen-into-core-package.tsk.md](completed/bundle-codegen-into-core-package.tsk.md) — the full investigation, both gotchas, and
   the verification method (pack + unzip + consumer smoke test).
 - `.projects` — how publishing is gated (the generator is simply omitted from this list; see the
   project.md decision "The source generator is bundled into the core package, not published standalone").

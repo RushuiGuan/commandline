@@ -2,7 +2,7 @@
 
 status: active
 created: 2026-07-08T12:35:28-04:00
-updated: 2026-11-16T15:00:00-05:00
+updated: 2026-11-16T11:48:48-05:00
 ----
 
 ## Business Requirements
@@ -391,10 +391,11 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   keeps the output contract in one serializer and the dependency graph to Spectre.Console.
 - **v9 ships as prerelease until System.CommandLine v3 reaches GA** (decided 2026-07-08):
   Because v9 depends on the System.CommandLine v3 prerelease, v9 itself will only be
-  published as a prerelease (e.g. `9.0.0-preview.*`). A stable 9.0.0 cannot ship until the
+  published as a prerelease (`9.0.0-rc.N`). A stable 9.0.0 cannot ship until the
   System.CommandLine v3 stable release, expected ~November 2026. v9 development, breaking
   changes, and feedback can therefore proceed and be released continuously on the
   prerelease channel without waiting; only the stable tag is gated.
+  Tasks: [v9-release-check-list.tsk.md](v9-release-check-list.tsk.md)
 - **Compile-time code generation over runtime reflection**: A Roslyn incremental source
   generator wires up commands, DI, and the command tree at compile time. Reflection-based
   discovery was rejected because it hurts startup performance and is incompatible with
@@ -462,7 +463,7 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   removed and `ICommandContext` exposes `InputActionErrors`; (b) logging happens at the catch site,
   so the handler only *notifies* (it no longer logs and cannot change the exit outcome); (c) an
   option handler's non-exception validation failure is now a first-class `Error` (nullable
-  `Exception`). See the `route-option-handler-exception-to-error-handler` task.
+  `Exception`). See [route-option-handler-exception-to-error-handler.tsk.md](completed/route-option-handler-exception-to-error-handler.tsk.md).
 - **Ship a companion Roslyn analyzer**: `Albatross.CommandLine.CodeAnalysis` surfaces
   attribute misuse (duplicate option names, bad `BaseParamsClass` inheritance, `OptionHandler`
   type mismatch, conflicting `[Option]`/`[Argument]`) as IDE diagnostics rather than as
@@ -480,8 +481,8 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   the standalone package, double-loading the generator (duplicate generated types). The project still
   exists and is consumed as a project reference in-repo (core and tests) via the `GetDependencyTargetPaths`
   mechanism, which is independent of packaging. `Albatross.CommandLine.CodeAnalysis` is the exception —
-  it stays published and opt-in (consumers reference it directly), so it is not bundled. See the
-  `bundle-codegen-into-core-package` task for the full implementation and verification.
+  it stays published and opt-in (consumers reference it directly), so it is not bundled. See
+  [bundle-codegen-into-core-package.tsk.md](completed/bundle-codegen-into-core-package.tsk.md) for the full implementation and verification.
 
 ## Open Questions
 
