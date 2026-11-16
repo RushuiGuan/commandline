@@ -1,5 +1,6 @@
 using Albatross.CommandLine;
 using Albatross.CommandLine.Annotations;
+using Albatross.CommandLine.Outputs;
 using System;
 using System.CommandLine;
 using System.Threading;
@@ -9,12 +10,14 @@ namespace Sample.CommandLine {
 	[OptionHandler<SlowOption, SlowOptionHandler>]
 	public class SlowOption : Option<string> {
 		public SlowOption(string name, params string[] aliases) : base(name, aliases) {
+			Description = "This is an option that will take 10 seconds to run";
 		}
 	}
 
 	public class SlowOptionHandler : IAsyncOptionHandler<SlowOption> {
 		public async Task InvokeAsync(SlowOption symbol, ParseResult result, CancellationToken cancellationToken) {
 			try {
+				System.Console.WriteLine("Running slow option");
 				var value = result.GetValue<string>(symbol);
 				if (value == "err") {
 					throw new ArgumentException("input is wrong");
@@ -37,6 +40,7 @@ namespace Sample.CommandLine {
 		}
 
 		public override async Task<int> InvokeAsync(CancellationToken cancellationToken) {
+			System.Console.WriteLine("Running command");
 			await Task.Delay(10000, cancellationToken);
 			return 0;
 		}
