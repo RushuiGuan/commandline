@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Albatross.CommandLine.Outputs {
 	public class ErrorOutput {
@@ -6,7 +6,7 @@ namespace Albatross.CommandLine.Outputs {
 		public string? Symbol { get; }
 		public string? Message { get; }
 
-		// if detail is actual json text, it is serialized inline as a JToken rather than a quoted string
+		// if detail is actual json text, it is serialized inline rather than as a quoted string
 		[JsonConverter(typeof(JsonDetailConverter))]
 		public string? Detail { get; }
 

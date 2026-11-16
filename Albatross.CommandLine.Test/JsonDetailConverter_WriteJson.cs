@@ -1,13 +1,14 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Albatross.CommandLine.Outputs;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Albatross.CommandLine.Test {
 	public class JsonDetailConverter_WriteJson {
-		// Serializes an ErrorOutput through the shared CLI serializer and returns the `detail` token.
-		static JToken? SerializeDetail(string? detail) {
+		// Serializes an ErrorOutput through the shared CLI serializer options and returns the `detail` node.
+		static JsonObject SerializeError(string? detail) {
 			var error = new ErrorOutput(ErrorSource.CommandHandler, null, "message", detail);
-			return JObject.FromObject(error, Outputs.Extensions.Serializer)["detail"];
+			return JsonSerializer.SerializeToNode(error, Outputs.Extensions.SerializerOptions)!.AsObject();
 		}
 
 		[Theory]
@@ -17,10 +18,9 @@ namespace Albatross.CommandLine.Test {
 		[InlineData("[]")]
 		[InlineData("{}")]
 		public void JsonContainer_WrittenInline(string detail) {
-			var token = SerializeDetail(detail);
-			Assert.NotNull(token);
-			Assert.IsAssignableFrom<JContainer>(token);
-			Assert.True(JToken.DeepEquals(JToken.Parse(detail), token));
+			var node = SerializeError(detail)["detail"];
+			Assert.True(node is JsonObject or JsonArray);
+			Assert.True(JsonNode.DeepEquals(JsonNode.Parse(detail), node));
 		}
 
 		[Theory]
@@ -31,16 +31,16 @@ namespace Albatross.CommandLine.Test {
 		[InlineData("{ not valid json")]
 		[InlineData("\"already quoted\"")]
 		public void NonJsonContainer_WrittenAsString(string detail) {
-			var token = SerializeDetail(detail);
-			Assert.NotNull(token);
-			Assert.Equal(JTokenType.String, token.Type);
-			Assert.Equal(detail, token.Value<string>());
+			var node = SerializeError(detail)["detail"];
+			Assert.NotNull(node);
+			Assert.Equal(JsonValueKind.String, node.GetValueKind());
+			Assert.Equal(detail, node.GetValue<string>());
 		}
 
 		[Fact]
 		public void NullDetail_Omitted() {
-			// The shared serializer uses NullValueHandling.Ignore, so a null Detail produces no property.
-			Assert.Null(SerializeDetail(null));
+			// The shared options ignore null properties, so a null Detail produces no property.
+			Assert.False(SerializeError(null).ContainsKey("detail"));
 		}
 	}
 }

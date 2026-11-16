@@ -1,6 +1,5 @@
-using System.IO;
+using System.Text.Json;
 using Albatross.CommandLine.Outputs;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace Albatross.CommandLine.Test {
@@ -9,8 +8,7 @@ namespace Albatross.CommandLine.Test {
 		// returning the resulting Detail string.
 		static string? DeserializeDetail(string detailFragment) {
 			var json = "{\"source\":\"CommandHandler\",\"message\":\"message\",\"detail\":" + detailFragment + "}";
-			using var reader = new JsonTextReader(new StringReader(json));
-			return Outputs.Extensions.Serializer.Deserialize<ErrorOutput>(reader)!.Detail;
+			return JsonSerializer.Deserialize<ErrorOutput>(json, Outputs.Extensions.SerializerOptions)!.Detail;
 		}
 
 		[Theory]

@@ -39,22 +39,24 @@ The unifying idea behind v9 is that a library should provide **capabilities, not
 
 ## 4. A first-class command output strategy: `Albatross.CommandLine.Outputs` (new package)
 
-**What changed:** A new opt-in package formalizes how commands emit results, centered on a `CommandOutput` / `CommandOutput<T>` envelope. It is **JSON-first with built-in JmesPath querying**: a shared serializer, a `Print` surface, and reusable `--query` / `--compact` options.
+**What changed:** A new opt-in package formalizes how commands emit results, centered on a `CommandOutput` / `CommandOutput<T>` envelope. It is **JSON-first**: shared `System.Text.Json` serializer options, a `Print` surface, and a reusable `--compact` option. Querying is left to external tools — pipe the output to `jp` or `jq`.
 
-**Why:** Once `stdout` is clean and logging is off the console, a command's output *is* its result — routinely piped to `jq`, queried with JmesPath, and fed to LLM/agent tooling as well as read by humans. That makes output a **contract**, and the package encodes the principles that keep it stable:
+**Why:** Once `stdout` is clean and logging is off the console, a command's output *is* its result — routinely piped to `jq`/`jp` and fed to LLM/agent tooling as well as read by humans. That makes output a **contract**, and the package encodes the principles that keep it stable:
 
 - Output is a contract; **compaction must be lossless** — the moment it changes meaning, it is the wrong lever.
-- **Drop nulls** (present-and-null equals absent) but **keep empty arrays/objects and default values**, so scripted/JmesPath/AI consumers never have to infer a missing key.
-- Shape less data per call at the **query layer (JmesPath)** rather than mutating the canonical output.
+- **Drop nulls** (present-and-null equals absent) but **keep empty arrays/objects and default values**, so scripted/AI consumers never have to infer a missing key.
+- Shape less data per call **downstream** (pipe to `jp`/`jq`) rather than mutating the canonical output.
+
+**Why no built-in `--query`:** a JmesPath `--query` option was trialled during the v9 prerelease and saw no use — piping to `jp` does the same job with no library involvement. Dropping it also removed JmesPath.Net and Newtonsoft.Json from the dependency graph; serialization is on `System.Text.Json`.
 - **Color is free and non-destructive** — rendered for a TTY, ANSI stripped when piped.
 
 The package also ships a simplified, dependency-light, **opt-in** `GlobalErrorHandler` that reports failures through the same `CommandOutput` envelope on `stderr`.
 
-**Why a separate package (not merged into Defaults):** `Outputs` (JSON/JmesPath/Spectre) and `Defaults` (Serilog/config) are orthogonal opinionated concerns with disjoint, heavy dependency graphs. Merging would force Serilog onto consumers who only want structured output, and vice versa. They are documented as a recommended pairing instead.
+**Why a separate package (not merged into Defaults):** `Outputs` (JSON/Spectre) and `Defaults` (Serilog/config) are orthogonal opinionated concerns with disjoint, heavy dependency graphs. Merging would force Serilog onto consumers who only want structured output, and vice versa. They are documented as a recommended pairing instead.
 
 ## 5. Opt-in options, never auto-registered
 
-**What changed:** The library's own cross-cutting options — `--query` and `--compact` from `Outputs` — are provided as reusable option *types*. The consumer decides whether and where to apply them (e.g. `[UseOption<QueryOption>]`, or on a shared base-params class); they are never auto-registered as recursive.
+**What changed:** The library's own cross-cutting options — such as `--compact` from `Outputs` — are provided as reusable option *types*. The consumer decides whether and where to apply them (e.g. `[UseOption<CompactOption>]`, or on a shared base-params class); they are never auto-registered as recursive.
 
 **Why:** This is the `--verbosity` lesson generalized: v9 never forces a global/cross-cutting option on consumers. If you want a recursive option, you add it deliberately.
 
@@ -84,7 +86,7 @@ This also fixes a latent bug: `CreateDefaultBuilder` turned on `ValidateOnBuild`
 - [ ] Remove any reliance on the automatic `--verbosity`/`-v` option or `CommandBuilder.VerbosityOption`.
 - [ ] If you want logging, add `Albatross.CommandLine.Defaults` and call `WithDefaults(appPath.ConfigRoot)`. Register an `IApplicationPath` to control where logs are written, or rely on the `DefaultApplicationPath` fallback. Logs now go to a **file**, not the console.
 - [ ] Move log-level tuning from the command line to a `Serilog:MinimumLevel` section in `appsettings.json`.
-- [ ] If you print structured results, adopt `Albatross.CommandLine.Outputs` (`CommandOutput` + `Print` + `--query`/`--compact`) instead of ad-hoc `Console.WriteLine`.
+- [ ] If you print structured results, adopt `Albatross.CommandLine.Outputs` (`CommandOutput` + `Print` + `--compact`) instead of ad-hoc `Console.WriteLine`. Pipe output to `jp`/`jq` for querying. If you customized the shared serializer, note it is now `System.Text.Json` (`Extensions.SerializerOptions`), not Newtonsoft.
 - [ ] Verify your build against the System.CommandLine v3 prerelease (expected to be a reference bump).
 - [ ] If you referenced `Albatross.CommandLine.CodeGen` directly, **remove that package reference** — the source generator is now bundled into `Albatross.CommandLine`, so referencing the core package is enough (keeping both would double-load the generator). `Albatross.CommandLine.CodeAnalysis` stays an opt-in package you add explicitly.
 - [ ] Note that core now pulls in **`Microsoft.Extensions.Hosting` 10.x**; a .NET 8/9 app referencing core will get Hosting 10.x transitively.

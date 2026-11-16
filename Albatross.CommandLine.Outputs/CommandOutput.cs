@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Albatross.CommandLine.Outputs {
 	public record class CommandOutput {
@@ -10,9 +10,7 @@ namespace Albatross.CommandLine.Outputs {
 	}
 
 	public record class CommandOutput<T> : CommandOutput {
-		// Order pushes Data after the inherited members, which Newtonsoft would otherwise emit last
-		// (it serializes a derived type's own members first).
-		[JsonProperty(Order = 100)]
+		[JsonPropertyOrder(100)]
 		public T? Data { get; set; }
 	}
 }

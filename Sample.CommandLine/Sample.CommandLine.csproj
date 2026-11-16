@@ -22,7 +22,7 @@
 		<ProjectReference Include="..\Albatross.CommandLine.Outputs\Albatross.CommandLine.Outputs.csproj" />
 		<ProjectReference Include="..\Albatross.CommandLine.Defaults\Albatross.CommandLine.Defaults.csproj" />
 		<ProjectReference Include="..\Albatross.CommandLine\Albatross.CommandLine.csproj" />
-		<PackageReference Include="Albatross.Collections" Version="8.0.1" />
+		<PackageReference Include="Albatross.Collections" Version="8.0.2" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Update="appsettings.json">

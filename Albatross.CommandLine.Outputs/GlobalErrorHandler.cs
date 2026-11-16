@@ -1,4 +1,3 @@
-using Newtonsoft.Json.Linq;
 
 namespace Albatross.CommandLine.Outputs {
 	public class GlobalErrorHandler : ICommandErrorHandler {
@@ -32,14 +31,14 @@ namespace Albatross.CommandLine.Outputs {
 					exitCode = ErrorExitCode;
 				}
 			}
-			var output = new CommandOutput<JToken> {
+			var output = new CommandOutput {
 				ExitCode = exitCode,
 				Command = context.Key,
 				Errors = list,
 				LogFolder = GetLogFolderPath(),
 			};
 			// Neither an error nor a cancellation is normal command output, so always to stderr.
-			output.Print(null, context.Result.IsCompact(), stderr: true);
+			output.Print(context.Result.IsCompact(), stderr: true);
 			return output.ExitCode;
 		}
 	}
