@@ -23,20 +23,10 @@ namespace Albatross.CommandLine {
 		/// </summary>
 		CommandTaskCancellation = 3,
 		/// <summary>
-		/// An async option handler (pre-action) was cancelled (an <see cref="OperationCanceledException"/>);
-		/// <see cref="Error.Symbol"/> carries the option name.
+		/// An async option handler (pre-action) was cancelled — typically by Ctrl+C, or by an
+		/// <see cref="OperationCanceledException"/> of its own. <see cref="Error.Symbol"/> carries the option name.
+		/// Once one option handler is cancelled, the remaining ones do not run.
 		/// </summary>
-		/// <remarks>
-		/// Known limitation: this source is effectively unreachable via Ctrl+C today. System.CommandLine
-		/// installs its process-termination handler — the piece that cancels the token and suppresses the
-		/// OS default kill — only around the command action, never around pre-actions. So when the user
-		/// presses Ctrl+C while an async option handler is running, the CancellationToken that handler
-		/// received is never cancelled, and the process is hard-terminated by the default SIGINT/SIGTERM
-		/// handling before this error can be produced (the handler simply vanishes mid-run). This source
-		/// is therefore only reached when an option handler throws OperationCanceledException for its own
-		/// reasons — e.g. an inner timeout token it created — not from process termination.
-		/// Raising CommandHost.ProcessTerminationTimeout does not help: that only affects the command action.
-		/// </remarks>
 		OptionTaskCancellation = 4,
 	}
 

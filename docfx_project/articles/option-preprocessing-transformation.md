@@ -67,6 +67,13 @@ This pattern allows you to run validation logic for an option before the main co
     }
     ```
 
+### Cancellation
+
+Option handlers receive a `CancellationToken` that Ctrl+C (SIGINT/SIGTERM) cancels, just like the command handler's. Pass it to the async calls the handler makes. A cancelled handler is reported to the [error handler](custom-error-handler.md) as `ErrorSource.OptionTaskCancellation` (`GlobalErrorHandler` exits with 130), the remaining option handlers are skipped, and the command handler does not run. A handler that ignores the token is abandoned once `CommandHost.ProcessTerminationTimeout` (30 seconds by default) has passed.
+
+> [!NOTE]
+> System.CommandLine itself only handles Ctrl+C around the command action, so an option handler — which runs as a pre-action — would otherwise be killed outright ([dotnet/command-line-api#2836](https://github.com/dotnet/command-line-api/issues/2836)). `Albatross.CommandLine` installs the same handling around option handlers itself.
+
 ## Scenario 2: Input Transformation
 
 This pattern transforms an option's input value (e.g., an ID) into a completely different, more complex object (e.g., a data transfer object) before it's passed to the command handler.

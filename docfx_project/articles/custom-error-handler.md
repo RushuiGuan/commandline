@@ -12,7 +12,7 @@ The pipeline captures each failure as an @Albatross.CommandLine.Error record and
 | `OptionHandler` | An option handler throws, or records a validation failure with `ICommandContext.SetInputActionError` | Option name |
 | `ServiceRegistration` | The command handler cannot be resolved or created from the DI container | Command key |
 | `CommandTaskCancellation` | The command handler is cancelled (`OperationCanceledException`, typically Ctrl+C) | Command key |
-| `OptionTaskCancellation` | An option handler throws `OperationCanceledException` | Option name |
+| `OptionTaskCancellation` | An option handler is cancelled — by Ctrl+C, or by an `OperationCanceledException` of its own | Option name |
 
 Each `Error` carries its `Source`, `Symbol`, a user-facing `Message`, and the underlying `Exception` when there is one (it is null for a validation failure or a cancellation). Several option handlers can fail in one invocation, so the handler receives the errors as a set.
 

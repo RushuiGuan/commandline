@@ -123,3 +123,31 @@ be hard-killed mid-run.
 - Reproduced on macOS (darwin); the code path is platform-independent (both the
   `PosixSignalRegistration` and `Console.CancelKeyPress` branches are gated inside the
   handler that pre-actions never construct).
+
+## Status
+
+Filed upstream as [dotnet/command-line-api#2836](https://github.com/dotnet/command-line-api/issues/2836)
+on 2026-07-13. As of 2026-11-16 it has no response, labels or assignee, and the bug is still present
+on upstream `main` (`InvocationPipeline.cs` creates the `ProcessTerminationHandler` after the
+pre-action loop; the file is unchanged since April 2026). The repository triages few issues; fixes
+land through pull requests.
+
+## Workaround in Albatross.CommandLine
+
+`PreActionTerminationHandler` (internal, core) mirrors System.CommandLine's
+`ProcessTerminationHandler` around each `IAsyncOptionHandler` invocation in `AsyncOptionAction`:
+it registers SIGINT/SIGTERM through `PosixSignalRegistration` (falling back to
+`Console.CancelKeyPress` + `ProcessExit` on `netstandard2.1`), suppresses the OS kill, cancels a
+token linked to the pre-action's, and abandons a handler still running
+`ProcessTerminationTimeout` after the signal. It is skipped when that timeout is null, as
+System.CommandLine does. Once one option handler is cancelled the remaining ones do not start
+(`HasCancelledInputAction`).
+
+Verified with a real Ctrl+C sent to `Sample.CommandLine long-running --slow x` in its own console:
+before, the process died with `0xC000013A` (STATUS_CONTROL_C_EXIT) and the log ended at
+"Invoking AsyncOptionHandler"; after, it exits 130 with "Option --slow was cancelled" logged and
+the host disposed. The abandon-after-timeout path is covered by unit tests
+(`PreActionTerminationHandler_RunAsync`).
+
+Remove the workaround once a System.CommandLine release fixes #2836: the two handlers would
+otherwise both be registered during pre-actions.

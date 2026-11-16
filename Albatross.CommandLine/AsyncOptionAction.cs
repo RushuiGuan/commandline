@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,12 +27,15 @@ namespace Albatross.CommandLine {
 		public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken) {
 			var serviceProvider = serviceFactory();
 			var context = serviceProvider.GetRequiredService<ICommandContext>();
-			if (!context.HasParsingError && !context.HasShortCircuitOptions) {
+			if (!context.HasParsingError && !context.HasShortCircuitOptions && !context.HasCancelledInputAction()) {
 				var logger = serviceProvider.GetRequiredService<ILogger<AsyncOptionAction<TOption, THandler>>>();
 				try {
 					logger.LogInformation("Invoking AsyncOptionHandler: [{CommandName} [{SymbolName}]]", context.Key, Symbol.Name);
 					var handler = serviceProvider.GetRequiredService<THandler>();
-					await handler.InvokeAsync(this.Symbol, parseResult, cancellationToken);
+					await PreActionTerminationHandler.RunAsync(parseResult, cancellationToken, async token => {
+						await handler.InvokeAsync(this.Symbol, parseResult, token);
+						return true;
+					});
 				} catch (OperationCanceledException) {
 					var msg = $"Option {Symbol.Name} was cancelled";
 					logger.LogWarning(msg);
@@ -63,12 +67,13 @@ namespace Albatross.CommandLine {
 		public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken) {
 			var serviceProvider = serviceFactory();
 			var context = serviceProvider.GetRequiredService<ICommandContext>();
-			if (!context.HasParsingError && !context.HasShortCircuitOptions) {
+			if (!context.HasParsingError && !context.HasShortCircuitOptions && !context.HasCancelledInputAction()) {
 				var logger = serviceProvider.GetRequiredService<ILogger<AsyncOptionAction<TOption, THandler, TContextValue>>>();
 				try {
 					logger.LogInformation("Invoking AsyncOptionHandler: [{CommandName} [{SymbolName}]]", context.Key, Symbol.Name);
 					var handler = serviceProvider.GetRequiredService<THandler>();
-					var result = await handler.InvokeAsync(this.Symbol, parseResult, cancellationToken);
+					var result = await PreActionTerminationHandler.RunAsync(parseResult, cancellationToken,
+						token => handler.InvokeAsync(this.Symbol, parseResult, token));
 					if (result.HasValue) {
 						context.SetValue<TContextValue>(this.Symbol.Name, result.Value);
 					}
@@ -85,6 +90,12 @@ namespace Albatross.CommandLine {
 			// this return code has no impact
 			return 0;
 		}
+	}
+
+	internal static class InputActionContextExtensions {
+		// once Ctrl+C cancels one option handler, the remaining ones must not start
+		public static bool HasCancelledInputAction(this ICommandContext context)
+			=> context.InputActionErrors.Any(x => x.Source == ErrorSource.OptionTaskCancellation);
 	}
 
 	/// <summary>
