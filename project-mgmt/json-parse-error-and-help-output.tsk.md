@@ -9,7 +9,7 @@ tags: outputs json help parse-error system-commandline v9
 ## Objective
 
 Let a CLI emit **parse errors** and **help** as JSON through the existing
-`Albatross.CommandLine.Outputs` contract (`CommandOutput` / `Print` / shared `Serializer`),
+`Albatross.CommandLine.Outputs` contract (`CommandOutput` / `Print` / shared `CompactSerializerOptions`),
 instead of `System.CommandLine`'s default rendering (red error text + plain-text help to
 stderr/stdout). This closes the last gap where a machine/AI/`jq` consumer still receives
 unstructured text: successful results and *runtime* exceptions already go through the JSON
@@ -28,15 +28,15 @@ Two independent, opt-in features with **different opt-in models** (per maintaine
 
 The v9 output strategy (see `project.md` → Key Design Decisions, "formalizes a first-class
 command output strategy") makes stdout/stderr a clean, JSON-first contract. `CommandOutput`/
-`CommandOutput<T>`, the shared `Serializer` (camelCase, enums-as-names, drop-nulls/keep-
-defaults-and-empties), and the `Print` render surface (`--compact`, JmesPath `--query`, ANSI
+`CommandOutput<T>`, the shared `CompactSerializerOptions` (camelCase, enums-as-names, drop-nulls/keep-
+defaults-and-empties), and the `Print` render surface (`--compact`, ANSI
 stripped when piped) all live in `Albatross.CommandLine.Outputs`. `GlobalErrorHandler`
 (Outputs) already renders *runtime* exceptions as a `CommandOutput` envelope on stderr.
 
 Both features therefore belong in **Outputs** (it owns the serializer, the envelope, and
 `Print`), and both must be **opt-in** — consistent with the standing v9 principle "capability
 over forced policy; never force cross-cutting/global options on consumers" (the `--verbosity`
-and `--query`/`--compact` precedents). The core library stays JSON-agnostic.
+and `--compact` precedents). The core library stays JSON-agnostic.
 
 ### System.CommandLine v3 mechanics (verified against C:\app\command-line-api, 2026-07-09)
 
@@ -77,7 +77,7 @@ Model it on `HelpOption`, but as an externally-constructible `Option<bool>`:
     (walk `CommandResult.Parent`), description, usage, and lists of options (name, aliases,
     description, required, default value, arity), arguments (name, description, arity), and
     subcommands (name, description). Skip `Hidden` symbols to match default help.
-  - Serializes it with the Outputs `Serializer` and renders via `Print` (honor `--compact` if
+  - Serializes it with the Outputs `CompactSerializerOptions` and renders via `Print` (honor `--compact` if
     the command declares it: `parseResult.IsCompact()`). Returns 0.
   - Overrides **`ClearsParseErrors => true`** (like `HelpAction`) so `--json-help` works even
     when the rest of the command line has parse errors — otherwise `ParseErrorAction` would win.
@@ -126,7 +126,7 @@ reserved codes 255 (unhandled) / 254 (cancelled) / 253 (option-handler error) �
 - `Albatross.CommandLine/CommandHost.cs` — `InvokeAsync()` seam for `IParseErrorHandler`.
 - `Albatross.CommandLine/` — new `IParseErrorHandler.cs` (mirror `ICommandErrorHandler.cs`).
 - `Albatross.CommandLine.Outputs/` — new `JsonHelpOption.cs` (+ its action), `JsonParseErrorHandler.cs`,
-  and registration/ergonomic extensions in `Extensions.cs`. Reuse `Serializer`, `Print`,
+  and registration/ergonomic extensions in `Extensions.cs`. Reuse `CompactSerializerOptions`, `Print`,
   `IsCompact`, `CommandOutput`. Prior art to mirror: `GlobalErrorHandler.cs`.
 - Reference for the framework mechanics: `C:\app\command-line-api\src\System.CommandLine\{Option.cs,
   ParseResult.cs, Help/HelpOption.cs, Help/HelpAction.cs, Invocation/ParseErrorAction.cs}`.
@@ -146,7 +146,6 @@ reserved codes 255 (unhandled) / 254 (cancelled) / 253 (option-handler error) �
 - `ErrorDetail` for parse errors: a single joined string vs. a structured `string[]` / list of
   `{message, ...}` under `CommandOutput<T>.Data`. A list is more machine-friendly; confirm the
   shape against how consumers/AI expect to read it.
-- Whether the `--json-help` action should honor `--query` (JmesPath) in addition to `--compact`.
 - Whether to also offer an appsettings.json toggle for the parse-error handler, or keep it purely
   DI-registration based (the latter matches "config-based opt-in" as stated).
 - Check `Anchor.CommandLine` (`C:\app\anchor\Anchor.CommandLine`) for any prior art on JSON help /

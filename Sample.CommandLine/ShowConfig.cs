@@ -2,7 +2,6 @@
 using Albatross.CommandLine.Annotations;
 using Albatross.CommandLine.Outputs;
 using Albatross.Config;
-using DevLab.JmesPath.Expressions;
 using System.CommandLine;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,9 +9,6 @@ using System.Threading.Tasks;
 namespace Sample.CommandLine {
 	[Verb<ShowConfigHandler>("config", Description = "Show application config")]
 	public record class ShowConfigParams {
-		[UseOption<QueryOption>]
-		public JmesPathExpression? Query { get; init; }
-
 		[UseOption<CompactOption>]
 		public bool Compact { get; init; }
 	}
@@ -25,7 +21,7 @@ namespace Sample.CommandLine {
 		}
 
 		public override async Task<int> InvokeAsync(CancellationToken cancellationToken) {
-			this.applicationPath.Print(parameters.Query, parameters.Compact, false);
+			this.applicationPath.Print(parameters.Compact);
 			return 0;
 		}
 	}

@@ -28,7 +28,7 @@ This pattern allows you to run validation logic for an option before the main co
     ```
 
 2.  **Implement the Option Handler:**
-    The handler implements `IAsyncOptionHandler<T>`. It uses dependency injection to get the services it needs. Inside `InvokeAsync`, it performs the validation and, if the ID is invalid, it "short-circuits" the command by setting the action status on the `ICommandContext`.
+    The handler implements `IAsyncOptionHandler<T>`. It uses dependency injection to get the services it needs. Inside `InvokeAsync`, it performs the validation and, if the ID is invalid, it "short-circuits" the command by recording an error on the `ICommandContext`. Throwing an exception has the same effect. Either way, the command handler is skipped and the error is reported through the registered [`ICommandErrorHandler`](custom-error-handler.md).
 
     ```csharp
     public class VerifyInstrumentId : IAsyncOptionHandler<InstrumentOption> {
@@ -43,13 +43,13 @@ This pattern allows you to run validation logic for an option before the main co
         }
 
         public async Task InvokeAsync(InstrumentOption option, ParseResult result, CancellationToken cancellationToken) {
-            var id = result.GetValueForOption(option);
+            var id = result.GetValue(option);
             if (id != 0) {
                 var valid = await _service.IsValidInstrument(id, cancellationToken);
                 if (!valid) {
                     _logger.LogError("{id} is not a valid instrument id", id);
                     // Terminate the command because the input is invalid.
-                    _context.SetInputActionStatus(new OptionHandlerStatus(option.Name, false, $"{id} is not a valid instrument id"));
+                    _context.SetInputActionError(new Error(ErrorSource.OptionHandler, option.Name, $"{id} is not a valid instrument id", null));
                 }
             }
         }
@@ -89,7 +89,7 @@ This pattern transforms an option's input value (e.g., an ID) into a completely 
     ```
 
 2.  **Implement the Transformation Handler:**
-    The handler now implements `IAsyncOptionHandler<T, TOut>` and its `InvokeAsync` method returns the transformed object (`Task<InstrumentSummary>`).
+    The handler now implements `IAsyncOptionHandler<T, TOut>` and its `InvokeAsync` method returns the transformed object wrapped in an `OptionHandlerResult<InstrumentSummary>`. Return an empty result when there is nothing to transform.
 
     ```csharp
     public class GetInstrumentSummary : IAsyncOptionHandler<InstrumentOption, InstrumentSummary> {
@@ -99,11 +99,14 @@ This pattern transforms an option's input value (e.g., an ID) into a completely 
             _service = service;
         }
 
-        public async Task<InstrumentSummary> InvokeAsync(InstrumentOption option, ParseResult result, CancellationToken cancellationToken) {
-            var id = result.GetValueForOption(option);
+        public async Task<OptionHandlerResult<InstrumentSummary>> InvokeAsync(InstrumentOption option, ParseResult result, CancellationToken cancellationToken) {
+            var id = result.GetValue(option);
+            if (id == 0) {
+                return new OptionHandlerResult<InstrumentSummary>();
+            }
             // Fetch the data and return the transformed object.
             var summary = await _service.GetInstrument(id, cancellationToken);
-            return summary;
+            return new OptionHandlerResult<InstrumentSummary>(summary);
         }
     }
     ```

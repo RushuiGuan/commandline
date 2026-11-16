@@ -2,7 +2,7 @@
 
 status: active
 created: 2026-07-08T12:35:28-04:00
-updated: 2026-07-13T09:00:00-04:00
+updated: 2026-11-16T15:00:00-05:00
 ----
 
 ## Business Requirements
@@ -147,9 +147,9 @@ read parsed values such as `--verbosity`.
 - **Albatross.CommandLine.Inputs** — reusable file/directory `Option`/`Argument` types
   with validation.
 - **Albatross.CommandLine.Outputs** *(new in v9)* — the formalized output strategy, centered on
-  the `CommandOutput` envelope: a shared JSON serializer plus the `Print`/`--query`(JmesPath)/
-  `--compact` render surface. Carries the output-only dependencies (Spectre.Console.Json, a
-  JmesPath library, Newtonsoft.Json) so the core stays dependency-light. Does **not** ship the
+  the `CommandOutput` envelope: shared `System.Text.Json` serializer options plus the
+  `Print`/`--compact` render surface. Carries the output-only dependency (Spectre.Console.Json)
+  so the core stays dependency-light. Does **not** ship the
   Anchor-specific paging/domain inputs or a default error handler — those stay with the consuming
   app. Lifted from Anchor's `Anchor.CommandLine` (see Key Design Decisions).
 - **Albatross.CommandLine.Test** — xUnit unit tests.
@@ -165,10 +165,9 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
     and multi-targets `netstandard2.1;net10.0` (its `Microsoft.Extensions.Hosting` reference is now
     `10.0.9`; see Key Design Decisions).
   - `Albatross.CommandLine.Outputs` exists and builds — `CommandOutput`/`CommandOutput<T>`, a
-    **single** shared serializer (the Anchor double-definition did not carry over), the
-    `Print`/`IsCompact`/`PrintSuccess`/`PrintError` surface, the `QueryOption`/`CompactOption`
-    options, and a simplified opt-in `GlobalErrorHandler` (no new dependencies). Its README is
-    written.
+    **single** set of shared `System.Text.Json` serializer options, the
+    `Print`/`IsCompact`/`PrintSuccess`/`PrintError` surface, the `CompactOption` option, and a
+    simplified opt-in `GlobalErrorHandler` (no new dependencies). Its README is written.
   - `Albatross.CommandLine.Defaults` now defaults to **file-based** Serilog logging (daily-rolling
     file under `IApplicationPath.LogRoot`, no console sink); the `Albatross.Logging` dependency was
     removed in favor of direct Serilog packages. Builds clean. Defaults pins Hosting/DI at 10.0.9,
@@ -222,7 +221,7 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   CLI log?" policy out of core while preserving the ability to add `--verbosity` — or any cross-cutting
   option — with the framework's existing extensibility rather than a bespoke API. Generalized
   principle: v9 never forces cross-cutting/global options on consumers — this holds not just for
-  `--verbosity` but for the library's own `Albatross.CommandLine.Outputs` options (`--query`/`--compact`),
+  `--verbosity` but for the library's own `Albatross.CommandLine.Outputs` options (`--compact`),
   which are likewise opt-in, not auto-recursive.
 - **`Albatross.CommandLine.Defaults` defaults to file-based Serilog logging, keeping the
   console free for command output** (decided 2026-07-08): The complement of the
@@ -295,27 +294,26 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   humans *and* automation/AI, favoring a stable, correct schema over visual compactness**
   (decided 2026-07-08): Modeled on the Anchor CLI's output contract. Now that stdout/stderr
   is clean by default and logging is off the console, a command's stdout is purely its result
-  — and that result is routinely piped to `jq`, queried with JmesPath, and fed to LLM/agent
-  tooling as well as read by humans. The library standardizes an output surface commands write
+  — and that result is routinely piped to `jq` and fed to LLM/agent tooling as well as read
+  by humans. The library standardizes an output surface commands write
   through (replacing ad-hoc `Console.WriteLine`), governed by these principles lifted from
   Anchor:
   - Output is a **contract**; compaction must be **lossless** — the moment it changes meaning
     it is the wrong lever.
   - **Drop nulls** (for a nullable field, present-and-null and absent are semantically
     identical), but **keep empty arrays/objects** (a positive "exists, zero items" statement;
-    preserves the "collections are always arrays" invariant that scripted/JmesPath/AI consumers
+    preserves the "collections are always arrays" invariant that scripted/AI consumers
     rely on) and **keep default values** (`false`/`0`/zero-enum members are printed, so nothing
     must be inferred from a missing key).
-  - **Shape less-data per call at the query layer (JmesPath)** rather than mutating the
-    canonical output for every consumer.
+  - **Shaping belongs to the consumer** — the library emits the full canonical output and a
+    caller who wants less pipes it through an external tool such as `jq` (see "Outputs has no
+    built-in query layer" below).
   - **Color is free and non-destructive** — rendered for a TTY, ANSI stripped for non-TTY/piped
     output, so it never harms the machine/AI path.
-  This resolves the earlier open question about the command-owned output surface. **Resolved
-  (2026-07-08):** the strategy ships as a new dedicated package, `Albatross.CommandLine.Outputs`
-  (keeping the core dependency-light), and standardizes **JSON as the output format with
-  built-in JmesPath querying** — Spectre.Console.Json for TTY coloring, a JmesPath library for
-  per-call shaping. The concrete patterns are lifted from Anchor's reference implementation —
-  see the next decision.
+  The strategy ships as a dedicated package, `Albatross.CommandLine.Outputs` (keeping the core
+  dependency-light), and standardizes **JSON as the output format** — `System.Text.Json` for
+  serialization, Spectre.Console.Json for TTY coloring. The concrete patterns are lifted from
+  Anchor's reference implementation — see the next decision.
 - **`Albatross.CommandLine.Outputs` centers on the `CommandOutput` envelope lifted from
   `Anchor.CommandLine`; the paging/query inputs and error handler are *not* lifted**
   (decided 2026-07-08): Anchor's `Anchor.CommandLine` project
@@ -323,22 +321,22 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   Only the genuinely reusable output pieces are promoted:
   - **`CommandOutput` / `CommandOutput<T>` envelope (the core pattern)** — a standard result
     record (`Command`, `Message`, `Error`, `ErrorDetail`, `ExitCode`, `LogFolder`, and generic
-    `Data` ordered last via `[JsonProperty(Order = 100)]`) so every command emits one
-    predictable, machine-parseable shape for both success and failure. This is the primary
-    artifact the package exists to provide.
-  - **Shared JSON serializer** — camelCase names, enums as names (`StringEnumConverter`),
-    `NullValueHandling.Ignore` to drop nulls while **keeping** defaults and empty collections —
-    the exact lossless-compaction contract from the output-strategy decision above.
-  - **The `Print` render surface** that realizes JSON-first-with-JmesPath: object → optional
-    JmesPath transform → indented, Spectre-colored JSON on a TTY (ANSI stripped when piped),
-    scalars raw for scriptability, a compact single-line mode, and stderr routing for errors,
-    plus the `--query`/`-q` and `--compact` options that drive it. These are the output-strategy
-    options; they are the exception to "the Inputs namespace stays in Anchor."
-  - **`--query`/`--compact` are provided as opt-in reusable options, never auto-registered as
-    recursive** (per maintainer, 2026-07-08) — the `--verbosity` lesson applied to the library's
-    own options. The package ships the option *types*; the consumer decides whether and where to
-    apply them (e.g. `[UseOption<QueryOption>]`, or on their own shared base-params class as
-    Anchor does). The library sets no cross-cutting-option policy on the consumer's behalf.
+    `Data` ordered last) so every command emits one predictable, machine-parseable shape for
+    both success and failure. This is the primary artifact the package exists to provide.
+  - **Shared `System.Text.Json` serializer options** — camelCase names, enums as names, nulls
+    dropped while **keeping** defaults and empty collections — the exact lossless-compaction
+    contract from the output-strategy decision above.
+  - **The `Print` / `PrintAsync` render surface**: objects and arrays as JSON, scalars raw (in their
+    JSON form, culture-independent) for scriptability, a compact single-line mode, and stderr routing
+    for errors, plus the `--compact` option that drives it. `Print` colors JSON through Spectre on a
+    TTY but cannot be interrupted; `PrintAsync` trades color for cancellation and stream-safe
+    output, for large results and machine consumers. Shipping both leaves that trade to the command
+    rather than giving up color for everyone. This output-strategy option is the exception to "the
+    Inputs namespace stays in Anchor."
+  - **`--compact` is provided as an opt-in reusable option, never auto-registered as
+    recursive** — the `--verbosity` lesson applied to the library's own options. The package
+    ships the option *type*; the consumer decides whether and where to apply it (e.g.
+    `[UseOption<CompactOption>]`, or on their own shared base-params class as Anchor does).
   - **What is deliberately NOT lifted**: the rest of `Anchor.CommandLine.Inputs` is Anchor-
     specific and stays put — the paging/search inputs (`skip`/`take`/search/`show-secrets`) and
     all domain options (client/tenant/OIDC/entity, `DatabaseProvider`). They are the consuming
@@ -353,10 +351,9 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
     full set of `Error` records into the envelope's `Errors` array (per error: `Source`, `Key`,
     `Message`, and `Detail` = exception message) rather than a single `Error`/`ErrorDetail`. It lives
     in **Outputs** (error reporting is output) and adds **no new dependencies** — only core
-    (`ICommandContext`/`ICommandErrorHandler`), `CommandOutput`/`Print`, and Newtonsoft (already
-    present). It is **opt-in**: the
+    (`ICommandContext`/`ICommandErrorHandler`) and `CommandOutput`/`Print`. It is **opt-in**: the
     consumer registers `ICommandErrorHandler` (same capability-not-policy stance as
-    `--query`/`--compact`), or replaces it with their own. Deliberately dropped from Anchor's
+    `--compact`), or replaces it with their own. Deliberately dropped from Anchor's
     richer version: (a) **semantic-error unwrapping** (an `Albatross.Exceptions`/Input opinion —
     left to consumer subclasses); (b) **`LogFolder` in the envelope** — re-adding it needs
     `IApplicationPath` (→ `Albatross.Config` dependency in Outputs), so the "point the user to the
@@ -364,37 +361,34 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
     subclasses the handler or adds an optional `IApplicationPath?` ctor param. This choice keeps
     **Defaults clean** — it does *not* depend on Outputs or `Albatross.Exceptions` (an earlier
     attempt to host the handler in Defaults added both and was reverted).
-  Cleanup to do while lifting: Anchor currently defines the shared `Serializer` twice (in its
-  `Inputs` and `Outputs` namespaces) — collapse to a single definition in the Outputs package.
-  **Resolved in code:** the shipped `Albatross.CommandLine.Outputs` defines the serializer once
-  (in its `Extensions`); the Anchor duplication did not carry over.
 - **`Albatross.CommandLine.Outputs` and `Albatross.CommandLine.Defaults` stay separate sibling
   opt-in packages — not merged** (decided 2026-07-08): Both are opinionated (unlike the
   dependency-light core), and `CommandOutput.LogFolder` pairs naturally with file-based logging,
   so merging them was considered. Rejected because the coupling is **semantic, not technical**:
-  `CommandOutput` references only Newtonsoft.Json; `LogFolder` is an optional `string?` whose
+  `CommandOutput` references only `System.Text.Json`; `LogFolder` is an optional `string?` whose
   value comes from the **config/path layer** (Anchor sources it from `IApplicationPath.LogRoot`),
   not from Serilog or Defaults, and it self-drops from output when null. The real shared
   dependency is therefore the *log-folder path*, which belongs in the config layer and is read by
   both — Defaults *writes* logs there, Output *reports* it; neither needs the other. The two also
   have disjoint, heavy dependency graphs (Defaults → Serilog / Albatross.Config / Albatross.Logging
-  / Hosting; Output → Spectre.Console.Json / JmesPath / Newtonsoft.Json). Merging would force
+  / Hosting; Output → Spectre.Console.Json). Merging would force
   Serilog onto consumers who want structured JSON output but their own or no logging, and force
   the JSON-output contract onto consumers who only want file-logging defaults — two genuinely
   independent choices. Keeping them separate matches the v9 philosophy (orthogonal opinionated
   concerns → separate packages; capability over forced policy). They are documented as a
   **recommended pairing**, and the "one call sets up everything" ergonomics is handled with
   docs/a sample rather than a merge.
-- **`QueryOption` and `CompactOption` stay in `Albatross.CommandLine.Outputs` — not moved to
-  `Albatross.CommandLine.Inputs`** (decided 2026-07-08): Considered relocating the two options to
-  the Inputs package (the general home for reusable `Option`/`Argument` types) and having Outputs
-  reference Inputs. Rejected. They are output-strategy options with no meaning outside the render
-  path — `--query` produces a `JmesPathExpression` consumed only by `Print`, and `--compact` is
-  read only by `Print`/`IsCompact`. Decisively, `QueryOption` depends on `JmesPath.Net`; moving it
-  into Inputs would push that dependency onto a package that is deliberately light (file/directory
-  options only), so every consumer wanting just `InputFileOption` would inherit JmesPath. Keeping
-  them in Outputs also avoids coupling two otherwise-independent sibling packages. Same
-  don't-force-dependency-graphs principle as the Outputs/Defaults separation.
+- **`CompactOption` stays in `Albatross.CommandLine.Outputs` — not moved to
+  `Albatross.CommandLine.Inputs`**: Relocating it to the Inputs package (the general home for
+  reusable `Option`/`Argument` types) was rejected. It is an output-strategy option with no meaning
+  outside the render path — `--compact` is read only by `Print`/`IsCompact` — and keeping it in
+  Outputs avoids coupling two otherwise-independent sibling packages.
+- **Outputs has no built-in query layer; `System.Text.Json` is its only JSON stack**: The
+  package emits the full canonical output and leaves shaping to external tools such as `jq`. A
+  built-in JmesPath `--query` option was rejected because no human used it, and it carried
+  JmesPath.Net plus the Newtonsoft.Json it requires, putting a second JSON stack on the
+  serialization path. Without it the package serializes with `System.Text.Json` alone, which
+  keeps the output contract in one serializer and the dependency graph to Spectre.Console.
 - **v9 ships as prerelease until System.CommandLine v3 reaches GA** (decided 2026-07-08):
   Because v9 depends on the System.CommandLine v3 prerelease, v9 itself will only be
   published as a prerelease (e.g. `9.0.0-preview.*`). A stable 9.0.0 cannot ship until the

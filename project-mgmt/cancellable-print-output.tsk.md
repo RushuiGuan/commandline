@@ -153,6 +153,30 @@ render colored JSON *and* be interrupted — a syntax-highlighting writer that e
 incrementally rather than building the whole document first, whether a third-party library
 or a small in-house tokenizer over the JSON text.
 
+### Since deferral: JmesPath and Newtonsoft are gone
+
+The Outputs package no longer ships `--query` or depends on JmesPath.Net or Newtonsoft.Json
+(see [project.md](project.md), "Outputs has no built-in query layer"). The four-stage
+pipeline described under *Design* no longer exists: `Print` now serializes to a
+`System.Text.Json` node and renders it, so the Newtonsoft re-parse (stage 2) and the
+JmesPath transform (stage 3) — including the JmesPath known gap — are gone, and the
+`expression` parameter drops out of the signature above. The `cancellable-print-output`
+branch predates this and would need rebasing onto the `System.Text.Json` pipeline. The
+Spectre blocker is unchanged.
+
+### Since deferral: `PrintAsync` ships alongside `Print`
+
+Rather than make `Print` cancellable, the Outputs package now offers a second method,
+`PrintAsync(value, compact, cancellationToken, stderr)`, and leaves the color-versus-cancellation
+choice to the command. It serializes with `System.Text.Json`, then writes the text to
+`Console.Out`/`Console.Error` in 16K-character slices with a token check before each, throwing
+`OperationCanceledException` for the pipeline to report as `CommandTaskCancellation`. It uses no
+Spectre, so it has no color, and its indented output is never wrapped into invalid JSON. Plain
+`TextWriter.WriteLineAsync(text, token)` was tried first and does not work: `Console.Out` is a
+`SyncTextWriter` whose async writes run synchronously and check the token only before starting.
+Serialization still runs before the first slice and cannot be interrupted. `Print` itself is
+unchanged, so the colored path remains uninterruptible — this task's original goal.
+
 ## Conclusion
 
 **Deferred** (2026-09-14), not abandoned — see *Why the task is deferred* above. Reopen if

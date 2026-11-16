@@ -1,42 +1,45 @@
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Albatross.CommandLine.Outputs {
 	/// <summary>
 	/// Serializes a string that may contain embedded JSON. When the value parses to a JSON object or array it is
-	/// written inline as a <see cref="JToken"/> (no surrounding quotes or escaping); any other value — including a
-	/// plain message or a bare JSON scalar such as <c>true</c> or <c>42</c> — is written as an ordinary JSON string
-	/// so its type is preserved. On read a JSON container is captured back as its compact string form.
+	/// written inline (no surrounding quotes or escaping); any other value — including a plain message or a bare
+	/// JSON scalar such as <c>true</c> or <c>42</c> — is written as an ordinary JSON string so its type is
+	/// preserved. On read a JSON container is captured back as its compact string form.
 	/// </summary>
 	public class JsonDetailConverter : JsonConverter<string?> {
-		public override void WriteJson(JsonWriter writer, string? value, JsonSerializer serializer) {
+		public override void Write(Utf8JsonWriter writer, string? value, JsonSerializerOptions options) {
 			if (value == null) {
-				writer.WriteNull();
-			} else if (TryParseContainer(value, out var token)) {
-				token.WriteTo(writer);
+				writer.WriteNullValue();
+			} else if (TryParseContainer(value, out var element)) {
+				element.WriteTo(writer);
 			} else {
-				writer.WriteValue(value);
+				writer.WriteStringValue(value);
 			}
 		}
 
-		public override string? ReadJson(JsonReader reader, System.Type objectType, string? existingValue, bool hasExistingValue, JsonSerializer serializer) {
-			if (reader.TokenType == JsonToken.Null) {
-				return null;
-			}
-			var token = JToken.ReadFrom(reader);
-			return token is JContainer ? token.ToString(Formatting.None) : token.Value<string>();
+		public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+			using var doc = JsonDocument.ParseValue(ref reader);
+			var element = doc.RootElement;
+			return element.ValueKind switch {
+				JsonValueKind.Null => null,
+				JsonValueKind.Object or JsonValueKind.Array => JsonSerializer.Serialize(element, options),
+				JsonValueKind.String => element.GetString(),
+				_ => element.GetRawText(),
+			};
 		}
 
-		static bool TryParseContainer(string value, out JToken token) {
+		static bool TryParseContainer(string value, out JsonElement element) {
 			try {
-				var parsed = JToken.Parse(value);
-				if (parsed is JContainer) {
-					token = parsed;
+				using var doc = JsonDocument.Parse(value);
+				if (doc.RootElement.ValueKind is JsonValueKind.Object or JsonValueKind.Array) {
+					element = doc.RootElement.Clone();
 					return true;
 				}
-			} catch (JsonReaderException) {
+			} catch (JsonException) {
 			}
-			token = JValue.CreateNull();
+			element = default;
 			return false;
 		}
 	}

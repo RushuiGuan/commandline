@@ -1,25 +1,36 @@
-using DevLab.JmesPath.Expressions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using Spectre.Console;
 using Spectre.Console.Json;
 using System.CommandLine;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+using System.Xml.Linq;
 
 namespace Albatross.CommandLine.Outputs {
 	public static class Extensions {
 		/// <summary>
-		/// Shared serializer for CLI output: camelCase property names and enums rendered as their names rather
-		/// than numeric values.
+		/// Shared serializer options for CLI output: camelCase property names, enums rendered as their names
+		/// rather than numeric values, and null properties omitted. Both instances are read-only.
 		/// </summary>
-		public static readonly JsonSerializer Serializer = JsonSerializer.Create(new JsonSerializerSettings {
-			ContractResolver = new CamelCasePropertyNamesContractResolver(),
-			Converters = {
-				new StringEnumConverter(),
-			},
-			NullValueHandling = NullValueHandling.Ignore,
-		});
+		public static readonly JsonSerializerOptions CompactSerializerOptions = CreateSerializerOptions(writeIndented: false);
+		public static readonly JsonSerializerOptions FormattedSerializerOptions = CreateSerializerOptions(writeIndented: true);
+
+		static JsonSerializerOptions CreateSerializerOptions(bool writeIndented) {
+			var options = new JsonSerializerOptions {
+				PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+				DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+				// output is read by terminals and scripts, not embedded in html
+				Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+				WriteIndented = writeIndented,
+				Converters = {
+					new JsonStringEnumConverter(),
+				},
+			};
+			options.MakeReadOnly(populateMissingResolver: true);
+			return options;
+		}
 
 		/// <summary>Spectre console bound to standard error, used when <c>Print</c> writes to stderr.</summary>
 		static readonly IAnsiConsole ErrorConsole = AnsiConsole.Create(new AnsiConsoleSettings {
@@ -27,55 +38,70 @@ namespace Albatross.CommandLine.Outputs {
 		});
 
 		/// <summary>
-		/// Renders <paramref name="value"/> to the console as syntax-highlighted JSON.  When
-		/// <paramref name="expression"/> is supplied the value is first transformed by the JmesPath expression.
-		/// A JSON object or array is printed indented; a scalar result (string, number, boolean) is written raw
-		/// so it can be piped or captured by scripts.  Set <paramref name="stderr"/> to write to standard error
-		/// instead of standard output.  Color is emitted only to a terminal — Spectre.Console strips ANSI when
-		/// the stream is redirected or piped, so a tool/AI consumer still receives plain JSON.
+		/// Renders <paramref name="value"/> to the console as syntax-highlighted JSON.  A JSON object or array is
+		/// printed indented; a scalar result (string, number, boolean) is written raw so it can be piped or
+		/// captured by scripts.  Set <paramref name="stderr"/> to write to standard error instead of standard
+		/// output.  Color is emitted only to a terminal — Spectre.Console strips ANSI when the stream is
+		/// redirected or piped, so a tool/AI consumer still receives plain JSON.
 		/// </summary>
-		public static void Print<T>(this T value, JmesPathExpression? expression, bool compact, bool stderr = false) {
+		public static void Print<T>(this T value, bool compact, bool stderr = false) {
 			if (value == null) {
 				return;
 			}
-			// Serialize to JSON text and re-parse rather than using JToken.FromObject.  FromObject preserves
-			// .NET scalars that have no JSON equivalent — Guid, DateTime, TimeSpan, Uri — as native JValue types
-			// (JTokenType.Guid, .Date, etc.) holding the boxed CLR value.  JmesPath is a JSON query language and
-			// only understands JSON types, so a Guid JValue never equals a string literal (`clientId=='...'` yields
-			// nothing) and string functions such as starts_with/length throw "Object must implement IConvertible"
-			// because System.Guid is not IConvertible.  Round-tripping through JSON text coerces those scalars to
-			// plain strings (a String JValue), which is what queries can actually match against.
-			JToken token;
-			using (var sw = new StringWriter()) {
-				using (var jw = new JsonTextWriter(sw)) {
-					Serializer.Serialize(jw, value);
+			var type = value.GetType();
+			if (ShouldPrintJson(value)) {
+				var json = JsonSerializer.Serialize(value, type, CompactSerializerOptions);
+				if (compact) {
+					(stderr ? Console.Error : Console.Out).WriteLine(json);
+				} else {
+					var console = stderr ? ErrorConsole : AnsiConsole.Console;
+					console.Write(new JsonText(json) {
+						StringStyle = stderr ? Color.Red : Style.Plain,
+						Indentation = "  "
+					});
+					console.WriteLine();
 				}
-				// DateParseHandling.None keeps ISO date/time strings as strings; otherwise JToken would re-type
-				// them back into Date JValues and reintroduce the same type-mismatch problem for date fields.
-				using (var reader = new JsonTextReader(new StringReader(sw.ToString())) {
-					DateParseHandling = DateParseHandling.None,
-				}) {
-					token = JToken.ReadFrom(reader);
-				}
-			}
-			if (expression != null) {
-				token = expression.Transform(token).AsJToken();
-			}
-			if (token is JContainer && !compact) {
-				var console = stderr ? ErrorConsole : AnsiConsole.Console;
-				var stringStyle = stderr ? Color.Red : Style.Plain;
-				console.Write(new JsonText(token.ToString(Formatting.None)) {
-					StringStyle = stringStyle,
-					Indentation = "  "
-				});
-				console.WriteLine();
 			} else {
-				// Compact: minified single-line JSON for objects/arrays. Scalars are always written raw
-				// (already single-line) so they can be captured directly by scripts.
-				var json = token is JContainer ? token.ToString(Formatting.None) : token.ToString();
-				(stderr ? Console.Error : Console.Out).WriteLine(json);
+				(stderr ? Console.Error : Console.Out).WriteLine(SerializeScalar(value, type));
 			}
 		}
+
+		static string SerializeScalar(object value, Type type) {
+			var element = JsonSerializer.SerializeToElement(value, type, CompactSerializerOptions);
+			return element.ValueKind == JsonValueKind.String ? element.GetString()! : element.GetRawText();
+		}
+
+		/// <summary>
+		/// Returns true when <paramref name="value"/> serializes to a JSON object or array, which <see cref="Print"/>
+		/// renders as formatted JSON; false for a scalar, which it writes raw. Decided from the runtime type, without
+		/// serializing, except for the JSON DOM types whose shape is only known from their content. A type with a
+		/// custom converter that writes an object is reported as false.
+		/// </summary>
+		public static bool ShouldPrintJson(object value) => value switch {
+			JsonNode node => node is JsonObject or JsonArray,
+			JsonElement element => element.ValueKind is JsonValueKind.Object or JsonValueKind.Array,
+			JsonDocument document => document.RootElement.ValueKind is JsonValueKind.Object or JsonValueKind.Array,
+			_ => CompactSerializerOptions.GetTypeInfo(value.GetType()).Kind != JsonTypeInfoKind.None,
+		};
+		public static async Task PrintAsync<T>(this T value, bool compact, CancellationToken cancellationToken, bool stderr = false) {
+			if (value == null) {
+				return;
+			}
+			var type = value.GetType();
+			var text = (ShouldPrintJson(value)
+				? JsonSerializer.Serialize(value, type, compact ? CompactSerializerOptions : FormattedSerializerOptions)
+				: SerializeScalar(value, type)).AsMemory();
+			var writer = stderr ? Console.Error : Console.Out;
+			// Console's async writes run synchronously and only check the token up front, so the text is written in
+			// slices with a check between them; that bounds how long Ctrl+C waits to one slice.
+			for (int i = 0; i < text.Length; i += PrintChunkSize) {
+				cancellationToken.ThrowIfCancellationRequested();
+				await writer.WriteAsync(text.Slice(i, Math.Min(PrintChunkSize, text.Length - i)), cancellationToken);
+			}
+			await writer.WriteLineAsync();
+		}
+
+		const int PrintChunkSize = 16 * 1024;
 
 		/// <summary>
 		/// Returns whether compact output was requested. Safe for commands that do not declare the
@@ -91,21 +117,21 @@ namespace Albatross.CommandLine.Outputs {
 		/// Prints a success <see cref="CommandOutput"/> (exit code 0) to stdout for a command that completed
 		/// successfully but has no data to return. The command key is taken from the parse result.
 		/// </summary>
-		public static void PrintSuccess(this ParseResult result, string message, JmesPathExpression? query = null) {
+		public static void PrintSuccess(this ParseResult result, string message) {
 			new CommandOutput {
 				Command = result.CommandResult.Command.GetCommandKey(),
 				ExitCode = 0,
 				Message = message,
-			}.Print(query, result.IsCompact());
+			}.Print(result.IsCompact());
 		}
 
-		public static void PrintSuccessWithData<T>(this ParseResult result, string message, T data, JmesPathExpression? query = null) {
+		public static void PrintSuccessWithData<T>(this ParseResult result, string message, T data) {
 			new CommandOutput<T> {
 				Command = result.CommandResult.Command.GetCommandKey(),
 				ExitCode = 0,
 				Message = message,
 				Data = data,
-			}.Print(query, result.IsCompact());
+			}.Print(result.IsCompact());
 		}
 
 
@@ -123,24 +149,24 @@ namespace Albatross.CommandLine.Outputs {
 		/// Prints a failure <see cref="CommandOutput"/> to stderr for a command that detected an error itself
 		/// (rather than throwing). The command key is taken from the parse result.
 		/// </summary>
-		public static int PrintError(this ParseResult result, string message, string? errorMessage = null, string? errorDetail = null, JmesPathExpression? query = null, int exitCode = 1) {
+		public static int PrintError(this ParseResult result, string message, string? errorMessage = null, string? errorDetail = null, int exitCode = 1) {
 			new CommandOutput {
 				Command = result.CommandResult.Command.GetCommandKey(),
 				Message = message,
 				ExitCode = exitCode,
 				Errors = BuildCommandHandlerErrorOutput(errorMessage, errorDetail),
-			}.Print(query, result.IsCompact(), stderr: true);
+			}.Print(result.IsCompact(), stderr: true);
 			return exitCode;
 		}
 
-		public static int PrintErrorWithData<T>(this ParseResult result, string message, T data, string? errorMessage = null, string? errorDetail = null, JmesPathExpression? query = null, int exitCode = 1) {
+		public static int PrintErrorWithData<T>(this ParseResult result, string message, T data, string? errorMessage = null, string? errorDetail = null, int exitCode = 1) {
 			new CommandOutput<T> {
 				Command = result.CommandResult.Command.GetCommandKey(),
 				ExitCode = exitCode,
 				Message = message,
 				Data = data,
 				Errors = BuildCommandHandlerErrorOutput(errorMessage, errorDetail),
-			}.Print(query, result.IsCompact(), stderr: true);
+			}.Print(result.IsCompact(), stderr: true);
 			return exitCode;
 		}
 	}

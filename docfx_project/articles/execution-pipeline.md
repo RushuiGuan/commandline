@@ -57,8 +57,8 @@ flowchart TD
     PreCheckFailure -->|Yes| Exit
     PreCheckFailure -->|No| FindOptionHandler[Find Option Handler]
     FindOptionHandler --> Execute
-    Execute --> ErrorCheck(Has Error)
-    ErrorCheck -->|Yes| SetError[Set PreAction Status<br>to Error]
+    Execute --> ErrorCheck(Threw or recorded<br>an error?)
+    ErrorCheck -->|Yes| SetError[Add Error to<br>InputActionErrors]
     ErrorCheck -->|No| Exit
     SetError --> Exit([Exit])
 ```
@@ -69,15 +69,19 @@ The main command execution follows this flow.  **The command action will only ex
 
 ```mermaid
 flowchart TD
-    Start([GlobalCommandAction]) --> PreCheck(Has PreAction<br/>Failures?)
-    PreCheck -->|Yes| Exit
+    Start([GlobalCommandAction]) --> PreCheck(Has InputAction<br/>Errors?)
+    PreCheck -->|Yes| ErrorHandler[ICommandErrorHandler]
     PreCheck -->|No| ResolveHandler[Resolve Command Handler]
-    ResolveHandler --> ExecuteHandler[Execute Command Handler]
-    ExecuteHandler --> ExceptionCheck(Unhandled<br/>Exception?)
-    ExceptionCheck -->|Yes| GlobalErrorHandler[Global Exception Handler]
+    ResolveHandler --> ResolveCheck(Resolved?)
+    ResolveCheck -->|No| ErrorHandler
+    ResolveCheck -->|Yes| ExecuteHandler[Execute Command Handler]
+    ExecuteHandler --> ExceptionCheck(Exception or<br/>Cancellation?)
+    ExceptionCheck -->|Yes| ErrorHandler
     ExceptionCheck -->|No| Exit
-    GlobalErrorHandler --> Exit([Exit])
+    ErrorHandler --> Exit([Exit])
 ```
+
+Every failure reaches the [error handler](custom-error-handler.md) as an `Error` tagged with its `ErrorSource`.
 
 ## Key Benefits of the Enhanced Pipeline
 1. **Dependency Injection Throughout**

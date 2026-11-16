@@ -6,14 +6,14 @@ The @Albatross.CommandLine.CommandContext class is designed to maintain executio
 
 - **Short-circuiting Commands**: Stop command execution early based on validation or preprocessing results
 - **Shared State**: Pass information between option handlers and command handlers
-- **Status Tracking**: Monitor the success/failure status of individual components
+- **Error Collection**: Option handler failures accumulate in `InputActionErrors` and are reported through the [error handler](custom-error-handler.md)
 - **Dependency Injection**: Fully injectable for easy testing and composition
 
 ## Primary Use Cases
 
 ### 1. Short-Circuiting Command Execution
 
-The most common use case is to stop a command from executing when an option handler detects an invalid state.  
+The most common use case is to stop a command from executing when an option handler detects an invalid state. Record the failure with `SetInputActionError`: the command handler is skipped, and the recorded errors are passed to the registered `ICommandErrorHandler` with `ErrorSource.OptionHandler`. Throwing from the option handler has the same effect, with the exception attached to the error.
 
 ```csharp
 public class VerifyApiKeyHandler : IAsyncOptionHandler<ApiKeyOption> {
@@ -26,24 +26,18 @@ public class VerifyApiKeyHandler : IAsyncOptionHandler<ApiKeyOption> {
     }
     
     public async Task InvokeAsync(ApiKeyOption option, ParseResult result, CancellationToken cancellationToken) {
-        var apiKey = result.GetValueForOption(option);
+        var apiKey = result.GetValue(option);
         
         if (string.IsNullOrEmpty(apiKey)) {
-            _context.SetResult(1, new OptionHandlerStatus(
-                optionName: option.Name, 
-                success: false, 
-                message: "API key is required but not provided"
-            ));
+            _context.SetInputActionError(new Error(ErrorSource.OptionHandler, option.Name,
+                "API key is required but not provided", null));
             return; // Command handler will not execute
         }
         
         var isValid = await _apiService.ValidateKeyAsync(apiKey, cancellationToken);
         if (!isValid) {
-            _context.SetResult(1, new OptionHandlerStatus(
-                optionName: option.Name, 
-                success: false, 
-                message: "Invalid API key provided"
-            ));
+            _context.SetInputActionError(new Error(ErrorSource.OptionHandler, option.Name,
+                "Invalid API key provided", null));
         }
     }
 }
@@ -74,7 +68,7 @@ public class MyCommandHandler : BaseHandler<MyCommandParams> {
     readonly Config _config;
     public MyCommandHandler(ParseResult result, MyCommandParams parameters, ICommandContext context) 
         : base(result, parameters) {
-        this._config = context.GetRequiredValue("--config-file");
+        this._config = context.GetRequiredValue<Config>("--config-file");
     }
     
     public override async Task<int> InvokeAsync(CancellationToken cancellationToken) {
@@ -114,5 +108,4 @@ public class TrackerHandler : IAsyncOptionHandler<TrackerOption, Tracker> {
 ```
 
 > [!NOTE]
-> You do not need to manually dispose values stored in the `CommandContext`. The disposal is handled automatically when the command execution pipeline completes
-```
+> You do not need to manually dispose values stored in the `CommandContext`. The disposal is handled automatically when the command execution pipeline completes.

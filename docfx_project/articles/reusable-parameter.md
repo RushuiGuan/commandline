@@ -22,9 +22,9 @@ using System.IO;
 public class InputDirectoryOption : Option<DirectoryInfo> {
 	public InputDirectoryOption(string name, params string[] aliases) : base(name, aliases) {
 		Description = "Specify an existing input directory";
-		this.AddValidator(result => {
-			if (result.GetValueForOption(this) is DirectoryInfo directory && !directory.Exists) {
-				result.ErrorMessage = $"Input directory {directory.FullName} does not exist";
+		this.Validators.Add(result => {
+			if (result.GetValue(this) is DirectoryInfo directory && !directory.Exists) {
+				result.AddError($"Input directory {directory.FullName} does not exist");
 			}
 		});
 	}
@@ -46,9 +46,9 @@ using System.IO;
 public class InputDirectoryArgument : Argument<DirectoryInfo> {
 	public InputDirectoryArgument(string name) : base(name) {
 		Description = "Specify an existing input directory";
-		this.AddValidator(result => {
-			if (result.GetValueForArgument(this) is DirectoryInfo directory && !directory.Exists) {
-				result.ErrorMessage = $"Input directory {directory.FullName} does not exist";
+		this.Validators.Add(result => {
+			if (result.GetValue(this) is DirectoryInfo directory && !directory.Exists) {
+				result.AddError($"Input directory {directory.FullName} does not exist");
 			}
 		});
 	}

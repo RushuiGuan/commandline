@@ -11,7 +11,8 @@ A skill is a set of instructions that teaches Claude Code how to perform specifi
 - Defining subcommand hierarchies
 - Creating reusable option and argument types
 - Adding async option pre-processing and validation
-- Configuring logging and JSON configuration
+- Printing results as JSON through the Outputs package
+- Configuring file-based logging and JSON configuration
 
 ## Installation
 
@@ -77,8 +78,9 @@ The skill guides you to the right package for each scenario:
 
 | Package | Purpose |
 |---------|---------|
-| `Albatross.CommandLine` | Core runtime — always required |
-| `Albatross.CommandLine.Defaults` | Pre-configured Serilog + JSON config (`WithDefaults()`) |
+| `Albatross.CommandLine` | Core runtime and bundled source generator — always required |
+| `Albatross.CommandLine.Defaults` | `appsettings.json` config + file-based Serilog logging (`WithDefaults()`) |
+| `Albatross.CommandLine.Outputs` | `CommandOutput` envelope, JSON `Print`, `--compact`, `GlobalErrorHandler` |
 | `Albatross.CommandLine.Inputs` | Pre-built validated option/argument types for files and directories |
 | `Albatross.CommandLine.CodeAnalysis` | Roslyn analyzers for best practices |
 
@@ -91,7 +93,7 @@ await using var host = new CommandHost("My App Name")
     .RegisterServices(RegisterServices)
     .AddCommands()      // source-generated
     .Parse(args)
-    .WithDefaults()     // optional — must come after Parse()
+    .WithDefaults()     // optional — config + file logging
     .Build();
 return await host.InvokeAsync();
 ```
@@ -163,9 +165,9 @@ Define once, use across many commands. The skill generates the correct construct
 public class InputDirectoryOption : Option<DirectoryInfo> {
     public InputDirectoryOption(string name, params string[] aliases) : base(name, aliases) {
         Description = "Specify an existing input directory";
-        AddValidator(result => {
-            if (result.GetValueForOption(this) is DirectoryInfo dir && !dir.Exists)
-                result.ErrorMessage = $"Directory {dir.FullName} does not exist";
+        Validators.Add(result => {
+            if (result.GetValue(this) is DirectoryInfo dir && !dir.Exists)
+                result.AddError($"Directory {dir.FullName} does not exist");
         });
     }
 }
@@ -199,7 +201,7 @@ public class ApiKeyValidator : IAsyncOptionHandler<ApiKeyOption> {
     public async Task InvokeAsync(ApiKeyOption option, ParseResult result,
         CancellationToken cancellationToken) {
         if (!await auth.IsValidAsync(result.GetValue(option), cancellationToken))
-            context.SetInputActionStatus(new OptionHandlerStatus(option.Name, false, "Invalid API key"));
+            context.SetInputActionError(new Error(ErrorSource.OptionHandler, option.Name, "Invalid API key", null));
     }
 }
 ```
@@ -218,7 +220,25 @@ public record class GetPriceParams {
 }
 ```
 
-Option handlers run before the command handler. If any handler marks the context as failed, the command handler is skipped.
+Option handlers run before the command handler. If any handler records an error or throws, the command handler is skipped and the error is reported through the registered `ICommandErrorHandler`.
+
+### Output (`Albatross.CommandLine.Outputs`)
+
+The skill prints command results through the Outputs package, so stdout carries a stable JSON contract:
+
+```csharp
+[Verb<GetWidgetsHandler>("get widgets")]
+public record class GetWidgetsParams {
+    [UseOption<CompactOption>]
+    public bool Compact { get; init; }
+}
+
+// in the handler
+var widgets = await service.GetAll(cancellationToken);
+widgets.Print(parameters.Compact);
+```
+
+For large results, or output a program parses, it uses `await widgets.PrintAsync(parameters.Compact, cancellationToken)`, which Ctrl+C can interrupt. It registers `GlobalErrorHandler` so failures reach stderr in the same `CommandOutput` envelope, and keeps diagnostics in `ILogger` (a log file with `WithDefaults()`), never on stdout.
 
 ### Built-in Inputs (`Albatross.CommandLine.Inputs`)
 
@@ -231,8 +251,9 @@ The skill knows to use these pre-built types instead of writing custom ones:
 | `OutputFileOption` | For output file paths |
 | `OutputDirectoryOption` / `OutputDirectoryArgument` | For output directory paths |
 | `OutputDirectoryWithAutoCreateOption` | Auto-creates directory if missing |
-| `FormatExpressionOption` | For format string inputs |
 | `TimeZoneOption` | For timezone name inputs |
+| `ConfirmOption` | Prompts for confirmation before proceeding |
+| `TrackerOption` | Records processed items so a rerun skips them |
 
 ## Tips for Best Results
 
