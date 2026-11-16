@@ -1,3 +1,5 @@
+// Adapted from System.CommandLine's ProcessTerminationHandler.
+// Copyright (c) .NET Foundation and Contributors. Licensed under the MIT license; see third-party.txt.
 using System;
 using System.CommandLine;
 using System.Threading;
