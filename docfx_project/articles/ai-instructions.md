@@ -6,7 +6,7 @@ This document provides condensed guidance for AI agents working with the Albatro
 
 **Albatross.CommandLine** is a .NET library that simplifies CLI application development by wrapping `System.CommandLine` with automatic code generation and dependency injection. It uses Roslyn incremental source generators to create command infrastructure from annotated classes.
 
-**Requirements:** System.CommandLine 3.0 (prerelease), Microsoft.Extensions.Hosting 10.x. The core library targets `netstandard2.1` and `net10.0`; create new CLI apps on `net10.0`. v9 is published on the prerelease channel until System.CommandLine v3 reaches GA.
+**Requirements:** System.CommandLine 3.0, Microsoft.Extensions.Hosting 10.x. The core library targets `netstandard2.1` and `net10.0`; create new CLI apps on `net10.0`.
 
 **Stance:** the library provides capabilities, not policies. It adds no global options, no console logging and no output format by default — `stdout`/`stderr` belong to the command.
 
@@ -101,14 +101,14 @@ public record class GetWidgetsParams {
 
 // in the handler
 var widgets = await service.GetAll(cancellationToken);
-widgets.Print(parameters.Compact);              // indented, colored on a TTY; plain when piped
-await widgets.PrintAsync(parameters.Compact, cancellationToken); // no color; Ctrl+C stops it; always valid JSON
+widgets.Print(parameters.Compact);              // indented, colored on a TTY; plain JSON when piped
+await widgets.PrintAsync(parameters.Compact, cancellationToken); // no color; Ctrl+C stops it
 
 result.PrintSuccess("deleted widget 42");       // CommandOutput envelope to stdout
 return result.PrintError("widget not found");   // CommandOutput envelope to stderr, returns 1
 ```
 
-Prefer `PrintAsync` for large or unbounded results and for output a program parses; let its `OperationCanceledException` propagate. `Print`'s indented output is rendered by Spectre, which wraps long lines even when redirected and can break a JSON string.
+Prefer `PrintAsync` for large or unbounded results; let its `OperationCanceledException` propagate. Outputs uses reflection-based `System.Text.Json` and does not work under Native AOT or trimming (its print methods carry `[RequiresUnreferencedCode]`/`[RequiresDynamicCode]`); do not set `PublishAot=true` in an app that uses it.
 
 Results are serialized with `System.Text.Json`: use `System.Text.Json.Serialization` attributes on result types. There is no built-in query option; callers shape output with `jq`.
 

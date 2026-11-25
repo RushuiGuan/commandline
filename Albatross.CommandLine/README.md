@@ -75,8 +75,8 @@ public class HelloWorldCommandHandler : IAsyncCommandHandler {
 Usage: `dotnet run -- hello --name test`
 
 ## Dependencies
-- **System.CommandLine 2.0.1+**
-- **Microsoft.Extensions.Hosting 8.0.1+**
+- **System.CommandLine 3.0.0+**
+- **Microsoft.Extensions.Hosting 10.0.15+**
 
 ## Prerequisites
 - **C# Compiler 4.10.0+** (included with .NET 8 SDK)

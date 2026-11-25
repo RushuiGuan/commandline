@@ -16,9 +16,12 @@ stable tag are tracked in one place.
 ## Design
 
 - Follows the prerelease gate in [Key Design Decisions](project.md#key-design-decisions)
-  ("v9 ships as prerelease until System.CommandLine v3 reaches GA") and the matching constraint in
-  [Dependencies & Constraints](project.md#dependencies--constraints): every 9.0.0 build before v3 GA
-  is an `rc`.
+  ("v9 ships as prerelease until it references only stable dependencies") and the matching
+  constraint in [Dependencies & Constraints](project.md#dependencies--constraints): every 9.0.0 build
+  that references a prerelease package is an `rc`.
+- Microsoft package versions follow "Microsoft package references track the latest patch of the
+  newest TFM's major" in [Key Design Decisions](project.md#key-design-decisions): latest 10.x, not
+  11.x.
 - The checklist follows the existing CI flow rather than adding release scripts: `main` is the work
   branch, `rc` produces candidates, tags promote. Steps CI already enforces (version format, rc
   number, branch provenance) are listed only so a red run is understood, not checked by hand.
@@ -94,13 +97,16 @@ failing test stops the publish. The workflow logic lives in `RushuiGuan/devops`
       `git tag v9.0.0-rc.N <commit> && git push origin v9.0.0-rc.N`.
 - [ ] The packages are listed on nuget.org, and a GitHub prerelease exists for the tag.
 - [ ] Update the user-level `alba-cli-upgrade` skill if it pins an RC version (it currently pins
-      `9.0.0-rc.284`).
+      `9.0.0-rc.284`; the latest tagged RC is `9.0.0-rc.294`).
 
 ### 4. Stable 9.0.0
 
-- [ ] System.CommandLine v3 is GA, and every `.csproj` references the stable version. A stable
-      package cannot depend on a prerelease one.
-- [ ] Remove prerelease wording from the release notes, `whats-new-v9.md` and the package READMEs.
+- [ ] Every `.csproj` references only stable packages. A stable package cannot depend on a
+      prerelease one. (System.CommandLine is at `3.0.0`; tick once that change is pushed.)
+- [ ] Microsoft runtime packages (`Microsoft.Extensions.*`) are on the latest 10.x patch, not 11.x.
+- [x] Remove prerelease wording from the release notes, `whats-new-v9.md` and the package READMEs.
+      Done 2026-11-24, along with `ai-instructions.md`, `outputs-library.md`, `defaults-library.md`
+      and the `alba-cli` skill. These pages go live on the next `main` push.
 - [ ] A `production` branch exists, and contains the commit to release.
 - [ ] `git tag v9.0.0 <commit> && git push origin v9.0.0`
 - [ ] The packages are listed on nuget.org, and a GitHub release exists for the tag.
@@ -109,24 +115,33 @@ failing test stops the publish. The workflow logic lives in `RushuiGuan/devops`
 
 ### Open items before stable 9.0.0
 
-- [ ] **Stable release is gated on System.CommandLine v3 GA.** The core references
-      `3.0.0-rc.3.26522.148`.
+Status as of 2026-11-24: the latest RC is `v9.0.0-rc.294`, tagged on `main` HEAD (`b0c1e05`), and
+`main` is in sync with `origin/main`.
+
+- [x] **System.CommandLine v3 GA.** The core references `3.0.0` (uncommitted as of 2026-11-24,
+      together with Microsoft.Extensions 10.0.15 and SourceLink 11.0.100); both CI test projects
+      pass in Release on SDK 10.0.301.
 - [ ] There is no `production` branch yet, locally or on `origin` (needed for section 4).
-- [ ] Merge `preaction-ctrlc-workaround`. It carries the Ctrl+C fix for option handlers and the
-      first `third-party.txt` entry.
-- [ ] Send the upstream fix for dotnet/command-line-api#2836, and remove `PreActionTerminationHandler`
-      (and its `third-party.txt` entry) once a fixed System.CommandLine ships. See
+- [x] Merge `preaction-ctrlc-workaround`: landed on `main` as `971e7a2` (Ctrl+C fix for option
+      handlers) and `aa3f3bb` (`third-party.txt`); both are in `rc.294`.
+- [x] dotnet/command-line-api#2836: not a blocker, no action planned. The bug ships in
+      System.CommandLine 3.0.0 and our `PreActionTerminationHandler` workaround stays. Remove it (and
+      its `third-party.txt` entry) only if a later System.CommandLine release fixes the bug. See
       [scommandline-preaction-cancellation-bug.md](scommandline-preaction-cancellation-bug.md).
-- [ ] `Albatross.CommandLine/README.md` lists "System.CommandLine 2.0.1+"; the project references
-      `3.0.0-rc.3`.
-- [ ] `docfx_project/articles/defaults-library.md` still states Hosting 8.0.1 and a `net8.0` target.
-- [ ] `Print`'s indented output can be invalid JSON when redirected (Spectre wraps long lines at
-      console width). Fix it, or accept and keep the documented workaround (`--compact` or
-      `PrintAsync`).
-- [ ] Outputs relies on reflection-based `System.Text.Json`, so it fails in Native AOT or trimmed
-      apps while the core is marked AOT-compatible. Fix it or document the limitation.
+- [x] `Albatross.CommandLine/README.md` and `docfx_project/index.md` list System.CommandLine 3.0.0
+      and Hosting 10.0.15; the index's package table drops CodeGen and adds Outputs.
+- [x] `docfx_project/articles/defaults-library.md` and the Defaults README list the current
+      dependency versions and the `net10.0` target.
+- [x] `Print`'s indented output was invalid JSON when redirected (Spectre wrapped long strings at its
+      80-column fallback width). Fixed: when the stream is redirected, `Print` writes plain indented
+      JSON directly. Covered by `Extensions_Print.Redirected_LongStringStaysValidJson`.
+- [x] Outputs relies on reflection-based `System.Text.Json`, so it fails in Native AOT or trimmed
+      apps (including .NET 10 file-based apps, which default to `PublishAot=true`). Documented, and
+      the public print methods and the `GlobalErrorHandler` constructor carry
+      `[RequiresUnreferencedCode]`/`[RequiresDynamicCode]`; an AOT app gets IL2026/IL3050 at each
+      call site (verified). Registering `GlobalErrorHandler` through DI does not warn.
 - [x] Decide the status of [cancellable-print-output.tsk.md](completed/cancellable-print-output.tsk.md):
       completed — `PrintAsync` is the interruptible path; `Print` stays colored.
-- [ ] Push `main`: it is one commit ahead of `origin/main` (the Outputs move to System.Text.Json).
+- [x] Push `main` with the Outputs move to System.Text.Json (`ba5c5de`): pushed, and in `rc.294`.
 
 ## Conclusion

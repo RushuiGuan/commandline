@@ -59,13 +59,13 @@ To change verbosity, drop a `Serilog` section into `appsettings.json` (in `Confi
 
 ## Dependencies
 
-- **Albatross.Config** (8.0.0-rc.51): application paths (`IApplicationPath`), configuration, and environment handling.
-- **Serilog** (4.3.0), **Serilog.Extensions.Hosting** (8.0.0), **Serilog.Settings.Configuration** (8.0.4), **Serilog.Sinks.File** (6.0.0), **Serilog.Enrichers.Thread** (4.0.0): file logging configured directly against Serilog.
-- **Microsoft.Extensions.Hosting** (8.0.1), **Microsoft.Extensions.DependencyInjection** (8.0.1): host builder and service container.
+- **Albatross.Config** (8.0.2): application paths (`IApplicationPath`), configuration, and environment handling.
+- **Serilog** (4.4.0), **Serilog.Extensions.Hosting** (10.0.0), **Serilog.Settings.Configuration** (10.0.1), **Serilog.Sinks.File** (7.0.0), **Serilog.Enrichers.Thread** (4.0.0): file logging configured directly against Serilog.
+- **Microsoft.Extensions.Hosting** (10.0.15), **Microsoft.Extensions.DependencyInjection** (10.0.15): host builder and service container.
 
 ## Prerequisites
 
-- **.NET 8** (`net8.0`) or newer.
+- **.NET 10** (`net10.0`) or newer.
 - Registering an `IApplicationPath` before the host is built is optional — it controls where logs are written. If none is registered, `WithSerilog()` falls back to a `DefaultApplicationPath` that logs to a `log` folder under the application base directory.
 
 ## Documentation

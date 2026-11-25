@@ -50,6 +50,15 @@ namespace Albatross.CommandLine.Test {
 		}
 
 		[Fact]
+		public void Redirected_LongStringStaysValidJson() {
+			Assert.True(Console.IsOutputRedirected, "the test host is expected to redirect stdout");
+			var description = new string('x', 200);
+			var output = Capture(new Widget(1, description, DayOfWeek.Monday), compact: false);
+			Assert.Equal(description, JsonNode.Parse(output)!["name"]!.GetValue<string>());
+			Assert.Contains("\n", output);
+		}
+
+		[Fact]
 		public void NullValue_PrintsNothing() {
 			Assert.Equal("", Capture(null, compact: true));
 		}

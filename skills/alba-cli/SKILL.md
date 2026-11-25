@@ -39,14 +39,13 @@ logging is opt-in and goes to a file; structured output is opt-in through the Ou
 Do **not** reference `Albatross.CommandLine.CodeGen` — the generator ships inside the core package,
 and a separate reference loads it twice.
 
-Install (v9 is published on the prerelease channel until System.CommandLine v3 reaches GA; keep every
-`Albatross.CommandLine.*` package on the same version):
+Install (keep every `Albatross.CommandLine.*` package on the same version):
 ```
 dotnet new console -n MyCliApp --framework net10.0
-dotnet add package Albatross.CommandLine --prerelease
-dotnet add package Albatross.CommandLine.Defaults --prerelease   # optional
-dotnet add package Albatross.CommandLine.Outputs --prerelease    # optional
-dotnet add package Albatross.CommandLine.Inputs --prerelease     # optional
+dotnet add package Albatross.CommandLine
+dotnet add package Albatross.CommandLine.Defaults   # optional
+dotnet add package Albatross.CommandLine.Outputs    # optional
+dotnet add package Albatross.CommandLine.Inputs     # optional
 ```
 
 Always use `--framework net10.0` when creating new CLI projects.
@@ -295,13 +294,14 @@ public class GetWidgetsHandler : BaseHandler<GetWidgetsParams> {
 ```
 
 - **`value.Print(compact, stderr: false)`** — objects and arrays print as indented, colored JSON on a
-  terminal (ANSI is stripped automatically when piped); `--compact` gives single-line JSON; scalars
+  terminal and as plain indented JSON when redirected or piped; `--compact` gives single-line JSON; scalars
   print raw so scripts can capture them, formatted as JSON values (`true`, `2026-11-16`), not `ToString()`.
 - **`await value.PrintAsync(compact, cancellationToken)`** — same output decisions, no color. Prefer it
-  for large or unbounded results and for output a program parses: it writes in slices and stops on
-  Ctrl+C (throwing `OperationCanceledException` — let it propagate), and its indented output is always
-  valid JSON. `Print`'s indented output goes through Spectre, which wraps long lines even when
-  redirected and can break a JSON string.
+  for large or unbounded results: it writes in slices and stops on Ctrl+C (throwing
+  `OperationCanceledException` — let it propagate).
+- Outputs uses reflection-based `System.Text.Json` and does not work under Native AOT or trimming; its
+  print methods carry `[RequiresUnreferencedCode]`/`[RequiresDynamicCode]`. Do not set `PublishAot=true`
+  in an app that uses it (.NET 10 file-based apps turn it on by default).
 - **Commands that report an outcome rather than data** — `result.PrintSuccess("deleted widget 42")`,
   `result.PrintSuccessWithData(message, data)`, and `return result.PrintError(message, errorMessage)`.
   These emit a `CommandOutput` envelope (`command`, `message`, `exitCode`, `errors`, `data`) — success

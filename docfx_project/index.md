@@ -78,8 +78,8 @@ public class HelloWorldCommandHandler : IAsyncCommandHandler {
 Usage: `dotnet run -- hello --name test`
 
 ## Dependencies
-- **System.CommandLine 2.0.1+**
-- **Microsoft.Extensions.Hosting 8.0.1+**
+- **System.CommandLine 3.0.0+**
+- **Microsoft.Extensions.Hosting 10.0.15+**
 
 ## Prerequisites
 - **C# Compiler 4.10.0+** (included with .NET 8 SDK)
@@ -91,9 +91,9 @@ Usage: `dotnet run -- hello --name test`
 |Name|Version|
 |-|-|
 |`Albatross.CommandLine`|[![NuGet Version](https://img.shields.io/nuget/v/Albatross.CommandLine)](https://www.nuget.org/packages/Albatross.CommandLine)|
-|`Albatross.CommandLine.CodeGen`|[![NuGet Version](https://img.shields.io/nuget/v/Albatross.CommandLine.CodeGen)](https://www.nuget.org/packages/Albatross.CommandLine.CodeGen)|
 |`Albatross.CommandLine.Defaults`|[![NuGet Version](https://img.shields.io/nuget/v/Albatross.CommandLine.Defaults)](https://www.nuget.org/packages/Albatross.CommandLine.Defaults)|
 |`Albatross.CommandLine.Inputs`|[![NuGet Version](https://img.shields.io/nuget/v/Albatross.CommandLine.Inputs)](https://www.nuget.org/packages/Albatross.CommandLine.Inputs)|
+|`Albatross.CommandLine.Outputs`|[![NuGet Version](https://img.shields.io/nuget/v/Albatross.CommandLine.Outputs)](https://www.nuget.org/packages/Albatross.CommandLine.Outputs)|
 |`Albatross.CommandLine.CodeAnalysis`|[![NuGet Version](https://img.shields.io/nuget/v/Albatross.CommandLine.CodeAnalysis)](https://www.nuget.org/packages/Albatross.CommandLine.CodeAnalysis)|
 
 ## For AI Agents

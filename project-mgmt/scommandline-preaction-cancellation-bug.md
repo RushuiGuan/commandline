@@ -127,10 +127,13 @@ be hard-killed mid-run.
 ## Status
 
 Filed upstream as [dotnet/command-line-api#2836](https://github.com/dotnet/command-line-api/issues/2836)
-on 2026-07-13. As of 2026-11-16 it has no response, labels or assignee, and the bug is still present
-on upstream `main` (`InvocationPipeline.cs` creates the `ProcessTerminationHandler` after the
-pre-action loop; the file is unchanged since April 2026). The repository triages few issues; fixes
-land through pull requests.
+on 2026-07-13. As of 2026-11-24 it is still open with no response, labels, assignee or linked pull
+request. The bug ships in the stable `System.CommandLine` 3.0.0: upstream `InvocationPipeline.cs`
+still creates the `ProcessTerminationHandler` after the pre-action loop, and the file is unchanged
+since 2026-04-09.
+
+No action is planned on our side. The workaround below stays in Albatross.CommandLine 9.0.0 and is
+not a release blocker.
 
 ## Workaround in Albatross.CommandLine
 

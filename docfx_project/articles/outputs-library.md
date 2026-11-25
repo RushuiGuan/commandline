@@ -20,7 +20,7 @@ Output strategy is an opinion, so it lives outside the dependency-light core. It
 ## Quick Start
 
 ```bash
-dotnet add package Albatross.CommandLine.Outputs --prerelease
+dotnet add package Albatross.CommandLine.Outputs
 ```
 
 Add `--compact` to a command's parameters and print the result:
@@ -88,8 +88,8 @@ Raw scalars let a script capture a single value directly: `id=$(myapp create wid
 |---|---|---|
 | Color | Syntax-highlighted on a terminal | None |
 | Ctrl+C while printing | Not interruptible: the process waits for the render to finish | Stops within one 16K-character slice |
-| Indented output when redirected | Can be **invalid JSON** — see below | Always valid JSON |
-| Typical use | Small results read by a person | Large or unbounded results, and output read by programs |
+| Indented output when redirected | Valid JSON | Valid JSON |
+| Typical use | Results read by a person | Large or unbounded results |
 
 ```csharp
 public override async Task<int> InvokeAsync(CancellationToken cancellationToken) {
@@ -101,8 +101,13 @@ public override async Task<int> InvokeAsync(CancellationToken cancellationToken)
 
 When Ctrl+C cancels the token, `PrintAsync` throws `OperationCanceledException`. Let it propagate: the pipeline reports it as a cancellation through the [error handler](custom-error-handler.md) (`GlobalErrorHandler` exits with 130). Output stops mid-document, so `stdout` holds truncated JSON — a consumer of a cancelled command must check the exit code. Serialization happens before the first slice is written and is not interruptible.
 
-> [!IMPORTANT]
-> **`Print`'s indented output is not safe to parse.** It is rendered by Spectre.Console, which wraps long lines at the console width even when the output is redirected; a wrap inside a JSON string breaks the JSON. When a program reads the output, use `--compact` or `PrintAsync`, both of which write directly to the stream.
+On a terminal, `Print` renders through Spectre.Console, which wraps long lines at the window width for display. When the output is redirected or piped, `Print` writes plain indented JSON directly to the stream instead, so the result is always parseable.
+
+### Native AOT and trimming
+
+The package serializes with reflection-based `System.Text.Json`, so it does not work in Native AOT or trimmed apps. In an app with `PublishAot=true` the first call fails with `InvalidOperationException: Reflection-based serialization has been disabled`, even under `dotnet run`. `Print`, `PrintAsync`, the `PrintSuccess`/`PrintError` helpers and the `GlobalErrorHandler` constructor are marked `[RequiresUnreferencedCode]` and `[RequiresDynamicCode]`, so such an app gets IL2026/IL3050 build warnings at each call site.
+
+.NET 10 file-based apps (`dotnet run app.cs`) enable `PublishAot` by default; add `#:property PublishAot=false` to use this package from one.
 
 ## The `CommandOutput` Envelope
 

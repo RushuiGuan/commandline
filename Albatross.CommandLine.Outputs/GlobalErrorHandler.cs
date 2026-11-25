@@ -1,8 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 
 namespace Albatross.CommandLine.Outputs {
 	public class GlobalErrorHandler : ICommandErrorHandler {
 		protected readonly ICommandContext context;
 
+		[RequiresUnreferencedCode(Extensions.ReflectionSerializationMessage)]
+		[RequiresDynamicCode(Extensions.ReflectionSerializationMessage)]
 		public GlobalErrorHandler(ICommandContext context) {
 			this.context = context;
 		}

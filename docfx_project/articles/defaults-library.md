@@ -6,12 +6,12 @@ The `Albatross.CommandLine.Defaults` package provides pre-configured integration
 
 ### The Core Library: Maximum Compatibility
 
-The main `Albatross.CommandLine` library is designed with **broad compatibility** as its primary goal. It targets .NET Standard 2.1 and keeps its dependency surface small:
+The main `Albatross.CommandLine` library is designed with **broad compatibility** as its primary goal. It multi-targets `netstandard2.1` and `net10.0` and keeps its dependency surface small:
 
 ```xml
 <!-- Albatross.CommandLine dependencies -->
-<PackageReference Include="System.CommandLine" Version="3.0.0-preview.5.26302.115" />
-<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+<PackageReference Include="System.CommandLine" Version="3.0.0" />
+<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.15" />
 ```
 
 This approach ensures that:
@@ -19,12 +19,9 @@ This approach ensures that:
 - Version conflicts with other dependencies in your project are minimized
 - The library integrates smoothly into existing projects with established dependency trees
 
-> [!NOTE]
-> Because v9 references the **System.CommandLine v3 prerelease**, `Albatross.CommandLine` v9 is published on the prerelease channel until System.CommandLine v3 reaches GA. The v8.x line remains the current stable release for consumers who cannot take a prerelease dependency.
-
 ### The Defaults Library: Opinionated Integrations
 
-In contrast, `Albatross.CommandLine.Defaults` is **opinionated**. It targets `net8.0` and pulls in the heavier integrations (Serilog, `Albatross.Config`) that the core deliberately leaves out, so the core stays dependency-light while applications that want batteries-included setup get it with one call.
+In contrast, `Albatross.CommandLine.Defaults` is **opinionated**. It targets `net10.0` and pulls in the heavier integrations (Serilog, `Albatross.Config`) that the core deliberately leaves out, so the core stays dependency-light while applications that want batteries-included setup get it with one call.
 
 **The trade-off is intentional**: if you have strict dependency version requirements, or want a different logging framework, use the core `Albatross.CommandLine` library directly and configure services yourself. If you are building a CLI application and want sensible defaults, use `Albatross.CommandLine.Defaults`.
 
@@ -210,14 +207,14 @@ The Defaults package brings in these libraries:
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| [Albatross.Config](https://github.com/RushuiGuan/config/tree/main/Albatross.Config) | 8.0.0-rc.51 | Application paths (`IApplicationPath`), configuration, environment handling |
-| Serilog | 4.3.0 | Structured logging core |
-| Serilog.Extensions.Hosting | 8.0.0 | `UseSerilog` host integration |
-| Serilog.Settings.Configuration | 8.0.4 | `ReadFrom.Configuration` support |
-| Serilog.Sinks.File | 6.0.0 | Rolling-file sink |
+| [Albatross.Config](https://github.com/RushuiGuan/config/tree/main/Albatross.Config) | 8.0.2 | Application paths (`IApplicationPath`), configuration, environment handling |
+| Serilog | 4.4.0 | Structured logging core |
+| Serilog.Extensions.Hosting | 10.0.0 | `UseSerilog` host integration |
+| Serilog.Settings.Configuration | 10.0.1 | `ReadFrom.Configuration` support |
+| Serilog.Sinks.File | 7.0.0 | Rolling-file sink |
 | Serilog.Enrichers.Thread | 4.0.0 | `WithThreadId` enricher |
-| Microsoft.Extensions.Hosting | 8.0.1 | Host builder abstractions |
-| Microsoft.Extensions.DependencyInjection | 8.0.1 | Service container integration |
+| Microsoft.Extensions.Hosting | 10.0.15 | Host builder abstractions |
+| Microsoft.Extensions.DependencyInjection | 10.0.15 | Service container integration |
 
 > [!NOTE]
 > v9 configures Serilog **directly** — the `Albatross.Logging` dependency used in v8 has been removed.

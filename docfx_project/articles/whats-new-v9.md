@@ -4,9 +4,6 @@ v9 is a **breaking major release**. After v8 stabilized and was used across seve
 
 This article explains what changed and, more importantly, *why*. For task-level how-to, follow the links in each section.
 
-> [!IMPORTANT]
-> **v9 ships as a prerelease.** Because it depends on the System.CommandLine v3 prerelease, v9 is published only on the prerelease channel (e.g. `9.0.0-preview.*`). A stable `9.0.0` cannot ship until System.CommandLine v3 reaches GA (expected ~November 2026). **v8.x remains the current stable line** for consumers who cannot take a prerelease dependency.
-
 ## The theme: the library sets fewer defaults
 
 The unifying idea behind v9 is that a library should provide **capabilities, not policies**. v8 made several decisions on the consumer's behalf — every CLI got a `--verbosity` option, logging went to the console, output was ad-hoc. Those are convenient until they are wrong, and when they are wrong they are hard to opt out of. v9 removes the imposed policies and lets each application choose.
@@ -23,9 +20,9 @@ The unifying idea behind v9 is that a library should provide **capabilities, not
 
 ## 2. System.CommandLine v3
 
-**What changed:** The core library moves from `System.CommandLine` 2.0.2 to the 3.0 prerelease, and now multi-targets `netstandard2.1;net10.0` (tracking System.CommandLine's own target frameworks — a netstandard floor for reach plus a modern `net10.0` leg). The `net10.0` leg is AOT/trim-analyzed (`IsAotCompatible`).
+**What changed:** The core library moves from `System.CommandLine` 2.0.2 to 3.0, and now multi-targets `netstandard2.1;net10.0` (tracking System.CommandLine's own target frameworks — a netstandard floor for reach plus a modern `net10.0` leg). The `net10.0` leg is AOT/trim-analyzed (`IsAotCompatible`).
 
-**Why:** A major version bump already signals breaking change to consumers, so it is the right moment to adopt the next System.CommandLine line. A source-level comparison found **no breaking changes to Albatross's usage** — at the API level the migration currently looks like a reference bump. System.CommandLine v3 itself ships `netstandard2.0` + `net10.0`; core keeps a `netstandard2.1` floor for broad reach and adds a `net10.0` leg to match v3's modern target, so the broad-compatibility stance holds. (The prerelease API can still shift before GA; this is re-verified as it evolves.)
+**Why:** A major version bump already signals breaking change to consumers, so it is the right moment to adopt the next System.CommandLine line. The move required **no changes to Albatross's usage** of the System.CommandLine API. System.CommandLine v3 itself ships `netstandard2.0` + `net10.0`; core keeps a `netstandard2.1` floor for broad reach and adds a `net10.0` leg to match v3's modern target, so the broad-compatibility stance holds.
 
 ## 3. File-based logging in `Albatross.CommandLine.Defaults`
 
@@ -64,9 +61,9 @@ The package also ships a simplified, dependency-light, **opt-in** `GlobalErrorHa
 
 ## 6. Dependency stance: System.CommandLine v3 and Hosting 10.x
 
-**What changed:** Core moves to `System.CommandLine` v3 (prerelease) and raises `Microsoft.Extensions.Hosting`/`DependencyInjection` to **10.x** (10.0.9); `Albatross.CommandLine.Defaults` matches.
+**What changed:** Core moves to `System.CommandLine` 3.0 and raises `Microsoft.Extensions.Hosting`/`DependencyInjection` to **10.x**; `Albatross.CommandLine.Defaults` matches.
 
-**Why:** The original v9 plan held Hosting at 8.0.1 to avoid raising the transitive floor and forcing consumers onto Hosting v10. That was reversed: .NET 8 reaches EOL in Nov 2026 (≈ v9's own GA timing) and .NET 9 is already EOL, so the runtimes this library targets are moving to 10.x regardless. **Trade-off accepted:** because core still ships the `netstandard2.1` leg, a net8/net9 consumer resolving that asset is pulled up to Hosting 10.x — acceptable given those runtimes are EOL/near-EOL. Core builds clean on both the `netstandard2.1` and `net10.0` legs with Hosting 10.x (which still ships a netstandard-compatible asset).
+**Why:** Microsoft package references follow the major version of the newest target framework (`net10.0`), at its latest patch. Holding back at 8.x no longer made sense: .NET 8 reaches end of life in November 2026 and .NET 9 already has, so the runtimes this library targets are moving to 10.x regardless. Moving ahead to 11.x was also rejected — it would raise the dependency floor for every consumer, including `net10.0` LTS apps, with no benefit to the library. **Trade-off accepted:** because core still ships the `netstandard2.1` leg, a net8/net9 consumer resolving that asset is pulled up to Hosting 10.x — acceptable given those runtimes are EOL/near-EOL. Core builds clean on both the `netstandard2.1` and `net10.0` legs with Hosting 10.x (which still ships a netstandard-compatible asset).
 
 ## 7. Lightweight host startup
 
@@ -82,13 +79,12 @@ This also fixes a latent bug: `CreateDefaultBuilder` turned on `ValidateOnBuild`
 
 ## Migration checklist (v8 → v9)
 
-- [ ] Expect a **prerelease** package version; keep v8.x if you cannot take a prerelease dependency.
 - [ ] Remove any reliance on the automatic `--verbosity`/`-v` option or `CommandBuilder.VerbosityOption`.
 - [ ] If you want logging, add `Albatross.CommandLine.Defaults` and call `WithDefaults(appPath.ConfigRoot)`. Register an `IApplicationPath` to control where logs are written, or rely on the `DefaultApplicationPath` fallback. Logs now go to a **file**, not the console.
 - [ ] Move log-level tuning from the command line to a `Serilog:MinimumLevel` section in `appsettings.json`.
 - [ ] If you print structured results, adopt `Albatross.CommandLine.Outputs` (`CommandOutput` + `Print`/`PrintAsync` + `--compact`) instead of ad-hoc `Console.WriteLine`. Output is serialized with `System.Text.Json`, so annotate your result types with `System.Text.Json.Serialization` attributes, not Newtonsoft ones.
 - [ ] If you adopted `--query` from an earlier v9 release candidate, remove `[UseOption<QueryOption>]` and the `JmesPathExpression` property, call `Print(compact)` without the expression, and shape output with `jq` instead.
-- [ ] Verify your build against the System.CommandLine v3 prerelease (expected to be a reference bump).
+- [ ] Verify your build against System.CommandLine 3.0. If you use the System.CommandLine API directly, check it against the 3.0 release notes.
 - [ ] If you referenced `Albatross.CommandLine.CodeGen` directly, **remove that package reference** — the source generator is now bundled into `Albatross.CommandLine`, so referencing the core package is enough (keeping both would double-load the generator). `Albatross.CommandLine.CodeAnalysis` stays an opt-in package you add explicitly.
 - [ ] Note that core now pulls in **`Microsoft.Extensions.Hosting` 10.x**; a .NET 8/9 app referencing core will get Hosting 10.x transitively.
 - [ ] If you read `IConfiguration` (`appsettings.json`, environment variables) without calling `WithConfig()`/`WithDefaults()`, add that call — `CommandHost` no longer loads configuration implicitly.

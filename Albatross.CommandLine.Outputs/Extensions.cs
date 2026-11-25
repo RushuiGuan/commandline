@@ -1,6 +1,7 @@
 using Spectre.Console;
 using Spectre.Console.Json;
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -10,6 +11,8 @@ using System.Xml.Linq;
 
 namespace Albatross.CommandLine.Outputs {
 	public static class Extensions {
+		internal const string ReflectionSerializationMessage = "Albatross.CommandLine.Outputs serializes with reflection-based System.Text.Json, which Native AOT and trimmed apps do not support.";
+
 		/// <summary>
 		/// Shared serializer options for CLI output: camelCase property names, enums rendered as their names
 		/// rather than numeric values, and null properties omitted. Both instances are read-only.
@@ -41,31 +44,36 @@ namespace Albatross.CommandLine.Outputs {
 		/// Renders <paramref name="value"/> to the console as syntax-highlighted JSON.  A JSON object or array is
 		/// printed indented; a scalar result (string, number, boolean) is written raw so it can be piped or
 		/// captured by scripts.  Set <paramref name="stderr"/> to write to standard error instead of standard
-		/// output.  Color is emitted only to a terminal — Spectre.Console strips ANSI when the stream is
-		/// redirected or piped, so a tool/AI consumer still receives plain JSON.
+		/// output.  Color is emitted only to a terminal; redirected or piped output is written as plain indented
+		/// JSON, so a tool/AI consumer receives valid JSON.
 		/// </summary>
+		[RequiresUnreferencedCode(ReflectionSerializationMessage)]
+		[RequiresDynamicCode(ReflectionSerializationMessage)]
 		public static void Print<T>(this T value, bool compact, bool stderr = false) {
 			if (value == null) {
 				return;
 			}
 			var type = value.GetType();
-			if (ShouldPrintJson(value)) {
-				var json = JsonSerializer.Serialize(value, type, CompactSerializerOptions);
-				if (compact) {
-					(stderr ? Console.Error : Console.Out).WriteLine(json);
-				} else {
-					var console = stderr ? ErrorConsole : AnsiConsole.Console;
-					console.Write(new JsonText(json) {
-						StringStyle = stderr ? Color.Red : Style.Plain,
-						Indentation = "  "
-					});
-					console.WriteLine();
-				}
+			var writer = stderr ? Console.Error : Console.Out;
+			if (!ShouldPrintJson(value)) {
+				writer.WriteLine(SerializeScalar(value, type));
+			} else if (compact) {
+				writer.WriteLine(JsonSerializer.Serialize(value, type, CompactSerializerOptions));
+			} else if (stderr ? Console.IsErrorRedirected : Console.IsOutputRedirected) {
+				// Spectre wraps at an 80-column fallback width when redirected, splitting long strings across lines
+				writer.WriteLine(JsonSerializer.Serialize(value, type, FormattedSerializerOptions));
 			} else {
-				(stderr ? Console.Error : Console.Out).WriteLine(SerializeScalar(value, type));
+				var console = stderr ? ErrorConsole : AnsiConsole.Console;
+				console.Write(new JsonText(JsonSerializer.Serialize(value, type, CompactSerializerOptions)) {
+					StringStyle = stderr ? Color.Red : Style.Plain,
+					Indentation = "  "
+				});
+				console.WriteLine();
 			}
 		}
 
+		[RequiresUnreferencedCode(ReflectionSerializationMessage)]
+		[RequiresDynamicCode(ReflectionSerializationMessage)]
 		static string SerializeScalar(object value, Type type) {
 			var element = JsonSerializer.SerializeToElement(value, type, CompactSerializerOptions);
 			return element.ValueKind == JsonValueKind.String ? element.GetString()! : element.GetRawText();
@@ -77,12 +85,17 @@ namespace Albatross.CommandLine.Outputs {
 		/// serializing, except for the JSON DOM types whose shape is only known from their content. A type with a
 		/// custom converter that writes an object is reported as false.
 		/// </summary>
+		[RequiresUnreferencedCode(ReflectionSerializationMessage)]
+		[RequiresDynamicCode(ReflectionSerializationMessage)]
 		public static bool ShouldPrintJson(object value) => value switch {
 			JsonNode node => node is JsonObject or JsonArray,
 			JsonElement element => element.ValueKind is JsonValueKind.Object or JsonValueKind.Array,
 			JsonDocument document => document.RootElement.ValueKind is JsonValueKind.Object or JsonValueKind.Array,
 			_ => CompactSerializerOptions.GetTypeInfo(value.GetType()).Kind != JsonTypeInfoKind.None,
 		};
+
+		[RequiresUnreferencedCode(ReflectionSerializationMessage)]
+		[RequiresDynamicCode(ReflectionSerializationMessage)]
 		public static async Task PrintAsync<T>(this T value, bool compact, CancellationToken cancellationToken, bool stderr = false) {
 			if (value == null) {
 				return;
@@ -117,6 +130,8 @@ namespace Albatross.CommandLine.Outputs {
 		/// Prints a success <see cref="CommandOutput"/> (exit code 0) to stdout for a command that completed
 		/// successfully but has no data to return. The command key is taken from the parse result.
 		/// </summary>
+		[RequiresUnreferencedCode(ReflectionSerializationMessage)]
+		[RequiresDynamicCode(ReflectionSerializationMessage)]
 		public static void PrintSuccess(this ParseResult result, string message) {
 			new CommandOutput {
 				Command = result.CommandResult.Command.GetCommandKey(),
@@ -125,6 +140,8 @@ namespace Albatross.CommandLine.Outputs {
 			}.Print(result.IsCompact());
 		}
 
+		[RequiresUnreferencedCode(ReflectionSerializationMessage)]
+		[RequiresDynamicCode(ReflectionSerializationMessage)]
 		public static void PrintSuccessWithData<T>(this ParseResult result, string message, T data) {
 			new CommandOutput<T> {
 				Command = result.CommandResult.Command.GetCommandKey(),
@@ -149,6 +166,8 @@ namespace Albatross.CommandLine.Outputs {
 		/// Prints a failure <see cref="CommandOutput"/> to stderr for a command that detected an error itself
 		/// (rather than throwing). The command key is taken from the parse result.
 		/// </summary>
+		[RequiresUnreferencedCode(ReflectionSerializationMessage)]
+		[RequiresDynamicCode(ReflectionSerializationMessage)]
 		public static int PrintError(this ParseResult result, string message, string? errorMessage = null, string? errorDetail = null, int exitCode = 1) {
 			new CommandOutput {
 				Command = result.CommandResult.Command.GetCommandKey(),
@@ -159,6 +178,8 @@ namespace Albatross.CommandLine.Outputs {
 			return exitCode;
 		}
 
+		[RequiresUnreferencedCode(ReflectionSerializationMessage)]
+		[RequiresDynamicCode(ReflectionSerializationMessage)]
 		public static int PrintErrorWithData<T>(this ParseResult result, string message, T data, string? errorMessage = null, string? errorDetail = null, int exitCode = 1) {
 			new CommandOutput<T> {
 				Command = result.CommandResult.Command.GetCommandKey(),

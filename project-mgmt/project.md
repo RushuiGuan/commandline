@@ -2,7 +2,7 @@
 
 status: active
 created: 2026-07-08T12:35:28-04:00
-updated: 2026-11-16T11:48:48-05:00
+updated: 2026-11-24T17:56:05-05:00
 ----
 
 ## Business Requirements
@@ -35,7 +35,7 @@ who consume the packages to build their own CLI tools.
 
 ## Technical Design
 
-The library sits on top of `System.CommandLine` 2.0.2 and adds a code-generation layer,
+The library sits on top of `System.CommandLine` 3.0 and adds a code-generation layer,
 a dependency-injection-aware execution pipeline, and optional integrations.
 
 ### Central abstraction: the Parameters class
@@ -128,11 +128,8 @@ read parsed values such as `--verbosity`.
 ### Package structure
 
 - **Albatross.CommandLine** — core library: `CommandHost`, attributes, interfaces,
-  pipeline. Targets .NET Standard 2.1. In v8 it used conservative dependency versions
-  (`System.CommandLine` 2.0.2, `Microsoft.Extensions.Hosting` 8.0.1) for maximum
-  compatibility across .NET 6+. **In v9 (verified in code) it multi-targets `netstandard2.1;net10.0`,
-  moves to `System.CommandLine` 3.0 prerelease, and raises `Microsoft.Extensions.Hosting` to 10.0.9**
-  (the earlier 8.0.1 hold-back was dropped now that net8/9 are EOL/near-EOL; see Key Design Decisions).
+  pipeline. Multi-targets `netstandard2.1;net10.0` and references `System.CommandLine` 3.0 and
+  `Microsoft.Extensions.Hosting` 10.x (see Key Design Decisions).
 - **Albatross.CommandLine.CodeGen** — the Roslyn incremental source generator. **Not published as a
   standalone package (v9):** it is bundled into the `Albatross.CommandLine` package's
   `analyzers/dotnet/cs` (see `CodeGen.Payload.targets`), so referencing the core package
@@ -161,17 +158,17 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
 `9.0.0`. Reconciling the plan against the actual source:
 
 - **Done in code:**
-  - Core `Albatross.CommandLine` is migrated to `System.CommandLine 3.0.0-preview.5.26302.115`
-    and multi-targets `netstandard2.1;net10.0` (its `Microsoft.Extensions.Hosting` reference is now
-    `10.0.9`; see Key Design Decisions).
+  - Core `Albatross.CommandLine` is migrated to `System.CommandLine 3.0.0` (stable)
+    and multi-targets `netstandard2.1;net10.0` (its `Microsoft.Extensions.Hosting` reference is
+    10.x; see Key Design Decisions).
   - `Albatross.CommandLine.Outputs` exists and builds — `CommandOutput`/`CommandOutput<T>`, a
     **single** set of shared `System.Text.Json` serializer options, the
     `Print`/`IsCompact`/`PrintSuccess`/`PrintError` surface, the `CompactOption` option, and a
     simplified opt-in `GlobalErrorHandler` (no new dependencies). Its README is written.
   - `Albatross.CommandLine.Defaults` now defaults to **file-based** Serilog logging (daily-rolling
     file under `IApplicationPath.LogRoot`, no console sink); the `Albatross.Logging` dependency was
-    removed in favor of direct Serilog packages. Builds clean. Defaults pins Hosting/DI at 10.0.9,
-    matching core's Hosting 10.0.9.
+    removed in favor of direct Serilog packages. Builds clean. Defaults references Hosting/DI at
+    the same 10.x version as core.
   - **Clean-output-by-default / `--verbosity` removal is done**: `VebosityOption.cs` is deleted and
     the verbosity-to-log-level wiring in `CommandHost` is commented out, so `CommandBuilder` no longer
     adds any recursive option and stdout/stderr are clean by default. No replacement library API was
@@ -185,19 +182,10 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   learnings warrant breaking *behavior* changes. Rather than absorb them piecemeal, they
   are batched into a single major version bump (8.x → 9.0). The specific breaking changes
   are being enumerated — see Open Questions.
-- **v9 migrates from System.CommandLine 2.0.2 to the v3 prerelease** (decided 2026-07-08):
-  The major bump is treated as the opportunity to move to the System.CommandLine v3
-  prerelease line. Adopting a prerelease dependency in a major release is an accepted
-  trade-off here because the version boundary already signals breaking change to consumers.
-  Impact on the core library's .NET Standard 2.1 target and conservative-dependency stance
-  is an open item — see Open Questions. **Assessment update (2026-07-08):** the maintainer
-  compared the v3 prerelease source against Albatross's usage and found **no breaking changes
-  so far** — at the API level the migration currently looks like a reference bump. This must be
-  re-verified as the prerelease evolves toward GA (the API can still shift before the stable
-  release). The core's `netstandard2.1` target is unaffected: the maintainer confirmed
-  (2026-07-08) that v3 still supports `netstandard2.1`, so the broad-compatibility stance holds.
-  **Realized in code:** core `Albatross.CommandLine.csproj` now references
-  `System.CommandLine 3.0.0-preview.5.26302.115` on a `netstandard2.1` target.
+- **v9 moves from System.CommandLine 2.0 to 3.0**: The major bump is the opportunity to
+  take the System.CommandLine v3 line, since the version boundary already signals breaking change
+  to consumers. Albatross's usage needed no API changes, and v3 still serves the `netstandard2.1`
+  leg, so the broad-compatibility stance holds.
 - **v9 default output is clean stdout/stderr; the recursive `--verbosity` option and
   automatic console logging are no longer created by default** (decided 2026-07-08): v8
   always added a recursive global `--verbosity`/`-v` option (defaulting to `Error`) to the
@@ -389,12 +377,10 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   JmesPath.Net plus the Newtonsoft.Json it requires, putting a second JSON stack on the
   serialization path. Without it the package serializes with `System.Text.Json` alone, which
   keeps the output contract in one serializer and the dependency graph to Spectre.Console.
-- **v9 ships as prerelease until System.CommandLine v3 reaches GA** (decided 2026-07-08):
-  Because v9 depends on the System.CommandLine v3 prerelease, v9 itself will only be
-  published as a prerelease (`9.0.0-rc.N`). A stable 9.0.0 cannot ship until the
-  System.CommandLine v3 stable release, expected ~November 2026. v9 development, breaking
-  changes, and feedback can therefore proceed and be released continuously on the
-  prerelease channel without waiting; only the stable tag is gated.
+- **v9 ships as prerelease until it references only stable dependencies**: A stable package
+  cannot depend on a prerelease one, so v9 is published as `9.0.0-rc.N` candidates while any
+  dependency is prerelease, and the stable 9.0.0 is tagged only once all are stable. Development
+  and feedback proceed continuously on the prerelease channel; only the stable tag is gated.
   Tasks: [v9-release-check-list.tsk.md](v9-release-check-list.tsk.md)
 - **Compile-time code generation over runtime reflection**: A Roslyn incremental source
   generator wires up commands, DI, and the command tree at compile time. Reflection-based
@@ -411,11 +397,10 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   when needed.
 - **Core library multi-targets `netstandard2.1;net10.0`, tracking System.CommandLine's own
   TFMs** (decided 2026-07-09; supersedes the earlier "core must remain netstandard2.1-only"
-  stance): The guiding rule is *don't be more restrictive than the dependency you wrap*. The v3
-  prerelease Albatross references (`3.0.0-preview.5.26302.115`) ships `netstandard2.0` + `net10.0`
-  (its csproj is `$(NetMinimum);netstandard2.0`; Arcade resolves `NetMinimum` to `net10.0` in the
-  .NET 10 cycle). Albatross therefore keeps a **netstandard** floor and adds a **net10.0** leg that
-  matches System.CommandLine's modern target. Two sub-decisions:
+  stance): The guiding rule is *don't be more restrictive than the dependency you wrap*.
+  System.CommandLine 3.0 ships `netstandard2.0` + `net10.0`. Albatross therefore keeps a
+  **netstandard** floor and adds a **net10.0** leg that matches System.CommandLine's modern target.
+  Two sub-decisions:
   - **The netstandard floor stays at 2.1, not 2.0.** Dropping to 2.0 (which would match
     System.CommandLine's reach exactly, adding .NET Framework 4.6.1+) was investigated in prior
     work and rejected as too hard to support. 2.1 is the deliberate floor.
@@ -429,19 +414,16 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   The net10 leg sets `IsAotCompatible=true` (valid on net7+ only, so gated by a TFM condition to
   keep the netstandard2.1 leg from emitting NETSDK1210) to self-validate the AOT goal and unlock
   `required`/newer BCL for net10 consumers. Modern conveniences (Serilog, config) still live in
-  the optional Defaults package. `Microsoft.Extensions.Hosting` is referenced at 10.0.9 on both legs
-  (see the dedicated Hosting decision below).
-- **Core tracks current `Microsoft.Extensions.Hosting` 10.x (10.0.9), reversing the earlier
-  hold-at-8.0.1 stance** (decided 2026-07-10; supersedes the 2026-07-08 decision to pin 8.0.1):
-  Originally core pinned Hosting at 8.0.1 to avoid raising the transitive floor and forcing consumers
-  onto Hosting 10.x for no benefit. That reasoning is now outweighed by lifecycle: .NET 8 reaches EOL
-  Nov 2026 (≈ v9's own GA timing) and .NET 9 is already EOL, so the runtimes this library targets are
-  moving to 10.x regardless. Core (and Defaults) now reference Hosting/DI **10.0.9**. **Accepted
-  trade-off:** because core still ships the `netstandard2.1` leg, a net8/net9 consumer resolving that
-  asset is pulled up to Hosting 10.x — the exact consequence the old decision avoided — but that is
-  acceptable given those runtimes are EOL/near-EOL. Verified: core builds clean on both the
-  `netstandard2.1` and `net10.0` legs with Hosting 10.0.9 (10.x still ships a netstandard-compatible
-  asset). Defaults matches at 10.0.9.
+  the optional Defaults package. `Microsoft.Extensions.Hosting` is referenced at the same 10.x
+  version on both legs (see the next decision).
+- **Microsoft package references track the latest patch of the newest TFM's major**: The
+  newest target is `net10.0`, so every Microsoft runtime package (`Microsoft.Extensions.*`) is
+  referenced at the latest 10.x patch. Moving to 11.x was rejected because it would raise the
+  dependency floor for every consumer, including `net10.0` LTS apps, with no benefit to the library;
+  holding back at 8.x was rejected because net8/net9 are end-of-life. Accepted trade-off: a
+  net8/net9 consumer resolving the `netstandard2.1` asset is pulled up to 10.x. Build-only tooling
+  that never reaches consumers (`PrivateAssets="all"`, e.g. SourceLink) is exempt and may take the
+  newest major.
 - **Enhanced pipeline with a shared per-execution DI scope**: Replaces `System.CommandLine`'s
   native actions with `AsyncOptionAction` and `GlobalCommandAction` to add DI, async
   support, dynamic short-circuiting, and centralized error handling — capabilities the base
@@ -501,16 +483,6 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   also `Init()` the path (create the directory) or rely on the consumer/Serilog to create it —
   currently the consumer calls `appPath.Init()` (Anchor pattern) and the File sink also creates
   the directory.
-- **API assessment done (2026-07-08): System.CommandLine v3 introduces no breaking changes to
-  Albatross's usage** per the maintainer's source-code comparison; the migration currently looks
-  like a reference bump. **Correction (2026-07-09):** the v3 package Albatross references
-  (`3.0.0-preview.5.26302.115`) ships `netstandard2.0` + `net10.0` — it does **not** target
-  netstandard2.1. Core now multi-targets `netstandard2.1;net10.0` to track System.CommandLine's
-  TFMs (see Key Design Decisions). Residual: re-verify the API before GA, since the prerelease
-  API can still shift.
-- **Core Hosting version — RESOLVED (2026-07-10): tracks 10.x (10.0.9).** The earlier
-  hold-at-8.0.1 was reversed now that net8/9 are EOL/near-EOL; core and Defaults reference Hosting/DI
-  10.0.9. Recorded in Key Design Decisions.
 - **Clean-output / `--verbosity`-removal — DONE (verified in code 2026-07-08).** Core no longer
   registers a recursive `VerbosityOption`: `VebosityOption.cs` is deleted and the verbosity-to-log-level
   wiring in `CommandHost` is commented out, so stdout/stderr are clean by default. `LoggingTest` (which
@@ -533,11 +505,9 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
 
 ## Dependencies & Constraints
 
-- **v9 stable release is gated on an external dependency**: v9 references the
-  System.CommandLine v3 prerelease and can only ship a stable 9.0.0 after System.CommandLine
-  v3 reaches GA (expected ~November 2026, not controlled by this project). Until then, v9
-  is published only on the prerelease channel. v8.x remains the current stable line for
-  consumers who cannot take a prerelease dependency.
+- **v9 stable release requires stable dependencies**: a stable 9.0.0 cannot reference a
+  prerelease package. System.CommandLine 3.0 is now stable, so this gate is met; v8.x remains the
+  current stable line until 9.0.0 is tagged.
 - Built on `System.CommandLine` 2.0.2 (stable) through v8. The library predates this stable release
   and a migration guide from `2.0.0-beta4` is maintained; consumers on beta4 APIs must
   migrate (`AddValidator` → `Validators.Add`, `GetValueForOption` → `GetValue`,
@@ -548,8 +518,7 @@ v9 is under active construction, not only designed. `Directory.Build.props` sets
   hard to support), and do not drop the netstandard leg (a library TFM is a floor, not a runtime
   mandate — the netstandard2.1 asset serves net8/net9 consumers, the net10 asset serves net10+).
   Modern/heavier dependencies still belong in the Defaults package. Raised core dependencies are
-  `System.CommandLine` (3.0 prerelease) and `Microsoft.Extensions.Hosting` 10.0.9 (see Key Design
-  Decisions).
+  `System.CommandLine` 3.0 and `Microsoft.Extensions.Hosting` 10.x (see Key Design Decisions).
 - Reusable `Option<T>` subclasses **must** expose a `(string name, params string[] aliases)`
   constructor; reusable `Argument<T>` subclasses **must** expose a `(string name)`
   constructor — the source generator relies on these signatures to instantiate them.

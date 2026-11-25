@@ -5,9 +5,9 @@ Renders CLI command results as stable JSON so a command's output is a reliable c
 ## Key Features
 - **Standard result envelope** - `CommandOutput` and `CommandOutput<T>` give every command one predictable shape for both success and failure: command key, message, errors, exit code, optional log folder, and typed `Data`.
 - **Stable schema over compactness** - The shared `System.Text.Json` options drop nulls but keep default values and empty collections, so a consumer never has to disambiguate "empty" from "absent" — collections are always arrays, and no field has to be inferred from a missing key.
-- **Pipe- and AI-safe rendering** - Objects and arrays print indented and syntax-highlighted on a terminal; ANSI color is stripped automatically when redirected or piped, and scalar results print raw so scripts can capture them directly.
+- **Pipe- and AI-safe rendering** - Objects and arrays print indented and syntax-highlighted on a terminal, and as plain indented JSON when redirected or piped; scalar results print raw so scripts can capture them directly.
 - **Compact mode** - The `--compact` option emits minified single-line JSON with no indentation or color, ready to pipe into `jq` or any other JSON tool.
-- **Interruptible printing** - `PrintAsync` writes in slices and checks the cancellation token between them, so Ctrl+C stops a large print promptly; its output is uncolored and always valid JSON, even when indented and redirected.
+- **Interruptible printing** - `PrintAsync` writes in slices and checks the cancellation token between them, so Ctrl+C stops a large print promptly; its output is uncolored.
 
 ## Quick Start
 Add the compact option to a command's parameters, then write the result through the `Print` extension:
@@ -54,12 +54,13 @@ For commands that report their own outcome instead of returning data, use `Parse
 
 ## Dependencies
 - Albatross.CommandLine 9.0.0
-- System.CommandLine 3.0.0-rc.3.26522.148 (prerelease)
+- System.CommandLine 3.0.0
 - Spectre.Console 0.57.2
 - Spectre.Console.Json 0.57.2
 
 ## Prerequisites
 - .NET 10.0 or later.
+- Not for Native AOT or trimmed apps: serialization uses reflection-based `System.Text.Json`, and the print methods are marked `[RequiresUnreferencedCode]`/`[RequiresDynamicCode]` so such apps get a build warning.
 
 ## Documentation
 
