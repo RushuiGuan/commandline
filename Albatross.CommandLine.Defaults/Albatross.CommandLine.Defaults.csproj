@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
+		<Description>Opinionated defaults for Albatross.CommandLine apps: JSON configuration and file-based Serilog logging, added with a single WithDefaults() call.</Description>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Albatross.Config" Version="8.0.2" />

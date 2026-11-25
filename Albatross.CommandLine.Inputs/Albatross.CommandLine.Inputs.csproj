@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
+		<Description>Reusable System.CommandLine options and arguments for Albatross.CommandLine apps: validated file and directory paths, time zone, confirmation, and tracker files.</Description>
 		<IsAotCompatible Condition="'$(TargetFramework)' == 'net10.0'">true</IsAotCompatible>
 	</PropertyGroup>
 	<ItemGroup>

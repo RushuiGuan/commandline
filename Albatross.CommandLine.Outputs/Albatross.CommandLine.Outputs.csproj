@@ -4,6 +4,7 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<Description>Stable JSON output for Albatross.CommandLine apps: a CommandOutput result envelope, Print and PrintAsync rendering, a --compact option, and an opt-in global error handler.</Description>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Spectre.Console" Version="0.57.2" />

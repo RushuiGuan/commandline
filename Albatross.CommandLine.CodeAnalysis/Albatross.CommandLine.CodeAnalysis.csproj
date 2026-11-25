@@ -5,7 +5,7 @@
 		<LangVersion>Latest</LangVersion>
 		<Nullable>Enable</Nullable>
 		<IncludeSymbols>false</IncludeSymbols>
-		<Description>A companion code analysis used by the Albatross.CommandLine library</Description>
+		<Description>Roslyn analyzers for Albatross.CommandLine that flag invalid command definitions at build time, such as duplicate command or option names and conflicting attributes.</Description>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 		<PackageTags>Analyzer;Roslyn</PackageTags>
 		<IncludeBuildOutput>false</IncludeBuildOutput>

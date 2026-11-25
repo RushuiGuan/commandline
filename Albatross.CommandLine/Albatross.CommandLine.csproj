@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
-		<Description>A streamlined integration layer for System.CommandLine with dependency injection, hosting, configuration, logging, and	source-generated command wiring for .NET CLI apps.</Description>
+		<Description>A streamlined integration layer for System.CommandLine with dependency injection, hosting, configuration, logging, and source-generated command wiring for .NET CLI apps.</Description>
 		<IsAotCompatible Condition="'$(TargetFramework)' == 'net10.0'">true</IsAotCompatible>
 	</PropertyGroup>
 	<ItemGroup>
